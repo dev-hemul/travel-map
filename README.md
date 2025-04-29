@@ -16,6 +16,7 @@
 
 - `main` — єдина продакшн-гілка
 - `PROJ-123-name` — вторинні гілки для розробки
+- `feature/PROJ-123-name` — вторинні гілки для розробки
 
 ---
 
@@ -29,7 +30,7 @@ git pull origin main
 
 1.2. Створити гілку із задачею JIRA:
 ```bash
-git checkout -b PROJ-123-short-description
+git checkout -b feature/PROJ-123-short-description
 ```
 
 > `PROJ-123` — це ід задачі в Jira
