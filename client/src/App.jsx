@@ -1,33 +1,24 @@
 import './App.css';
-import React, { useState } from 'react';
+import React from 'react';
 import MapView from './components/MapView';
 import SupportButton from './components/support/supportButton';
 import SupportModal from './components/support/supportModal';
+import { AnimatePresence } from 'framer-motion';
+import useSupportModal from './components/support/useSupportModal'; // Підключаємо хук
 
 function App() {
-  const [showSupport, setShowSupport] = useState(false);
-
-  const handleSupportButtonClick = () => {
-    setShowSupport(true);
-  };
-
-  const handleCloseSupportModal = () => {
-    setShowSupport(false);
-  };
+  const { showSupport, toggleSupportModal } = useSupportModal(); // Використовуємо хук
 
   return (
-    <>
-      <div className="map-container">
-        <MapView className="map-view" />
-        <SupportButton onClick={handleSupportButtonClick} />
-        
-        {showSupport && (
-          <div className="support-modal-container">
-            <SupportModal onClose={handleCloseSupportModal} />
-          </div>
-        )}
-      </div>
-    </>
+    <div className="map-container">
+      <MapView className="map-view" />
+      <SupportButton onClick={toggleSupportModal} />
+      
+      
+      {showSupport && (
+        <SupportModal onClose={toggleSupportModal} />
+      )}
+    </div>
   );
 }
 
