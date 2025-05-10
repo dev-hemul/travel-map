@@ -9,7 +9,7 @@ import createHttpError from 'http-errors';
 // Імпорт CORS
 import cors from 'cors';
 // Роути
-
+import announcementsRouter from "./routes/annoucementsAdding.js";
 
 const app = express();
 app.use(morgan('combined'));
@@ -32,6 +32,7 @@ const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, '../client')));
 
 // Підключення роутів тут
+app.use('/', announcementsRouter);
 /*app.use('/', mainRouter);*/
 
 app.get('*', (req, res) => {

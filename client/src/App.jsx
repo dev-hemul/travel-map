@@ -1,6 +1,7 @@
 import './App.css';
 import React from 'react';
 import MapView from './components/MapView';
+import AnnouncementsPage from './components/announcementsPage/announcementsPage'
 import SupportButton from './components/support/supportButton';
 import SupportModal from './components/support/supportModal';
 import useSupportModal from './components/support/useSupportModal'; // Підключаємо хук
@@ -12,14 +13,15 @@ function App() {
 
   return (
     <div className="map-container">
-      <MapView className="map-view" />
+      <AnnouncementsPage />
+      {/* <MapView className="map-view" />
       <Announcements />
       <SupportButton onClick={toggleSupportModal} />
       
       
       {showSupport && (
         <SupportModal onClose={toggleSupportModal} />
-      )}
+      )} */}
     </div>
   );
 }
