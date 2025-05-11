@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import mongoose from "mongoose";
+import _mongoose from "mongoose";
 
 const supportSchema = new Schema({
     name: String,

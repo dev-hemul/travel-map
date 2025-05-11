@@ -9,7 +9,10 @@ import cors from 'cors';
 import express from 'express';
 import createHttpError from 'http-errors';
 import morgan from 'morgan';
+
 // Роути
+import getReportsRouter from './routes/main.js';
+import supportRouter from './routes/support.js';
 
 const app = express();
 app.use(morgan('combined'));
@@ -34,7 +37,8 @@ const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, '../client')));
 
 // Підключення роутів тут
-/*app.use('/', mainRouter);*/
+app.use('/', supportRouter);
+app.use('/', getReportsRouter);
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/index.html'));

@@ -1,7 +1,7 @@
 // Підключення до бази даних
-import mongoose from 'mongoose';
-import colors from 'colors';
+import _colors from 'colors';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 dotenv.config();
 
 const connectDB = async () => {
