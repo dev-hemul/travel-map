@@ -1,24 +1,29 @@
-import express from 'express';
 import path from 'path';
 // Цей рядок імпортує функцію fileURLToPath із модуля url, вбудованого в Node.js.
-import {fileURLToPath} from 'url';
+import { fileURLToPath } from 'url';
+
 // Логи для консолі за запитами
-import morgan from 'morgan';
 // Обробка та відображення помилок
-import createHttpError from 'http-errors';
 // Імпорт CORS
 import cors from 'cors';
+import express from 'express';
+import createHttpError from 'http-errors';
+import morgan from 'morgan';
+
 // Роути
 import announcementsRouter from "./routes/annoucementsAdding.js";
+
 
 const app = express();
 app.use(morgan('combined'));
 
-app.use(cors({
-  origin: '*',
-	methods: ['GET', 'POST'],
-	credentials: true
-}));
+app.use(
+  cors({
+    origin: '*',
+    methods: ['GET', 'POST'],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // import.meta.url це спеціальна змінна ESM, яка містить URL поточного модуля (файлу).
@@ -40,16 +45,16 @@ app.get('*', (req, res) => {
 });
 
 app.use((req, res, next) => {
-	next(createHttpError(404));
-})
+  next(createHttpError(404));
+});
 
 // error hendler - midleware для обробки помилок. Тобто спочатку вище формуємо помилку, а потім всі помилки передаються сюди
-app.use((err, req, res, next) => {
-	const {status = 404, message = 'Internal Server Error'} = err; // Беремо статус помилки
-	console.error(status);
-	console.error(message);
-	
-	res.status(status).json({ error: message }); // Повертаємо повідомлення про помилку в форматі JSON
+app.use((err, req, res) => {
+  const { status = 404, message = 'Internal Server Error' } = err; // Беремо статус помилки
+  console.error(status);
+  console.error(message);
+
+  res.status(status).json({ error: message }); // Повертаємо повідомлення про помилку в форматі JSON
 });
 
 export default app;

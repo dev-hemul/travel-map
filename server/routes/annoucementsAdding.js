@@ -1,19 +1,25 @@
-import express from "express"
-import cors from "cors";
-const router = express.Router();
+import express from "express";
+
 import UserModel from "../model/annoucementsModel.js";
 
-/* GET users listing. */
-router.post('/annoucementsAdding', cors(), async (req, res, next) => {
-  const { name, description, url } = req.body;
+const router = express.Router();
+
+router.post('/annoucementsAdding', async (req, res) => { // Добавлен параметр res
+  const { title, description } = req.body; // Изменили name на title
   console.log(`В БД передано: 
-                title: ${name}
-                description:${description}`);
-  const doc = new UserModel();
-  doc.name = name;
-  doc.url = url;
-  doc.description = description;
-  await doc.save();
+              title: ${title}
+              description: ${description}`);
+  
+  try {
+    const doc = new UserModel();
+    doc.title = title; // Изменили name на title
+    doc.description = description;
+    await doc.save();
+    res.status(200).send('Оголошення збережено'); // Добавляем ответ
+  } catch (error) {
+    console.error('Помилка збереження:', error);
+    res.status(500).send('Помилка сервера');
+  }
 });
 
 export default router;

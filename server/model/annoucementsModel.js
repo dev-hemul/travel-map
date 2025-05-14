@@ -1,10 +1,10 @@
 import { Schema, model } from "mongoose";
 
-const schema = new Schema({
-    name: String,
+const announcementsSchema = new Schema({
+    title: String,
     description: String,
 });
 
-const modele = model('announcements', schema, "announcements");
+const modele = model( "announcements", announcementsSchema);
 
 export default modele;

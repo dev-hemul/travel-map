@@ -1,27 +1,17 @@
-import './App.css';
 import React from 'react';
+import Announcements from './components/announcements/AnnouncementModalWrapper';
 import MapView from './components/MapView';
-import AnnouncementsPage from './components/announcementsPage/announcementsPage'
-import SupportButton from './components/support/supportButton';
-import SupportModal from './components/support/supportModal';
-import useSupportModal from './components/support/useSupportModal'; // Підключаємо хук
-import Announcements from './components/announcements/announcements';
-
+import SupportModalWrapper from './components/support/supportModalWrapper';
+import AnnouncementModalWrapper from './components/announcements/AnnouncementModalWrapper';
+import './App.css';
 
 function App() {
-  const { showSupport, toggleSupportModal } = useSupportModal(); // Використовуємо хук
-
   return (
-    <div className="map-container">
-      <AnnouncementsPage />
-      {/* <MapView className="map-view" />
+    <div className="min-h-screen dark:bg-gray-900 bg-gray-50">
+      <MapView />
       <Announcements />
-      <SupportButton onClick={toggleSupportModal} />
-      
-      
-      {showSupport && (
-        <SupportModal onClose={toggleSupportModal} />
-      )} */}
+      <SupportModalWrapper />
+      <AnnouncementModalWrapper />
     </div>
   );
 }
