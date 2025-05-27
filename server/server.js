@@ -9,9 +9,12 @@ import cors from 'cors';
 import express from 'express';
 import createHttpError from 'http-errors';
 import morgan from 'morgan';
+import { rateLimit } from 'express-rate-limit'
 
 // Роути
 import announcementsRouter from "./routes/annoucementsAdding.js";
+import getReportsRouter from './routes/main.js';
+import supportRouter from './routes/support.js';
 
 const app = express();
 app.use(morgan('combined'));
@@ -35,9 +38,22 @@ const __dirname = path.dirname(__filename);
 
 app.use(express.static(path.join(__dirname, '../client')));
 
+//Ліміт запитів в репорт(конфігурація)
+const limiter = rateLimit({
+	windowMs: 60 * 60 * 1000, // 60 minutes
+	limit: 5, // Limit each IP to 5 requests per `window` (here, per 60 minutes)
+	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+})
+
+app.use(limiter);
+
 // Підключення роутів тут
 app.use('/', announcementsRouter);
+app.use('/', supportRouter, limiter);
+app.use('/', getReportsRouter);
 /*app.use('/', mainRouter);*/
+
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/index.html'));
