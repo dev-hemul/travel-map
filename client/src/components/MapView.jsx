@@ -822,6 +822,7 @@ const MapView = () => {
         <WeatherWidget />
         <div></div>
         <div></div>
+        <div></div>
       </div>
     </div>
   );
