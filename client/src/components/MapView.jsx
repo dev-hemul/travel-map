@@ -821,6 +821,7 @@ const MapView = () => {
         <LayersSwitcher mapType={mapType} setMapType={setMapType} />
         <WeatherWidget />
         <div></div>
+        <div></div>
       </div>
     </div>
   );
