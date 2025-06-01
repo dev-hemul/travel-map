@@ -1,6 +1,6 @@
 import express from 'express';
-import Support from '../model/Support.js';
 
+import Support from '../model/Support.js';
 import { supportLimiter } from '../utils/rateLimiter.js';
 
 const router = express.Router();
