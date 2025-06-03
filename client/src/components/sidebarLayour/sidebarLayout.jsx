@@ -1,12 +1,17 @@
-import { Outlet, Link } from 'react-router-dom';
-import { CiSettings } from "react-icons/ci";
+import { Outlet, Link, NavLink} from 'react-router-dom';
+import { IoMdSettings } from "react-icons/io";
 import { FaRoute } from "react-icons/fa6";
 import { FaBullhorn } from 'react-icons/fa';
 import { CgProfile } from "react-icons/cg";
 import { RiLogoutBoxLine } from "react-icons/ri"
-import { MdSupportAgent } from "react-icons/md";
+import { BiSupport } from "react-icons/bi";
+
+
 
 const SidebarLayout = () => {
+  const activeStyle = ({isActive}) => isActive ? "bg-indigo-600" : "bg-none";
+
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
@@ -19,12 +24,12 @@ const SidebarLayout = () => {
         </div>
         
         <nav className="space-y-4 [&>a]:py-2 [&>a]:px-4 [&>a]:rounded-lg [&>a]:transition-all [&>a]:duration-200 [&>a]:ease-in-out [&>a]:flex [&>a]:items-center [&>a:hover]:bg-indigo-600">
-            <Link to="/profile" className="bg-indigo-600"><CgProfile size="25" className="mr-[5px]" /> Профіль</Link>
-            <Link to="/announcements"><FaBullhorn size="25" className="mr-[5px]" /> Оголошення</Link>
-            <Link to="/routes"><FaRoute size="25" className="mr-[5px]" /> Маршрути</Link>
-            <Link to="/support"><MdSupportAgent size="25" className="mr-[5px]" /> Підтримка</Link>
-            <Link to="/settings"><CiSettings size="25" className="mr-[5px]" /> Налаштування</Link>
-            <Link to="/logout" className="text-red-300 hover:bg-red-600"><RiLogoutBoxLine size="25" className="mr-[5px]" /> Вихід</Link>
+            <NavLink to="/profile" className={activeStyle}><CgProfile size="25" className="mr-[5px]" /> Профіль</NavLink>
+            <NavLink to="/announcements" className={activeStyle}><FaBullhorn size="25" className="mr-[5px]" /> Оголошення</NavLink>
+            <NavLink to="/routes" className={activeStyle}><FaRoute size="25" className="mr-[5px]" /> Маршрути</NavLink>
+            <NavLink to="/support" className={activeStyle}><BiSupport size="25" className="mr-[5px]" /> Підтримка</NavLink>
+            <NavLink to="/settings" className={activeStyle}><IoMdSettings size="25" className="mr-[5px]" /> Налаштування</NavLink>
+            <NavLink to="/logout" className="text-red-300 hover:bg-red-600"><RiLogoutBoxLine size="25" className="mr-[5px]" /> Вихід</NavLink>
         </nav>
       </div>
 
