@@ -36,13 +36,14 @@ app.use('/', supportRouter);
 app.use('/', getReportsRouter);
 app.use('/', profileEdditRouter);
 
+
 // Обробка 404
 app.use((req, res, next) => {
   next(createHttpError(404));
 });
 
 // Обробник помилок
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   const { status = 500, message = 'Internal Server Error' } = err;
   console.error(status, message);
   res.status(status).json({ error: message });
