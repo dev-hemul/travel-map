@@ -1,40 +1,83 @@
 import React from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 
 import Announcements from './components/announcements/announcementModalWrapper';
 import SearchBar from './components/announcements/SearchBar';
 import MapView from './components/MapView';
+import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import SidebarLayout from './components/sidebarLayour/sidebarLayout';
 import ProfilePage from './pages/profilePage';
 
-
-import './App.css';
-
 function App() {
+  const location = useLocation();
+
+  const inDashboard =
+    location.pathname.startsWith('/profile') ||
+    location.pathname.startsWith('/settings') ||
+    location.pathname.startsWith('/announcements') ||
+    location.pathname.startsWith('/support') ||
+    location.pathname.startsWith('/routes');
+
   return (
-    <div className="min-h-screen dark:bg-gray-900 bg-gray-50">
-      {/* <MapView />
-      <SearchBar />
-      <Announcements />
-      <SupportModalWrapper /> */}
-      <Router>
-        <Routes>
-          <Route path="/" element={<MapView />} />
-          
-          <Route element={<SidebarLayout />}>
-            <Route path="/profile" element={<ProfilePage />} />
-            {/* Інші маршрути з сайдбаром */}
-            <Route path="/announcements" element={<div>Оголошення</div>} />
-            <Route path="/routes" element={<div>Маршрути</div>} />
-            <Route path="/support" element={<div>Підтримка</div>} />
-            <Route path="/settings" element={<div>Налаштування</div>} />
-          </Route>
-          
-          {/* Маршрути без сайдбара */}
-          <Route path="/login" element={<div>Логін</div>} />
-        </Routes>
-      </Router>
+    <div className="min-h-screen dark:bg-gray-900 bg-gray-50 relative">
+      {!inDashboard && (
+        <>
+          <MapView />
+          <SupportModalWrapper />
+          <Announcements />
+          <SearchBar />
+        </>
+      )}
+
+      <Routes>
+        {/* Главная страница с MapView и UI-элементами */}
+        <Route path="/" element={<div />} />
+
+        {/* Личный кабинет */}
+        <Route
+          path="/profile"
+          element={
+            <SidebarLayout>
+              <ProfilePage />
+            </SidebarLayout>
+          }
+        />
+        <Route
+          path="/announcements"
+          element={
+            <SidebarLayout>
+              <div>Оголошення</div>
+            </SidebarLayout>
+          }
+        />
+        <Route
+          path="/routes"
+          element={
+            <SidebarLayout>
+              <div>Маршрути</div>
+            </SidebarLayout>
+          }
+        />
+        <Route
+          path="/support"
+          element={
+            <SidebarLayout>
+              <div>Підтримка</div>
+            </SidebarLayout>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <SidebarLayout>
+              <div>Налаштування</div>
+            </SidebarLayout>
+          }
+        />
+
+        {/* Пример авторизации */}
+        <Route path="/login" element={<div>Логін</div>} />
+      </Routes>
     </div>
   );
 }

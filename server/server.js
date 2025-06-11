@@ -11,7 +11,7 @@ import morgan from 'morgan';
 import announcementsRouter from "./routes/annoucementsAdding.js";
 import getReportsRouter from './routes/main.js';
 import supportRouter from './routes/support.js';
-import profileEdditRouter from './routes/profileChanges.js'
+import profileEdditRouter from './routes/profileChanges.js';
 
 
 const app = express();

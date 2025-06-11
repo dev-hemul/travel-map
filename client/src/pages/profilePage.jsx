@@ -1,6 +1,6 @@
-import React, { useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
+import React, { useState, useRef } from "react";
 
 const ProfilePage = () => {
   const [formData, setFormData] = useState({
@@ -9,9 +9,12 @@ const ProfilePage = () => {
     middleName: "",
     location: "",
   });
+  const [avatar, setAvatar] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState(null);
+  const fileInputRef = useRef(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,6 +24,37 @@ const ProfilePage = () => {
     }));
   };
 
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Перевірка розміру файлу (до 10 МБ)
+    if (file.size > 10 * 1024 * 1024) {
+      setError("Розмір файлу повинен бути менше 10 МБ");
+      return;
+    }
+
+    // Перевірка типу файлу
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      setError("Дозволені лише JPG/PNG файли");
+      return;
+    }
+
+    setAvatar(file);
+    setError(null);
+
+    // Створення попереднього перегляду
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -28,7 +62,23 @@ const ProfilePage = () => {
     setError(null);
     
     try {
-      const response = await axios.post('http://localhost:4000/profileChanges', formData);
+      const formDataToSend = new FormData();
+      
+      // Додаємо текстові дані
+      Object.entries(formData).forEach(([key, value]) => {
+        formDataToSend.append(key, value);
+      });
+      
+      // Додаємо аватар, якщо він є
+      if (avatar) {
+        formDataToSend.append('avatar', avatar);
+      }
+      
+      const response = await axios.post('http://localhost:4000/profileChanges', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       
       if (response.status === 200) {
         setIsSuccess(true);
@@ -44,7 +94,7 @@ const ProfilePage = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <h2 className="text-3xl font-bold text-indigo-900 mb-8">Персональні дані</h2>
+      <h2 className="text-3xl font-bold text-[#744ce9] mb-8">Персональні дані</h2>
       
       <form onSubmit={handleSubmit}>
         <motion.div 
@@ -57,10 +107,17 @@ const ProfilePage = () => {
             {/* Ліва частина з аватаром та полями */}
             <div className="w-1/4">
               <motion.div 
-                whileHover={{ scale: 1.03 }}
-                className="bg-indigo-100 rounded-full w-40 h-40 flex items-center justify-center mb-4"
+                className="bg-[#F4EFFF] rounded-full w-40 h-40 flex items-center justify-center mb-4 overflow-hidden"
               >
-                <span className="text-indigo-500 text-4xl">АС</span>
+                {avatarPreview ? (
+                  <img 
+                    src={avatarPreview} 
+                    alt="Profile preview" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-[#744ce9] text-4xl">АС</span>
+                )}
               </motion.div>
               
               <div className="mb-6 space-y-4">
@@ -86,40 +143,55 @@ const ProfilePage = () => {
                 ))}
               </div>
               
-              <div className="space-y-2">
-                <p className="text-indigo-600">test@gmail.com</p>
-                <p className="text-indigo-600">38 (099) 999 99 99</p>
+              <div className="space-y-2 text-[#744ce9]">
+                <p>test@gmail.com</p>
+                <p>38 (099) 999 99 99</p>
               </div>
             </div>
 
             {/* Права частина з фото та Google акаунтом */}
             <div className="w-3/4">
               <motion.div 
-                whileHover={{ scale: 1.01 }}
-                className="border-2 border-dashed border-indigo-300 rounded-lg p-6 mb-6"
+                className="border-2 border-dashed border-[#4DDB80] rounded-lg p-6 mb-6 bg-[#C4FEDB]"
               >
-                <h4 className="text-lg font-semibold text-indigo-900 mb-2">Додати фото</h4>
+                <h4 className="text-lg font-semibold text-[#40b96d] mb-2">Додати фото</h4>
                 <p className="text-gray-500 text-sm mb-4">Jpg, png, розміром від 600×600 пікселів, до 10 МБ</p>
+                <input 
+                  type="file" 
+                  ref={fileInputRef}
+                  onChange={handleAvatarChange}
+                  accept="image/jpeg, image/png"
+                  className="hidden"
+                />
                 <motion.button 
                   type="button"
+                  onClick={triggerFileInput}
                   whileTap={{ scale: 0.95 }}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-all"
+                  className="bg-[#4DDB80] text-white px-4 py-2 rounded-lg hover:bg-[#40b96d] transition-all"
                 >
-                  Завантажити
+                  {avatar ? "Змінити фото" : "Завантажити"}
                 </motion.button>
+                {error && (
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-red-500 text-sm mt-2"
+                  >
+                    {error}
+                  </motion.p>
+                )}
               </motion.div>
 
               <motion.div 
-                whileHover={{ scale: 1.01 }}
-                className="bg-indigo-50 rounded-lg p-6"
+                className="bg-[#F4EFFF] rounded-lg p-6"
               >
-                <h4 className="text-lg font-semibold text-indigo-900 mb-4">Авторизуйтесь в один клік</h4>
+                <h4 className="text-lg font-semibold text-[#744ce9] mb-4">Авторизуйтесь в один клік</h4>
                 <motion.button 
                   type="button"
                   whileTap={{ scale: 0.95 }}
-                  className="flex items-center justify-center space-x-2 bg-white border border-indigo-300 text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-50 w-full"
+                  className="flex items-center justify-center space-x-2 bg-white #F4EFFF text-[#744ce9] px-4 py-2 rounded-lg hover:bg-indigo-50 w-full"
                 >
-                  <span>Прив'язати Google акаунт</span>
+                  <span>Прив&apos;язати Google акаунт</span>
                 </motion.button>
               </motion.div>
             </div>
@@ -157,7 +229,7 @@ const ProfilePage = () => {
               className={`px-6 py-2 rounded-lg transition-all ${
                 isSubmitting 
                   ? "bg-indigo-400 cursor-not-allowed" 
-                  : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                  : "bg-[#F22F46] hover:bg-[#F22F46] text-white"
               }`}
             >
               {isSubmitting ? (
