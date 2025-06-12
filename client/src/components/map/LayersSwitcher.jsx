@@ -50,7 +50,7 @@ const LayersSwitcher = ({ mapType, setMapType }) => {
                       ${mapType === 'standard' ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 hover:bg-gray-100'}`}
               >
                 <FaMap className="text-xl" />
-                <span>Стандартная</span>
+                <span>Стандартна</span>
               </button>
 
               <button
@@ -62,7 +62,7 @@ const LayersSwitcher = ({ mapType, setMapType }) => {
                       ${mapType === 'satellite' ? 'bg-orange-500 text-white' : 'bg-white text-gray-900 hover:bg-gray-100'}`}
               >
                 <FaSatellite className="text-xl" />
-                <span>Спутниковая</span>
+                <span>Супутникова</span>
               </button>
 
               <button
@@ -74,7 +74,7 @@ const LayersSwitcher = ({ mapType, setMapType }) => {
                       ${mapType === 'topographic' ? 'bg-green-500 text-white' : 'bg-white text-gray-900 hover:bg-gray-100'}`}
               >
                 <GiCompass className="text-xl" />
-                <span>Топографическая</span>
+                <span>Топографічна</span>
               </button>
             </div>
           </motion.div>

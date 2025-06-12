@@ -6,23 +6,23 @@ import express from 'express';
 import createHttpError from 'http-errors';
 import morgan from 'morgan';
 
+
 // Роути
-import announcementsRouter from './routes/annoucementsAdding.js';
+import announcementsRouter from "./routes/annoucementsAdding.js";
 import getReportsRouter from './routes/main.js';
-import markerRouter from './routes/markerRouter.js';
 import supportRouter from './routes/support.js';
+import profileEdditRouter from './routes/profileChanges.js';
+
 
 const app = express();
 
 // Middleware
 app.use(morgan('combined'));
-app.use(
-  cors({
-    origin: '*',
-    methods: ['GET', 'POST'],
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST'],
+  credentials: true,
+}));
 app.use(express.json());
 
 // Шляхи до статичних файлів
@@ -34,7 +34,8 @@ app.use(express.static(path.join(__dirname, '../client')));
 app.use('/', announcementsRouter);
 app.use('/', supportRouter);
 app.use('/', getReportsRouter);
-app.use('/', markerRouter);
+app.use('/', profileEdditRouter);
+
 
 // Обробка 404
 app.use((req, res, next) => {
@@ -42,7 +43,7 @@ app.use((req, res, next) => {
 });
 
 // Обробник помилок
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   const { status = 500, message = 'Internal Server Error' } = err;
   console.error(status, message);
   res.status(status).json({ error: message });
