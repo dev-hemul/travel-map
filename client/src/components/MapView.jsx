@@ -6,6 +6,7 @@ import CreatableSelect from 'react-select/creatable';
 import 'leaflet/dist/leaflet.css';
 import AuthMenu from './map/AuthMenu.jsx';
 import LayersSwitcher from './map/LayersSwitcher';
+import RouteFunctionality from './map/RouteFunctionality.jsx';
 import WeatherWidget from './map/WeatherWidget';
 
 const initialOptions = [
@@ -22,6 +23,19 @@ const MapView = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [options, setOptions] = useState(initialOptions);
   const [selectedOption, setSelectedOption] = useState(null);
+
+  useEffect(() => {
+    const fetchMarkers = async () => {
+      try {
+        const response = await axios.get('http://localhost:4000/markers');
+        setMarkers(response.data); // Устанавливаем маркеры в состояние
+      } catch (error) {
+        console.error('Ошибка при загрузке маркеров:', error);
+      }
+    };
+
+    fetchMarkers();
+  }, []);
 
   // Функция для обработки изменений категории
   const handleChange = newValue => {
@@ -139,7 +153,12 @@ const MapView = () => {
 
   // Функція для закриття модального вікна
   const handleModalClose = () => {
+    if (selectedMarker && !selectedMarker.title) {
+      // Удаляем последний маркер, если он пустой
+      setMarkers(prev => prev.filter(marker => marker !== selectedMarker));
+    }
     setModalOpen(false);
+    setSelectedMarker(null);
   };
 
   // Функція для обробки змін у формі
@@ -309,35 +328,29 @@ const MapView = () => {
     setLoading(true);
 
     if (!selectedMarker) {
-      console.error('Маркер не вибрано!');
+      console.error('Маркер не выбран!');
       setLoading(false);
       return;
     }
 
-    const data = new FormData();
-    data.append('title', formData.title);
-    data.append('tags', JSON.stringify(formData.tags));
-    data.append('lat', selectedMarker.lat);
-    data.append('lng', selectedMarker.lng);
-    data.append('private', formData.Private || false);
-    // Додаємо URL файлів, якщо вони вже завантажені
-    if (formData.fileUrls && formData.fileUrls.length > 0) {
-      data.append('fileUrls', JSON.stringify(formData.fileUrls));
-    }
-    // Або додаємо файли, якщо вони ще не були завантажені
-    else if (formData.files && formData.files.length > 0) {
-      formData.files.forEach(file => {
-        data.append('files', file);
-      });
-    }
+    const data = {
+      title: formData.title,
+      category: selectedOption ? selectedOption.value : '',
+      tags: formData.tags,
+      lat: selectedMarker.lat,
+      lng: selectedMarker.lng,
+      private: !!formData.Private, // Преобразование в Boolean
+      fileUrls: formData.fileUrls || [],
+      description: formData.description || '',
+    };
 
     try {
-      await axios.post('http://localhost:4000/api/marker', data, {
+      const response = await axios.post('http://localhost:4000/marker', data, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/json',
         },
       });
-      console.log('Дані успішно відправлено');
+      console.log('Данные успешно отправлены:', response.data);
 
       setMarkers(prevMarkers =>
         prevMarkers.map(marker =>
@@ -347,7 +360,7 @@ const MapView = () => {
 
       setModalOpen(false);
     } catch (err) {
-      console.error('Помилка при відправці:', err);
+      console.error('Ошибка при отправке:', err);
     } finally {
       setLoading(false);
     }
@@ -377,10 +390,10 @@ const MapView = () => {
       {modalOpen && (
         <div
           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
-              bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl z-1000
-              w-11/12 sm:w-[450px] max-w-[95vw] overflow-hidden border border-gray-100"
+          bg-gradient-to-br from-white to-gray-50 border rounded-2xl shadow-xl z-[1000]
+          w-11/12 sm:w-[450px] border-gray-100"
         >
-          <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 p-5 sm:p-6 pb-7">
+          <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 p-5 sm:p-6 pb-7 rounded-t-2xl">
             <h3 className="text-xl sm:text-2xl font-semibold text-white leading-tight">
               Створення маркера
             </h3>
@@ -391,10 +404,13 @@ const MapView = () => {
             <div className="absolute -bottom-4 left-0 right-0 h-8 bg-white rounded-full"></div>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-5 sm:p-7 pt-0">
+          <form
+            onSubmit={handleSubmit}
+            className="p-5 pt-3 max-h-[75vh] overflow-y-auto custom-scrollbar"
+          >
             <div className="space-y-5">
-              <div className="group -mt-1">
-                <div className="group mb-5">
+              <div className="group">
+                <div className="group mb-3">
                   <label
                     htmlFor="title"
                     className="inline-block text-xs font-semibold uppercase text-gray-500 mb-1.5 group-focus-within:text-blue-600 transition duration-200"
@@ -418,7 +434,7 @@ const MapView = () => {
                   Категорія
                 </span>
                 <CreatableSelect
-                  className="mb-5"
+                  className="mb-3"
                   isClearable
                   onChange={handleChange}
                   onCreateOption={handleCreate}
@@ -597,9 +613,7 @@ const MapView = () => {
                   <span className="ml-3 text-sm text-gray-700">Приватний маркер</span>
                 </label>
               </div>
-
               {/*Input для завантаження файлів*/}
-
               <div className="pt-1">
                 <label className="inline-block text-xs font-semibold uppercase text-gray-500 mb-1.5">
                   ЗОБРАЖЕННЯ/ВІДЕО
@@ -759,6 +773,24 @@ const MapView = () => {
                   </div>
                 )}
               </div>
+              <div>
+                <label
+                  className="inline-block text-xs font-semibold uppercase text-gray-500 mb-1.5"
+                  htmlFor="description"
+                >
+                  Опис
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleFormChange}
+                  cols="50"
+                  rows="2"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 placeholder-gray-400 focus:border-blue-500"
+                  placeholder="Уведіть опис (необов'язково)"
+                />
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 mt-6">
@@ -820,6 +852,7 @@ const MapView = () => {
         <AuthMenu />
         <LayersSwitcher mapType={mapType} setMapType={setMapType} />
         <WeatherWidget />
+        <RouteFunctionality />
       </div>
     </div>
   );
