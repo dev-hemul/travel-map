@@ -34,11 +34,8 @@ app.use(express.static(path.join(__dirname, '../client')));
 app.use('/', announcementsRouter);
 app.use('/', supportRouter);
 app.use('/', getReportsRouter);
-<<<<<<< HEAD
-=======
 app.use('/', profileEdditRouter);
 
->>>>>>> 3384f3c406036832e547291e0264fc26087841e0
 
 // Обробка 404
 app.use((req, res, next) => {
@@ -46,11 +43,7 @@ app.use((req, res, next) => {
 });
 
 // Обробник помилок
-<<<<<<< HEAD
-app.use((err, req, res, next) => {
-=======
 app.use((err, req, res) => {
->>>>>>> 3384f3c406036832e547291e0264fc26087841e0
   const { status = 500, message = 'Internal Server Error' } = err;
   console.error(status, message);
   res.status(status).json({ error: message });
