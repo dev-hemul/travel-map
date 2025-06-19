@@ -25,6 +25,7 @@ const operatorChats = {};
 const activeComplaints = {};
 const COOLDOWN_MS = 5 * 60 * 1000; // 5 хвилин
 const lastComplaintTime = {};
+const queue = [];
 
 // Встановлення команд бота
 bot.api.setMyCommands([
@@ -72,7 +73,7 @@ bot.command("complaints", async (ctx) => {
 
   for (const c of complaints) {
     const text = `📬 Нова скарга:\n\n` +
-      `📌 Тема: ${c.subject}\n` +  // Виводимо subject замість text
+      `📌 Тема: ${c.subject}\n` +  
       `👤 Від: ${c.name || "користувача"}${c.username ? ` (@${c.username})` : ''}\n` +
       `🆔 ID: ${c.userId}\n` +
       `📅 Дата: ${c.date.toLocaleString()}`;
@@ -197,7 +198,8 @@ bot.on("message:text", async (ctx) => {
     return;
   }
 
-  if (state && state.step === "replying") {
+  // Якщо це оператор (ADMIN_ID) і він у режимі відповіді
+  if (userId === ADMIN_ID && state && state.step === "replying") {
     const targetUserId = state.targetUserId;
     const text = ctx.message.text;
     try {
@@ -209,10 +211,11 @@ bot.on("message:text", async (ctx) => {
     return;
   }
 
-  if (operatorChats[userId]) {
-    const interlocutorId = operatorChats[userId];
+  // Якщо це оператор (ADMIN_ID) і він у чаті з користувачем
+  if (userId === ADMIN_ID && operatorChats[ADMIN_ID]) {
+    const targetUserId = operatorChats[ADMIN_ID];
     try {
-      await bot.api.sendMessage(interlocutorId, `📞 Оператор: ${ctx.message.text}`);
+      await bot.api.sendMessage(targetUserId, `📩 Оператор: ${ctx.message.text}`);
       await ctx.reply("Ваше повідомлення надіслано користувачу.");
     } catch {
       await ctx.reply("Не вдалося надіслати повідомлення користувачу.");
@@ -220,20 +223,17 @@ bot.on("message:text", async (ctx) => {
     return;
   }
 
-  // Якщо користувач у чаті з оператором
-  for (const opId in operatorChats) {
-    if (operatorChats[opId] === userId) {
-      try {
-        await bot.api.sendMessage(Number(opId), `📞 Користувач: ${ctx.message.text}`);
-        await ctx.reply("Ваше повідомлення надіслано оператору.");
-      } catch {
-        await ctx.reply("Не вдалося надіслати повідомлення оператору.");
-      }
-      return;
+  // Якщо це звичайний користувач і він у чаті з оператором
+  if (operatorChats[userId] === ADMIN_ID) {
+    try {
+      await bot.api.sendMessage(ADMIN_ID, `📞 Користувач (ID: ${userId}): ${ctx.message.text}`);
+      await ctx.reply("Ваше повідомлення надіслано оператору.");
+    } catch {
+      await ctx.reply("Не вдалося надіслати повідомлення оператору.");
     }
+    return;
   }
 });
-
 // Збереження скарги та сповіщення оператора
 async function saveComplaintAndNotify(ctx, subject, message = "") {
   try {
@@ -249,7 +249,6 @@ async function saveComplaintAndNotify(ctx, subject, message = "") {
     
     const savedComplaint = await complaint.save();
 
-    // Додаємо скаргу до активних
     activeComplaints[savedComplaint._id] = {
       userId: ctx.from.id,
       complaintId: savedComplaint._id
@@ -267,7 +266,7 @@ async function saveComplaintAndNotify(ctx, subject, message = "") {
 
     await bot.api.sendMessage(ADMIN_ID, adminMessage, {
       reply_markup: new InlineKeyboard()
-        .text("Відповісти", `start_chat_${savedComplaint._id}`)  // Використовуємо збережений ID
+        .text("Відповісти", `start_chat_${savedComplaint._id}`) 
         .text("Вирішити", `resolve_${savedComplaint._id}`)
     });
 
@@ -280,22 +279,114 @@ async function saveComplaintAndNotify(ctx, subject, message = "") {
 bot.callbackQuery("contact_operator", async (ctx) => {
   const userId = ctx.from.id;
 
-  if (operatorChats[userId]) {
-    await ctx.reply("Ви вже перебуваєте в чаті з оператором.");
-    return;
+  // Перевірка чи користувач вже в черзі
+  const inQueue = queue.some(user => user.id === userId);
+  if (inQueue) {
+    return ctx.reply("Ви вже в черзі на з'єднання з оператором.");
   }
 
-  operatorChats[ADMIN_ID] = userId;
-  operatorChats[userId] = ADMIN_ID;
+  // Перевірка чи користувач вже в чаті з оператором
+  if (operatorChats[userId]) {
+    return ctx.reply("Ви вже спілкуєтеся з оператором.");
+  }
 
-  await ctx.reply("Вас з'єднано з оператором. Ви можете писати повідомлення.");
-  await bot.api.sendMessage(ADMIN_ID, 
-    `Користувач ${ctx.from.first_name}${ctx.from.username ? ` (@${ctx.from.username})` : ''} (ID: ${userId}) хоче поговорити з оператором.`,
+  // Додаємо користувача в чергу
+  queue.push({
+    id: userId,
+    name: ctx.from.first_name || "Користувач",
+    username: ctx.from.username
+  });
+
+  await ctx.reply("⌛ Вас додано в чергу на з'єднання з оператором. Очікуйте, скоро з вами зв'яжуться.");
+  
+  // Сповіщаємо оператора про нового користувача в черзі
+  try {
+    await bot.api.sendMessage(
+      ADMIN_ID,
+      `🆕 Новий запит в черзі від ${ctx.from.first_name}${ctx.from.username ? ` (@${ctx.from.username})` : ''} [ID: ${userId}]\n\nЗагальна кількість в черзі: ${queue.length}`,
+      {
+        reply_markup: new InlineKeyboard()
+          .text("Переглянути чергу", "view_queue")
+      }
+    );
+  } catch (e) {
+    console.error("Не вдалося сповістити оператора:", e);
+  }
+});
+
+// Обробка кнопки "Переглянути чергу"
+bot.callbackQuery("view_queue", async (ctx) => {
+  if (ctx.from.id !== ADMIN_ID) return ctx.answerCallbackQuery({ text: "Ви не оператор." });
+
+  if (queue.length === 0) {
+    return ctx.reply("Черга пуста.");
+  }
+
+  let message = "📋 Черга запитів на чат:\n\n";
+  queue.forEach((user, index) => {
+    message += `${index + 1}. ${user.name}${user.username ? ` (@${user.username})` : ''} [ID: ${user.id}]\n`;
+  });
+
+  await ctx.editMessageText(message, {
+    reply_markup: new InlineKeyboard()
+      .text("Прийняти першого в черзі", "accept_first")
+  });
+});
+
+// Обробка кнопки "Прийняти першого в черзі"
+bot.callbackQuery("accept_first", async (ctx) => {
+  if (ctx.from.id !== ADMIN_ID) return ctx.answerCallbackQuery({ text: "Ви не оператор." });
+
+  if (queue.length === 0) {
+    return ctx.answerCallbackQuery({ text: "Черга пуста." });
+  }
+
+  const firstUser = queue.shift(); // Видаляємо першого користувача з черги
+
+  // Встановлюємо з'єднання
+  operatorChats[ADMIN_ID] = firstUser.id;
+  operatorChats[firstUser.id] = ADMIN_ID;
+
+  // Сповіщаємо користувача
+  try {
+    await bot.api.sendMessage(
+      firstUser.id,
+      "✅ Оператор прийняв ваш запит. Тепер ви можете спілкуватися."
+    );
+  } catch (e) {
+    console.error("Не вдалося сповістити користувача:", e);
+  }
+
+  await ctx.editMessageText(
+    `Ви почали чат з користувачем ${firstUser.name}${firstUser.username ? ` (@${firstUser.username})` : ''} [ID: ${firstUser.id}]`,
     {
       reply_markup: new InlineKeyboard()
-        .text("Завершити чат", `end_chat_${userId}`)
+        .text("Завершити чат", `end_chat_${firstUser.id}`)
     }
   );
+});
+
+// Оновлений обробник завершення чату
+bot.callbackQuery(/^end_chat_(\d+)$/, async (ctx) => {
+  if (ctx.from.id !== ADMIN_ID) return ctx.answerCallbackQuery({ text: "Ви не оператор." });
+
+  const targetUserId = Number(ctx.match[1]);
+  
+  // Сповіщаємо користувача
+  try {
+    await bot.api.sendMessage(
+      targetUserId,
+      "✅ Чат з оператором завершено. Дякуємо за звернення!"
+    );
+  } catch (e) {
+    console.error("Не вдалося сповістити користувача:", e);
+  }
+
+  // Видаляємо з активних чатів
+  delete operatorChats[ADMIN_ID];
+  delete operatorChats[targetUserId];
+  
+  await ctx.editMessageText(`Чат з користувачем ${targetUserId} завершено.`);
 });
 
 // Оператор починає чат
@@ -347,7 +438,7 @@ bot.callbackQuery(/^start_chat_(.+)$/, async (ctx) => {
   await ctx.deleteMessage();
 });
 
-// Завершення чату оператором
+// Завершення чату оператором (для чату через скаргу)
 bot.callbackQuery(/^end_chat_(.+)$/, async (ctx) => {
   if (ctx.from.id !== ADMIN_ID) return ctx.answerCallbackQuery({ text: "Ви не оператор." });
 
