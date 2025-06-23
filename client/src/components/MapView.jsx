@@ -1,12 +1,13 @@
 import axios from 'axios';
 import L from 'leaflet';
 import React, { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import CreatableSelect from 'react-select/creatable';
 
 import 'leaflet/dist/leaflet.css';
-import AuthMenu from './map/AuthMenu.jsx';
 import LayersSwitcher from './map/LayersSwitcher';
 import RouteFunctionality from './map/RouteFunctionality.jsx';
+import SidePanel from './map/SidePanel.jsx';
 import WeatherWidget from './map/WeatherWidget';
 
 const initialOptions = [
@@ -23,12 +24,42 @@ const MapView = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [options, setOptions] = useState(initialOptions);
   const [selectedOption, setSelectedOption] = useState(null);
+  // Стейт для модального вікна і даних маркерів
+  const [modalOpen, setModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    category: '',
+    tags: [],
+    files: [],
+    fileUrls: [],
+  });
+  const [selectedMarker, setSelectedMarker] = useState(null);
+
+  const [searchParams] = useSearchParams();
+  const mapRef = useRef(null);
+  const [mapType, setMapType] = useState('standard');
+  const mapInstance = useRef(null);
+  const [markers, setMarkers] = useState([]);
+  const [tagInput, setTagInput] = useState('');
+
+  // состояния для боковой панели
+  const [sidePanelOpen, setSidePanelOpen] = useState(false);
+  const [selectedMarkerForPanel, setSelectedMarkerForPanel] = useState(null);
 
   useEffect(() => {
     const fetchMarkers = async () => {
       try {
         const response = await axios.get('http://localhost:4000/markers');
-        setMarkers(response.data); // Устанавливаем маркеры в состояние
+        console.log('Загруженные маркеры с сервера:', response.data); // Отладка
+
+        // Обрабатываем данные с сервера, чтобы они соответствовали нужному формату
+        const processedMarkers = response.data.map(marker => ({
+          ...marker,
+          // Убеждаемся, что есть popup для совместимости с существующим кодом
+          popup: marker.popup || `Маркер: ${marker.title || 'Без названия'}`,
+        }));
+
+        setMarkers(processedMarkers);
       } catch (error) {
         console.error('Ошибка при загрузке маркеров:', error);
       }
@@ -60,22 +91,45 @@ const MapView = () => {
     console.log('New option created:', newOption);
   };
 
-  const mapRef = useRef(null);
-  const [mapType, setMapType] = useState('standard');
-  const mapInstance = useRef(null);
-  const [markers, setMarkers] = useState([]);
-  const [tagInput, setTagInput] = useState('');
+  // Функция для удаления маркера
+  const handleDeleteMarker = async markerId => {
+    try {
+      const response = await axios.delete(`http://localhost:4000/marker/${markerId}`);
+      console.log('Маркер успешно удален:', response.data);
 
-  // Стейт для модального вікна і даних маркерів
-  const [modalOpen, setModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    category: '',
-    tags: [],
-    files: [],
-    fileUrls: [],
-  });
-  const [selectedMarker, setSelectedMarker] = useState(null);
+      // Удаляем маркер из локального состояния
+      setMarkers(prevMarkers => prevMarkers.filter(marker => marker._id !== markerId));
+    } catch (error) {
+      console.error('Ошибка при удалении маркера:', error);
+      throw error;
+    }
+  };
+
+  // Функция для редактирования маркера
+  const handleEditMarker = markerData => {
+    // Устанавливаем данные маркера для редактирования
+    setSelectedMarker(markerData);
+
+    // Заполняем форму данными маркера
+    setFormData({
+      title: markerData.title || '',
+      category: markerData.category || '',
+      tags: markerData.tags || [],
+      files: [],
+      fileUrls: markerData.fileUrls || [],
+      description: markerData.description || '',
+      Private: markerData.private || false,
+    });
+
+    // Устанавливаем выбранную категорию
+    if (markerData.category) {
+      const categoryOption = options.find(option => option.value === markerData.category);
+      setSelectedOption(categoryOption || null);
+    }
+
+    // Открываем модальное окно
+    setModalOpen(true);
+  };
 
   // Ініціалізація карти
   useEffect(() => {
@@ -121,11 +175,14 @@ const MapView = () => {
 
     // Додаємо маркери на карту
     markers.forEach(marker => {
+      console.log('Добавляем маркер на карту:', marker); // Отладка
+
       L.marker([marker.lat, marker.lng])
         .addTo(map)
         .on('click', () => {
-          setSelectedMarker(marker);
-          setModalOpen(true);
+          console.log('Клик по маркеру, передаем данные:', marker); // Отладка
+          setSelectedMarkerForPanel(marker);
+          setSidePanelOpen(true);
         });
     });
 
@@ -136,6 +193,37 @@ const MapView = () => {
       map.off('click', handleMapClick);
     };
   }, [mapType, markers]);
+
+  useEffect(() => {
+    // Проверяем URL параметры при загрузке маркеров
+    if (markers.length > 0 && mapInstance.current) {
+      const lat = searchParams.get('lat');
+      const lng = searchParams.get('lng');
+      const zoom = searchParams.get('zoom');
+      const markerId = searchParams.get('marker');
+
+      if (lat && lng) {
+        const targetLat = parseFloat(lat);
+        const targetLng = parseFloat(lng);
+        const targetZoom = zoom ? parseInt(zoom) : 15;
+
+        // Центрируем карту на указанных координатах
+        mapInstance.current.setView([targetLat, targetLng], targetZoom);
+
+        // Если указан ID маркера, ищем и открываем его
+        if (markerId) {
+          const targetMarker = markers.find(marker => marker._id === markerId);
+          if (targetMarker) {
+            setSelectedMarkerForPanel(targetMarker);
+            setSidePanelOpen(true);
+
+            // Очищаем URL параметры после открытия
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        }
+      }
+    }
+  }, [markers, searchParams]);
 
   // Обробник кліка по карті
   const handleMapClick = e => {
@@ -149,6 +237,12 @@ const MapView = () => {
     setMarkers(prev => [...prev, newMarker]);
     setSelectedMarker(newMarker); // Встановлюємо поточний маркер
     setModalOpen(true); // Відкриваємо модальне вікно
+  };
+
+  // Функція для закриття бокової панелі
+  const handleSidePanelClose = () => {
+    setSidePanelOpen(false);
+    setSelectedMarkerForPanel(null);
   };
 
   // Функція для закриття модального вікна
@@ -354,9 +448,37 @@ const MapView = () => {
 
       setMarkers(prevMarkers =>
         prevMarkers.map(marker =>
-          marker === selectedMarker ? { ...marker, title: formData.title } : marker
+          marker === selectedMarker
+            ? {
+                ...marker,
+                ...response.data, // Добавляем все данные с сервера
+                title: formData.title,
+                category: selectedOption ? selectedOption.value : '',
+                tags: formData.tags,
+                description: formData.description || '',
+                fileUrls: formData.fileUrls || [],
+                private: !!formData.Private,
+              }
+            : marker
         )
       );
+
+      // Очищаем все поля формы после успешной отправки
+      setFormData({
+        title: '',
+        category: '',
+        tags: [],
+        files: [],
+        fileUrls: [],
+        description: '',
+        Private: false,
+      });
+
+      // Очищаем дополнительные состояния
+      setSelectedOption(null);
+      setTagInput('');
+      setImagePreviews([]);
+      setUploadProgress({});
 
       setModalOpen(false);
     } catch (err) {
@@ -625,7 +747,7 @@ const MapView = () => {
                   onChange={handleFileChange}
                   className="hidden"
                   disabled={loading}
-                  accept="image/*,video/*"
+                  accept="image/*,video/*,.webp,image/webp"
                   multiple
                 />
 
@@ -848,8 +970,15 @@ const MapView = () => {
         </div>
       )}
 
+      <SidePanel
+        isOpen={sidePanelOpen}
+        onClose={handleSidePanelClose}
+        markerData={selectedMarkerForPanel}
+        onEdit={handleEditMarker}
+        onDelete={handleDeleteMarker}
+      />
+
       <div className="absolute top-4 right-4 flex gap-3 z-10" style={{ zIndex: 1000 }}>
-        <AuthMenu />
         <LayersSwitcher mapType={mapType} setMapType={setMapType} />
         <WeatherWidget />
         <RouteFunctionality />
