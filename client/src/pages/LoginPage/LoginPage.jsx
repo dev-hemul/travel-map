@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FaGoogle, FaUser, FaLock } from 'react-icons/fa';
-import TelegramLoginButton from './LoginButton';
+import TelegramLoginButton from './LoginTelegramButton';
 
 const LoginPage = () => {
   const [isRegister, setIsRegister] = useState(false);

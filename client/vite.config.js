@@ -6,6 +6,6 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    allowedHosts: ['f8bba17490a9.ngrok-free.app', 'localhost']
+    allowedHosts: ['d5abd7abb47b.ngrok-free.app', 'localhost']
   }
 });
