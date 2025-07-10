@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import { FaGoogle, FaTelegramPlane, FaUser, FaLock } from 'react-icons/fa';
+import { FaGoogle, FaUser, FaLock } from 'react-icons/fa';
+import TelegramLoginButton from './LoginButton';
 
 const LoginPage = () => {
   const [isRegister, setIsRegister] = useState(false);
 
   const handleGoogleLogin = () => {
-    // TODO: реалізувати логіку входу через Google
-  };
-
-  const handleTelegramLogin = () => {
-    // TODO: реалізувати логіку входу через Telegram
+    // TODO: реалізувати логіку Google Login
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#F4EFFF] to-[#744ce9]/10">
-      <form className="bg-white p-10 rounded-xl shadow-md w-full max-w-md transition-all duration-300">
+      <form
+        className="bg-white p-10 rounded-xl shadow-md w-full max-w-md transition-all duration-300"
+        onSubmit={(e) => e.preventDefault()}
+      >
         <h2 className="text-3xl font-bold mb-8 text-center text-[#744ce9] drop-shadow">
           {isRegister ? 'Реєстрація' : 'Вхід'}
         </h2>
@@ -58,24 +58,20 @@ const LoginPage = () => {
         >
           {isRegister ? 'Зареєструватися' : 'Увійти'}
         </button>
-        <div className="flex gap-4 justify-center mb-4">
+
+        <div className="flex gap-4 justify-center mb-4 items-center">
           <button
             type="button"
             onClick={handleGoogleLogin}
             className="flex items-center justify-center bg-white border border-[#D1D5DB] p-3 rounded-full shadow text-xl hover:bg-[#f3f3f3] transition"
-            aria-label="Войти через Google"
+            aria-label="Увійти через Google"
           >
             <FaGoogle className="text-red-500" />
           </button>
-          <button
-            type="button"
-            onClick={handleTelegramLogin}
-            className="flex items-center justify-center bg-[#229ED9] border border-[#229ED9] p-3 rounded-full shadow text-xl hover:bg-[#178bb7] transition"
-            aria-label="Войти через Telegram"
-          >
-            <FaTelegramPlane className="text-white" />
-          </button>
+
+          <TelegramLoginButton />
         </div>
+
         <div className="text-center">
           <button
             type="button"
