@@ -88,7 +88,7 @@ const ProfilePage = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between bg-[#F4EFFF] rounded-xl px-4 py-2 mb-6 shadow gap-4">
-        <Link to="/map" className="text-[#744ce9] text-sm hover:underline">← Повернутись до карти</Link>
+        <Link to="/" className="text-[#744ce9] text-sm hover:underline">← Повернутись до карти</Link>
         <div className="relative w-full max-w-md">
           <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
