@@ -1,8 +1,8 @@
 import axios from "axios";
 import { motion } from "framer-motion";
 import React, { useState, useRef } from "react";
-import { FiUpload, FiTrash, FiLogOut, FiSearch } from "react-icons/fi";
-import { Link, useNavigate } from "react-router-dom";
+import { FiUpload, FiTrash, FiLogOut, FiSearch, FiArrowLeft, FiMoon, FiMessageCircle, FiUsers } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -21,6 +21,7 @@ const ProfilePage = () => {
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
   const [focusedField, setFocusedField] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -85,10 +86,24 @@ const ProfilePage = () => {
     }
   };
 
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      {/* Верхній бар */}
       <div className="flex items-center justify-between bg-[#F4EFFF] rounded-xl px-4 py-2 mb-6 shadow gap-4">
-        <Link to="/" className="text-[#744ce9] text-sm hover:underline">← Повернутись до карти</Link>
+        <motion.button
+          onClick={() => navigate("/")}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="flex items-center gap-2 text-sm bg-[#744ce9] text-white px-4 py-2 rounded-md shadow hover:bg-[#5c3bc7] transition"
+        >
+          <FiArrowLeft />
+          Повернутись до карти
+        </motion.button>
+
         <div className="relative w-full max-w-md">
           <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
@@ -97,34 +112,71 @@ const ProfilePage = () => {
             className="bg-white text-sm text-gray-700 placeholder-gray-400 pl-10 pr-4 py-2 rounded-md w-full shadow-sm"
           />
         </div>
+
         <div className="flex items-center gap-4">
-          <p className="text-sm font-medium text-gray-700">Ім’я Прізвище</p>
-          <img src={avatarPreview || '/default-avatar.png'} alt="avatar" className="w-8 h-8 rounded-full" />
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={toggleDarkMode}
+            className="text-[#744ce9] text-xl p-2"
+            title={darkMode ? "Світла тема" : "Темна тема"}
+          >
+            <FiMoon />
+          </motion.button>
+
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="text-[#744ce9] text-xl p-2 relative"
+            title="Повідомлення"
+          >
+            <FiMessageCircle />
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+          </motion.button>
+
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="text-[#744ce9] text-xl p-2 relative"
+            title="Друзі"
+          >
+            <FiUsers />
+            <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">5</span>
+          </motion.button>
+
+          <p className="text-sm font-medium text-gray-700">Ім'я Прізвище</p>
+          {avatarPreview ? (
+            <img src={avatarPreview} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-[#744ce9] text-white flex items-center justify-center text-sm font-semibold">ІП</div>
+          )}
           <button title="Вихід" className="text-[#744ce9] text-xl"><FiLogOut /></button>
         </div>
       </div>
 
-      <div className="flex justify-end mb-4">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => navigate('/login')}
-          className="bg-[#744ce9] text-white px-4 py-2 rounded-md shadow hover:bg-[#5c3bc7] transition"
-        >
-          Авторизуватись в один клік
-        </motion.button>
-      </div>
+      {/* Головний заголовок */}
+      <h1 className="text-3xl font-bold text-[#744ce9] mb-2">Ваш профіль</h1>
+      <h2 className="text-xl text-gray-600 mb-8">Керуйте своїми персональними даними</h2>
 
-      <h2 className="text-3xl font-bold text-[#744ce9] mb-8">Персональні дані</h2>
-
+      {/* Основна форма */}
       <form onSubmit={handleSubmit}>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="bg-white rounded-xl shadow-md p-6 mb-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ duration: 0.5 }} 
+          className="bg-white rounded-xl shadow-md p-6 mb-8"
+        >
           <div className="grid grid-cols-3 gap-8">
-            {/* Left Avatar Section */}
-            <div className="col-span-1">
-              <div className="relative group w-40 h-40 m-auto rounded-full overflow-hidden bg-[#F4EFFF] flex items-center justify-center">
-                {avatarPreview ? <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" /> : <span className="text-[#744ce9] text-4xl">ІП</span>}
-                <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center space-x-4">
+            {/* Ліва частина - аватар */}
+            <div className="col-span-1 flex flex-col items-center justify-start">
+              <h3 className="text-xl font-semibold text-[#744ce9] mb-4 self-start">Фото профілю</h3>
+              <div className="relative group w-40 h-40 rounded-full overflow-hidden bg-[#F4EFFF] flex items-center justify-center">
+                {avatarPreview ? (
+                  <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-[#744ce9] text-4xl font-semibold">ІП</span>
+                )}
+                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center space-x-4">
                   <button type="button" onClick={triggerFileInput} className="text-white text-xl"><FiUpload /></button>
                   <button type="button" onClick={() => { setAvatar(null); setAvatarPreview(null); fileInputRef.current.value = null; }} className="text-white text-xl"><FiTrash /></button>
                 </div>
@@ -135,8 +187,11 @@ const ProfilePage = () => {
               <p className="text-center text-sm text-gray-400">Дата реєстрації: 2024-06-20</p>
             </div>
 
-            {/* Right Form Section */}
+            {/* Права частина - форма */}
             <div className="col-span-2 space-y-6">
+              <h3 className="text-xl font-semibold text-[#744ce9]">Особисті дані</h3>
+              <p className="text-sm text-gray-500 mb-4">Заповніть інформацію про себе</p>
+              
               <div className="grid grid-cols-2 gap-4">
                 {["firstName", "lastName", "middleName", "location", "email", "phone"].map((name) => (
                   <div key={name} className="relative w-full">
