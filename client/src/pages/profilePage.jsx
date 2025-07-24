@@ -92,13 +92,13 @@ const ProfilePage = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* Верхній бар */}
-      <div className="flex items-center justify-between bg-[#F4EFFF] rounded-xl px-4 py-2 mb-6 shadow gap-4">
+      {/* Верхній бар з тінню */}
+      <div className="flex items-center justify-between bg-[#F4EFFF] rounded-xl px-4 py-2 mb-6 shadow-lg gap-4 border border-gray-200">
         <motion.button
           onClick={() => navigate("/")}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-2 text-sm bg-[#744ce9] text-white px-4 py-2 rounded-md shadow hover:bg-[#5c3bc7] transition"
+          className="flex items-center gap-2 text-sm bg-[#744ce9] text-white px-4 py-2 rounded-md shadow hover:bg-[#5c3bc7] transition focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
         >
           <FiArrowLeft />
           Повернутись до карти
@@ -109,7 +109,7 @@ const ProfilePage = () => {
           <input
             type="text"
             placeholder="Пошук..."
-            className="bg-white text-sm text-gray-700 placeholder-gray-400 pl-10 pr-4 py-2 rounded-md w-full shadow-sm"
+            className="bg-white text-sm text-gray-700 placeholder-gray-400 pl-10 pr-4 py-2 rounded-md w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
           />
         </div>
 
@@ -118,7 +118,7 @@ const ProfilePage = () => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={toggleDarkMode}
-            className="text-[#744ce9] text-xl p-2"
+            className="text-[#744ce9] text-xl p-2 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
             title={darkMode ? "Світла тема" : "Темна тема"}
           >
             <FiMoon />
@@ -127,7 +127,7 @@ const ProfilePage = () => {
           <motion.button 
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="text-[#744ce9] text-xl p-2 relative"
+            className="text-[#744ce9] text-xl p-2 relative focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
             title="Повідомлення"
           >
             <FiMessageCircle />
@@ -137,7 +137,7 @@ const ProfilePage = () => {
           <motion.button 
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="text-[#744ce9] text-xl p-2 relative"
+            className="text-[#744ce9] text-xl p-2 relative focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
             title="Друзі"
           >
             <FiUsers />
@@ -146,11 +146,26 @@ const ProfilePage = () => {
 
           <p className="text-sm font-medium text-gray-700">Ім'я Прізвище</p>
           {avatarPreview ? (
-            <img src={avatarPreview} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+            <img 
+              src={avatarPreview} 
+              alt="avatar" 
+              className="w-8 h-8 rounded-full object-cover focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
+              tabIndex="0"
+            />
           ) : (
-            <div className="w-8 h-8 rounded-full bg-[#744ce9] text-white flex items-center justify-center text-sm font-semibold">ІП</div>
+            <div 
+              className="w-8 h-8 rounded-full bg-[#744ce9] text-white flex items-center justify-center text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
+              tabIndex="0"
+            >
+              ІП
+            </div>
           )}
-          <button title="Вихід" className="text-[#744ce9] text-xl"><FiLogOut /></button>
+          <button 
+            title="Вихід" 
+            className="text-[#744ce9] text-xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
+          >
+            <FiLogOut />
+          </button>
         </div>
       </div>
 
@@ -164,30 +179,52 @@ const ProfilePage = () => {
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ duration: 0.5 }} 
-          className="bg-white rounded-xl shadow-md p-6 mb-8"
+          className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-200"
         >
           <div className="grid grid-cols-3 gap-8">
-            {/* Ліва частина - аватар */}
+            {/* Ліва частина - аватар з тінню */}
             <div className="col-span-1 flex flex-col items-center justify-start">
               <h3 className="text-xl font-semibold text-[#744ce9] mb-4 self-start">Фото профілю</h3>
-              <div className="relative group w-40 h-40 rounded-full overflow-hidden bg-[#F4EFFF] flex items-center justify-center">
+              <div className="relative group w-40 h-40 rounded-full overflow-hidden bg-[#F4EFFF] flex items-center justify-center shadow-md">
                 {avatarPreview ? (
                   <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-[#744ce9] text-4xl font-semibold">ІП</span>
                 )}
-                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center space-x-4">
-                  <button type="button" onClick={triggerFileInput} className="text-white text-xl"><FiUpload /></button>
-                  <button type="button" onClick={() => { setAvatar(null); setAvatarPreview(null); fileInputRef.current.value = null; }} className="text-white text-xl"><FiTrash /></button>
+                <div className="absolute inset-x-0 bottom-[-10%] h-2/5 bg-[#744ce966] opacity-0 group-hover:opacity-100 transition flex items-center justify-center space-x-4">
+                  <button 
+                    type="button" 
+                    onClick={triggerFileInput} 
+                    className="text-white text-xl focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
+                  >
+                    <FiUpload />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAvatar(null);
+                      setAvatarPreview(null);
+                      fileInputRef.current.value = null;
+                    }}
+                    className="text-white text-xl focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
+                  >
+                    <FiTrash />
+                  </button>
                 </div>
               </div>
               <p className="text-center text-xs text-gray-500 mt-2">Підтримка: JPG, PNG, WEBP. До 10 МБ</p>
-              <input type="file" ref={fileInputRef} onChange={handleAvatarChange} accept="image/jpeg, image/png, image/webp" className="hidden" />
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleAvatarChange} 
+                accept="image/jpeg, image/png, image/webp" 
+                className="hidden" 
+              />
               <p className="text-center text-sm text-gray-400 mt-4">Ваш ID: 22222</p>
               <p className="text-center text-sm text-gray-400">Дата реєстрації: 2024-06-20</p>
             </div>
 
-            {/* Права частина - форма */}
+            {/* Права частина - форма з тінню */}
             <div className="col-span-2 space-y-6">
               <h3 className="text-xl font-semibold text-[#744ce9]">Особисті дані</h3>
               <p className="text-sm text-gray-500 mb-4">Заповніть інформацію про себе</p>
@@ -207,7 +244,7 @@ const ProfilePage = () => {
                       onChange={handleChange}
                       onFocus={() => setFocusedField(name)}
                       onBlur={() => setFocusedField(null)}
-                      className="w-full p-2 border border-indigo-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full p-2 border border-indigo-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
                     />
                   </div>
                 ))}
@@ -220,7 +257,7 @@ const ProfilePage = () => {
                   disabled={isSubmitting}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  className={`px-6 py-2 rounded-lg transition-all ${isSubmitting ? "bg-indigo-400 cursor-not-allowed" : "bg-[#744ce9] text-white"}`}
+                  className={`px-6 py-2 rounded-lg transition-all ${isSubmitting ? "bg-indigo-400 cursor-not-allowed" : "bg-[#744ce9] text-white"} focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2`}
                 >
                   {isSubmitting ? "Збереження..." : "Зберегти зміни"}
                 </motion.button>
