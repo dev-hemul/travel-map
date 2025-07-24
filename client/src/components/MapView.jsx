@@ -2,8 +2,8 @@ import axios from 'axios';
 import L from 'leaflet';
 import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import CreatableSelect from 'react-select/creatable';
 import { components } from 'react-select';
+import CreatableSelect from 'react-select/creatable';
 
 import 'leaflet/dist/leaflet.css';
 import AuthMenu from './map/AuthMenu.jsx';
@@ -641,6 +641,7 @@ const MapView = () => {
                     </div>
                   )}
                   components={{ Option: OptionWithDelete }}
+                  noOptionsMessage={() => 'Поки не створено жодної категорії'}
                 />
 
                 {
