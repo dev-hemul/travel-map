@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon bin/www.js",
-    "start:bot": "nodemon bot/grammY.js"
+    "start:bot": "nodemon bot/grammY.js",
+    "start": "node bin/www.js"
   },
   "license": "MIT",
   "dependencies": {
@@ -13,6 +14,7 @@
     "ajv": "^8.17.1",
     "axios": "^1.9.0",
     "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.2",
     "cloudinary": "^2.6.1",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
@@ -20,6 +22,7 @@
     "express-rate-limit": "^7.5.0",
     "grammy": "^1.36.3",
     "http-errors": "^2.0.0",
+    "jsonwebtoken": "^9.0.2",
     "jws": "^4.0.0",
     "mongoose": "^8.14.2",
     "multer": "2.0.2",
