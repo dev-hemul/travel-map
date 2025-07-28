@@ -44,7 +44,7 @@ const SidebarLayout = ({ children }) => {
             <NavLink to="/support" className={activeStyle}>
               <BiSupport size="25" className="mr-[5px]" /> Підтримка
             </NavLink>
-            <NavLink to="/login" className={activeStyle}>
+            <NavLink to="/auth" className={activeStyle}>
               <BiLogIn size="25" className="mr-[5px]" /> Авторизація
             </NavLink>
           </div>
