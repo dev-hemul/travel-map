@@ -2,9 +2,9 @@ import { BiSupport } from "react-icons/bi";
 import { IoMdSettings } from "react-icons/io";
 import { FaRoute } from "react-icons/fa6";
 import { FaBullhorn } from 'react-icons/fa';
+import { BiLogIn } from "react-icons/bi";
 import { Outlet, Link, NavLink } from 'react-router-dom';
 import { CgProfile } from "react-icons/cg";
-import { RiLogoutBoxLine } from "react-icons/ri";
 
 const SidebarLayout = ({ children }) => {
   const baseLinkStyles = `
@@ -37,6 +37,9 @@ const SidebarLayout = ({ children }) => {
             </NavLink>
             <NavLink to="/support" className={activeStyle}>
               <BiSupport size="25" className="mr-[5px]" /> Підтримка
+            </NavLink>
+            <NavLink to="/auth" className={activeStyle}>
+              <BiLogIn size="25" className="mr-[5px]" /> Авторизація
             </NavLink>
           </div>
 

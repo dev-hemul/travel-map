@@ -4,7 +4,6 @@ import React, { useState, useRef } from "react";
 import { FiUpload, FiTrash, FiLogOut, FiSearch, FiArrowLeft, FiMoon, FiMessageCircle, FiUsers } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
-
 const ProfilePage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
