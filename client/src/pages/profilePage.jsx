@@ -117,11 +117,9 @@ const ProfilePage = () => {
           onClick={() => navigate("/")}
           whileHover={{ 
             scale: 1.05,
-            backgroundColor: "#FFFFFF",
-            color: "#744ce9"
           }}
           whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-2 text-sm bg-[#744ce9] text-white px-4 py-2 rounded-md shadow transition-all duration-50 cursor-pointer border-2 border-[#744ce9]"
+          className="flex items-center gap-2 text-base bg-[#FFFF] text-[#black] px-4 py-2 rounded-md shadow transition-all duration-50 cursor-pointer border-2 border-[#ffff] hover:border-black transition-colors duration-500"
         >
           <FiArrowLeft />
           Повернутись до карти
@@ -167,7 +165,7 @@ const ProfilePage = () => {
             <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">5</span>
           </motion.button>
 
-          <p className="text-sm font-medium text-gray-700">Ім'я Прізвище</p>
+          <p className="text-base font-medium text-gray-700">Ім'я Прізвище</p>
           {avatarPreview ? (
             <img src={avatarPreview} alt="avatar" className="w-8 h-8 rounded-full object-cover shadow cursor-pointer" />
           ) : (
@@ -178,7 +176,7 @@ const ProfilePage = () => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={handleLogout}
-            className="text-[#744ce9] text-xl p-2 rounded cursor-pointer"
+            className="text-[#dc2626] text-xl p-2 rounded cursor-pointer"
             title="Вихід"
           >
             <FiLogOut />
@@ -186,7 +184,7 @@ const ProfilePage = () => {
         </div>
       </div>
      
-      <h1 className="text-3xl font-bold text-[#744ce9] mb-2">Ваш профіль</h1>
+      <h2 className="text-2xl font-bold text-[#744ce9] mb-2">Ваш профіль</h2>
       
       <form onSubmit={handleSubmit}>
         <motion.div 
@@ -197,7 +195,7 @@ const ProfilePage = () => {
         >
           
           <div className="col-span-1 flex flex-col items-center justify-start bg-[#F4EFFF] rounded-xl p-6 shadow-lg">
-            <h3 className="text-xl font-semibold text-[#744ce9] mb-4 self-start">Фото профілю</h3>
+            <h3 className="text-lg font-semibold text-[#744ce9] mb-4 self-start">Фото профілю</h3>
             <div className="relative group w-40 h-40 rounded-full overflow-hidden bg-white flex items-center justify-center shadow-md cursor-pointer">
               {avatarPreview ? (
                 <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
@@ -225,7 +223,7 @@ const ProfilePage = () => {
                 </button>
               </div>
             </div>
-            <p className="text-center text-xs text-gray-500 mt-2">Підтримка: JPG, PNG, WEBP. До 10 МБ</p>
+            <p className="text-center text-base text-gray-500 mt-2">Підтримка: JPG, PNG, WEBP. До 10 МБ</p>
             <input 
               type="file" 
               ref={fileInputRef} 
@@ -233,13 +231,13 @@ const ProfilePage = () => {
               accept="image/jpeg, image/png, image/webp" 
               className="hidden" 
             />
-            <p className="text-center text-sm text-gray-400 mt-4">Ваш ID: 22222</p>
-            <p className="text-center text-sm text-gray-400">Дата реєстрації: 2024-06-20</p>
+            <p className="text-center text-base text-gray-400 mt-4">Ваш ID: 22222</p>
+            <p className="text-center text-base text-gray-400">Дата реєстрації: 2024-06-20</p>
           </div>
 
           <div className="col-span-2 space-y-6 bg-white rounded-xl p-6 border border-gray-200 shadow-lg">
-            <h3 className="text-xl font-semibold text-[#744ce9]">Особисті дані</h3>
-            <p className="text-sm text-gray-500 mb-4">Заповніть інформацію про себе</p>
+            <h3 className="text-lg font-semibold text-[#744ce9]">Особисті дані</h3>
+            <p className="text-base text-gray-500 mb-4">Заповніть інформацію про себе</p>
             
             <div className="grid grid-cols-2 gap-4">
               {["firstName", "lastName", "middleName", "location", "email", "phone"].map((name) => (
@@ -267,10 +265,10 @@ const ProfilePage = () => {
               <motion.button
                 type="submit"
                 disabled={isSubmitting}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 className={`px-6 py-2 rounded-lg transition-all ${
-                  isSubmitting ? "bg-indigo-400 cursor-not-allowed" : "bg-[#744ce9] text-white"
+                  isSubmitting ? "bg-indigo-400 cursor-not-allowed" : "bg-[#32CD32] text-white"
                 } focus:outline-none focus:ring-2 focus:ring-[#744ce9] focus:ring-offset-2 cursor-pointer`}
               >
                 {isSubmitting ? "Збереження..." : "Зберегти зміни"}
