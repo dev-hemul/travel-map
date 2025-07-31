@@ -116,14 +116,21 @@ const ProfilePage = () => {
         <motion.button
           onClick={() => navigate("/")}
           whileHover={{ 
-            scale: 1.05,
+            scale: 1.02,
+            backgroundColor: "#CCCCCC",
+            borderColor: "#000000"
           }}
-          whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-2 text-base bg-[#FFFF] text-[#black] px-4 py-2 rounded-md shadow transition-all duration-50 cursor-pointer border-2 border-[#ffff] hover:border-black transition-colors duration-500"
+          whileTap={{ scale: 0.98 }}
+          transition={{ 
+            duration: 0.2,
+            ease: "easeInOut"
+          }}
+          className="flex items-center gap-2 text-base bg-white text-black px-4 py-2 rounded-md shadow cursor-pointer border-2 border-white"
         >
           <FiArrowLeft />
-          Повернутись до карти
+          <motion.span layout="position">Повернутись до карти</motion.span>
         </motion.button>
+
 
         <div className="relative w-full max-w-md">
           <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -202,11 +209,17 @@ const ProfilePage = () => {
               ) : (
                 <span className="text-[#744ce9] text-4xl font-semibold">ІП</span>
               )}
-              <div className="absolute inset-x-0 bottom-[-0.1%] h-2/6 bg-[#744ce966] opacity-0 group-hover:opacity-100 transition flex items-center justify-center space-x-4">
+              <div className="absolute inset-x-0 bottom-[-0.1%] h-2/6 bg-[#744ce9b3] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-1">
                 <button 
                   type="button" 
                   onClick={triggerFileInput} 
-                  className="text-white text-xl cursor-pointer"
+                  className="text-white text-xl cursor-pointer p-2 rounded-lg hover:bg-[#5d39b380] transition-all duration-200"
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    fontWeight: 600,
+                    borderRadius: '8px',
+                  }}
                 >
                   <FiUpload />
                 </button>
@@ -217,7 +230,13 @@ const ProfilePage = () => {
                     setAvatarPreview(null);
                     fileInputRef.current.value = null;
                   }}
-                  className="text-white text-xl cursor-pointer"
+                  className="text-white text-xl cursor-pointer p-2 rounded-lg hover:bg-[#5d39b380] transition-all duration-200"
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    fontWeight: 600,
+                    borderRadius: '8px',
+                  }}
                 >
                   <FiTrash />
                 </button>
@@ -268,10 +287,26 @@ const ProfilePage = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className={`px-6 py-2 rounded-lg transition-all ${
-                  isSubmitting ? "bg-indigo-400 cursor-not-allowed" : "bg-[#32CD32] text-white"
-                } focus:outline-none focus:ring-2 focus:ring-[#744ce9] focus:ring-offset-2 cursor-pointer`}
+                  isSubmitting 
+                    ? "bg-gray-400 cursor-not-allowed" 
+                    : "bg-[#32CD32] hover:bg-[#2EB94D] text-white"
+                } focus:outline-none focus:ring-2 focus:ring-[#744ce9] focus:ring-offset-2 cursor-pointer border-none font-semibold`}
+                style={{
+                  transition: 'background-color 0.2s ease',
+                  borderRadius: '8px',
+                }}
               >
-                {isSubmitting ? "Збереження..." : "Зберегти зміни"}
+                {isSubmitting ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Збереження...
+                  </span>
+                ) : (
+                  "Зберегти зміни"
+                )}
               </motion.button>
             </div>
           </div>
