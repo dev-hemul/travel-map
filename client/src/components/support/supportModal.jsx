@@ -88,7 +88,7 @@ export default function SupportModal({ onClose }) {
                 <motion.button
                   onClick={handleClose}
                   title="Закрити"
-                  className="p-2 rounded-full hover:bg-white/10 transition-colors text-white"
+                  className="p-2 rounded-full hover:bg-white/10 transition-colors text-white cursor-pointer"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                 >
