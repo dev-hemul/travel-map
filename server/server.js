@@ -12,6 +12,7 @@ import getReportsRouter from './routes/main.js';
 import marker from './routes/markerRouter.js';
 import profileEdditRouter from './routes/profileChanges.js';
 import supportRouter from './routes/support.js';
+
 const app = express();
 
 // Middleware
