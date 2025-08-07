@@ -21,7 +21,7 @@ const SidebarLayout = ({ children }) => {
 
         <div className="mb-8">
           <p className="text-[#744ce9]">Вітаємо</p>
-          <p className="text-xl font-semibold">Користувач!</p>
+          <p className="text-xl text-[#744ce9] font-semibold">Користувач!</p>
         </div>
 
         <nav className="flex flex-col justify-between h-full">
