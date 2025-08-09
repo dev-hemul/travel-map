@@ -1,24 +1,105 @@
 import React, { useState } from 'react';
 import { FaGoogle, FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-
 import LoginTelegramButton from './TelegramLoginButton';
+import axios from 'axios';
 
 const LoginPage = () => {
   const [isRegister, setIsRegister] = useState(false);
-  const [showReset, setShowReset] = useState(false);
-  const [resetEmail, setResetEmail] = useState('');
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showReset, setShowReset] = useState(false); // Додано для модального вікна
+  const [resetEmail, setResetEmail] = useState(''); // Додано для email скидання
 
-  const handleGoogleLogin = () => {
-    // TODO: логика Google Login
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError(''); // Скидаємо помилку при зміні
+    setSuccess(''); // Скидаємо успіх при зміні
   };
 
-  const handleResetPassword = e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: логика відправки email для відновлення пароля
-    setShowReset(false);
-    setResetEmail('');
+    console.log('Форма відправлена, isRegister:', isRegister); // Діагностика
+    console.log('Дані форми:', formData);
+
+    if (isRegister) {
+      // Логіка реєстрації
+      if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
+        setError('Усі поля є обов’язковими');
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError('Паролі не збігаються');
+        return;
+      }
+      try {
+        console.log('Відправка на /api/register...');
+        const response = await axios.post('http://localhost:4000/api/register', {
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+        });
+        console.log('Відповідь від сервера:', response.data);
+        setSuccess('Реєстрація успішна! Ви можете увійти.');
+        setFormData({ username: '', email: '', password: '', confirmPassword: '' }); // Скидання форми
+        localStorage.setItem('accessToken', response.data.accessToken); // Збереження токенів
+        localStorage.setItem('refreshToken', response.data.refreshToken);
+      } catch (error) {
+        console.error('Помилка реєстрації:', error.response?.data || error.message);
+        setError(error.response?.data?.message || 'Помилка реєстрації. Спробуйте ще раз.');
+      }
+    } else {
+      // Логіка входу
+      if (!formData.email || !formData.password) {
+        setError('Email і пароль є обов’язковими');
+        return;
+      }
+      try {
+        console.log('Відправка на /api/login...');
+        const response = await axios.post('http://localhost:4000/api/login', {
+          email: formData.email,
+          password: formData.password,
+        });
+        console.log('Відповідь від сервера:', response.data);
+        setSuccess('Успішний вхід!');
+        localStorage.setItem('accessToken', response.data.accessToken); // Збереження токенів
+        localStorage.setItem('refreshToken', response.data.refreshToken);
+        // TODO: Перенаправлення на іншу сторінку (наприклад, профіль)
+      } catch (error) {
+        console.error('Помилка входу:', error.response?.data || error.message);
+        setError(error.response?.data?.message || 'Невірні облікові дані.');
+      }
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    // TODO: логіка Google Login
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (!resetEmail) {
+      setError('Будь ласка, введіть email');
+      return;
+    }
+    try {
+      // TODO: Замінити на реальний endpoint для скидання пароля
+      console.log('Відправка email для скидання пароля:', resetEmail);
+      // Приклад: await axios.post('http://localhost:4000/api/reset-password', { email: resetEmail });
+      setSuccess('Інструкції відправлено на ваш email');
+      setShowReset(false);
+      setResetEmail('');
+    } catch (error) {
+      console.error('Помилка скидання пароля:', error.message);
+      setError('Помилка відправки. Спробуйте ще раз.');
+    }
   };
 
   return (
@@ -26,7 +107,7 @@ const LoginPage = () => {
       <h1 className="sr-only">Авторизація</h1>
       <form
         className="bg-white p-10 rounded-xl shadow-md w-full max-w-md transition-all duration-300"
-        onSubmit={e => e.preventDefault()}
+        onSubmit={handleSubmit}
       >
         <h2 className="text-2xl font-bold mb-8 text-center text-[#744ce9] drop-shadow">
           {isRegister ? 'Реєстрація' : 'Вхід'}
@@ -37,6 +118,9 @@ const LoginPage = () => {
             <FaUser className="absolute left-3 top-4 text-[#744ce9]" />
             <input
               type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
               placeholder="Логін"
               className="w-full pl-10 pr-3 py-3 border border-indigo-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] transition-all"
             />
@@ -47,6 +131,9 @@ const LoginPage = () => {
           <FaUser className="absolute left-3 top-4 text-[#744ce9]" />
           <input
             type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
             placeholder="Email"
             className="w-full pl-10 pr-3 py-3 border border-indigo-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] transition-all"
           />
@@ -54,16 +141,18 @@ const LoginPage = () => {
 
         <div className="relative mb-5">
           <FaLock className="absolute left-3 top-4 text-[#744ce9]" />
-
           <input
             type={showPassword ? 'text' : 'password'}
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
             placeholder="Пароль"
             className="w-full pl-10 pr-3 py-3 border border-indigo-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] transition-all"
           />
           <button
             type="button"
             className="absolute right-3 top-4 text-[#744ce9] focus:outline-none"
-            onClick={() => setShowPassword(v => !v)}
+            onClick={() => setShowPassword((v) => !v)}
             tabIndex={-1}
           >
             {showPassword ? <FaEye /> : <FaEyeSlash />}
@@ -75,13 +164,16 @@ const LoginPage = () => {
             <FaLock className="absolute left-3 top-4 text-[#744ce9]" />
             <input
               type={showConfirmPassword ? 'text' : 'password'}
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
               placeholder="Підтвердіть пароль"
               className="w-full pl-10 pr-3 py-3 border border-indigo-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] transition-all"
             />
             <button
               type="button"
               className="absolute right-3 top-4 text-[#744ce9] focus:outline-none"
-              onClick={() => setShowConfirmPassword(v => !v)}
+              onClick={() => setShowConfirmPassword((v) => !v)}
               tabIndex={-1}
             >
               {showConfirmPassword ? <FaEye /> : <FaEyeSlash />}
@@ -89,6 +181,8 @@ const LoginPage = () => {
           </div>
         )}
 
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        {success && <p className="text-green-500 text-center mb-4">{success}</p>}
         <button
           type="submit"
           className="w-full bg-[#744ce9] text-base text-white py-3 rounded-lg font-semibold hover:bg-[#5d39b3] transition mb-4 shadow"
@@ -111,7 +205,7 @@ const LoginPage = () => {
         <div className="text-center">
           <button
             type="button"
-            className="text-sm font-semibold text-[#5d39b3] hover:underline transition-colors drop-shadow-sm"
+            className="text-[#744ce9] hover:underline font-medium"
             onClick={() => setIsRegister(!isRegister)}
           >
             {isRegister ? 'Вже є акаунт? Увійти' : 'Немає акаунта? Зареєструватися'}
@@ -142,16 +236,14 @@ const LoginPage = () => {
             >
               &times;
             </button>
-            <h3 className="text-xl font-bold mb-4 text-[#744ce9] text-center">
-              Відновлення пароля
-            </h3>
+            <h3 className="text-xl font-bold mb-4 text-[#744ce9] text-center">Відновлення пароля</h3>
             <form onSubmit={handleResetPassword}>
               <input
                 type="email"
                 required
                 placeholder="Уведіть ваш email"
                 value={resetEmail}
-                onChange={e => setResetEmail(e.target.value)}
+                onChange={(e) => setResetEmail(e.target.value)}
                 className="w-full mb-4 px-4 py-3 border border-indigo-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] transition-all"
               />
               <button
