@@ -12,6 +12,7 @@ import getReportsRouter from './routes/main.js';
 import marker from './routes/markerRouter.js';
 import profileEdditRouter from './routes/profileChanges.js';
 import supportRouter from './routes/support.js';
+import router from './routes/authRouter.js';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/', supportRouter);
 app.use('/', getReportsRouter);
 app.use('/', profileEdditRouter);
 app.use('/', marker);
+app.use('/auth', router);
 
 // Обробка 404
 app.use((req, res, next) => {
