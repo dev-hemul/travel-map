@@ -8,11 +8,14 @@ const REFRESH_SECRET = process.env.REFRESH_SECRET
 export const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    const existingEmail = await User.findOne({ email });
+    const existingUsername = await User.findOne({ username })
+    if (existingEmail) {
       return res.status(400).json({ message: 'Користувач уже існує' });
     }
-
+    if (existingUsername){
+      return res.status(400).json({ message: 'Цей логін вже зайнято'})
+    }
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ username, email, password: hashedPassword });
     await user.save();
