@@ -22,7 +22,7 @@ export const register = async (req, res) => {
 
     const savedUser = await User.findById(user._id);
     if (!savedUser) {
-      throw new Error('користувача не знайдено');
+      return res.status(400).json({ message: 'Користувача не знайдено.' });
     }
 
     const accessToken = jwt.sign({ userId: savedUser._id }, JWT_SECRET, { expiresIn: '1h' });
@@ -32,7 +32,7 @@ export const register = async (req, res) => {
     user.refreshToken = refreshToken;
     await user.save();
 
-    res.status(200).json({ accessToken, refreshToken, user: { id: user._id, username, email } });
+    res.status(201).json({ accessToken, refreshToken, user: { id: user._id, username, email } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Помилка сервера', error: error.message });
