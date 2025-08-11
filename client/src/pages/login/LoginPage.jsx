@@ -23,105 +23,19 @@ const LoginPage = () => {
 
   const navigate = useNavigate();
 
-  const notifySuccessReg = () => toast.success('Реєстрація успішна! Ви можете увійти.', {
-    position: "top-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: false,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "light",
-    transition: Bounce,
-  });
-  const notifySuccessLog = () => toast.success('Успішний вхід!', {
-    position: "top-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: false,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "light",
-    transition: Bounce,
-  });
-  const notifyLetterHasBeenSentOnEmail = () => toast.success('Успішний вхід!', {
-    position: "top-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: false,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "light",
-    transition: Bounce,
-  });
-  const notifyPasswordConfirmationErr = () => toast.error('Паролі не збігаються', {
-    position: "top-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: false,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "light",
-    transition: Bounce,
-  });
-  const notifyLoginErr = () => toast.error('Помилка реєстрації. Спробуйте ще раз.', {
-    position: "top-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: false,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "light",
-    transition: Bounce,
-  });
-  const notifyWrongDataErr = () => toast.error('Невірні облікові дані.', {
-    position: "top-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: false,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "light",
-    transition: Bounce,
-  });
-  const notifyPasswordRecoveryErr = () => toast.error('Невірні облікові дані.', {
-    position: "top-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: false,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "light",
-    transition: Bounce,
-  });
-  const notifyAllInputAreNecessaryWarning = () => toast.warning('Заповніть усі поля.', {
-    position: "top-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: false,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "light",
-    transition: Bounce,
-  })
-  const notifyEmailIsNecessaryWarning = () => toast.warning('Заповніть усі поля.', {
-    position: "top-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: false,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "light",
-    transition: Bounce,
-  })
+  const notifySuccessReg = () => toast.success('Реєстрація успішна! Ви можете увійти.');
+  const notifySuccessLog = () => toast.success('Успішний вхід!');
+  const notifyLetterHasBeenSentOnEmail = () => toast.success('Лист підтвердження було надіслано на ваш Email');
+  const notifyPasswordConfirmationErr = () => toast.error('Паролі не збігаються');
+  const notifyCurrentEmailErr = () => toast.error('Такий email вже зайнятий');
+  const notifyCurrentLoginErr = () => toast.error('Такий логін вже зайнятий');
+  const notifyWrongPasswordErr = () => toast.error('Невірний пароль.');
+  const notifyCurrentUserDoesntExist = () => toast.error('Такого користувача не існує.');
+  const notifyServerErr = () => toast.error('Помилка сервера.', );
+  const notifyPasswordRecoveryErr = () => toast.error('Невірні облікові дані.');
+  const notifyAllInputAreNecessaryWarning = () => toast.warning('Заповніть усі поля.')
+  const notifyEmailIsNecessaryWarning = () => toast.warning('Заповніть усі поля.')
+  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -160,8 +74,15 @@ const LoginPage = () => {
           navigate('/profile');
         }, 2000);
       } catch (error) {
-        console.error('Помилка реєстрації:', error.response?.data || error.message);
-        notifyLoginErr();
+        const field = error.response?.data?.field;
+        if(field === 'email') {
+          notifyCurrentEmailErr();
+        } else if (field === 'username') {
+          notifyCurrentLoginErr();
+        } else if (field === 'serverRegisterError') {
+          notifyServerErr();
+        }
+        
       }
     } else {
       // Логіка входу
@@ -184,8 +105,14 @@ const LoginPage = () => {
           navigate('/profile');
         }, 2000);
       } catch (error) {
-        console.error('Помилка входу:', error.response?.data || error.message);
-        notifyWrongDataErr();
+        const field = error.response?.data?.field;
+        if(field === 'unknown') {
+          notifyCurrentUserDoesntExist();
+        } else if(field === 'serverLoginError'){
+          notifyServerErr();
+        } else if(field === 'wrongPassword'){
+          notifyWrongPasswordErr();
+        }
       }
     }
   };
