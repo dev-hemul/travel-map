@@ -1,10 +1,17 @@
+import bcrypt from 'bcrypt';
+import { validationResult } from 'express-validator';
+
 import Role from '../model/role.js';
 import User from '../model/users.js';
-import bcrypt from 'bcrypt';
 
 class AuthController {
   async registration(req, res) {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ message: 'Помилка при реєстрації', errors });
+      }
+
       const { login, password, email } = req.body;
       const candidate = await User.findOne({ login });
       if (candidate) {
@@ -24,6 +31,7 @@ class AuthController {
 
   async login(req, res) {
     try {
+      const { login, password, email } = req.body;
     } catch (e) {
       console.log(e);
       res.status(400).json({ message: 'Login error' });
