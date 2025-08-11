@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaGoogle, FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import LoginTelegramButton from './TelegramLoginButton';
+import { ToastContainer, toast, Bounce } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 
 const LoginPage = () => {
@@ -18,6 +21,108 @@ const LoginPage = () => {
   const [showReset, setShowReset] = useState(false); // Додано для модального вікна
   const [resetEmail, setResetEmail] = useState(''); // Додано для email скидання
 
+  const navigate = useNavigate();
+
+  const notifySuccessReg = () => toast.success('Реєстрація успішна! Ви можете увійти.', {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: false,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "light",
+    transition: Bounce,
+  });
+  const notifySuccessLog = () => toast.success('Успішний вхід!', {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: false,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "light",
+    transition: Bounce,
+  });
+  const notifyLetterHasBeenSentOnEmail = () => toast.success('Успішний вхід!', {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: false,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "light",
+    transition: Bounce,
+  });
+  const notifyPasswordConfirmationErr = () => toast.error('Паролі не збігаються', {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: false,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "light",
+    transition: Bounce,
+  });
+  const notifyLoginErr = () => toast.error('Помилка реєстрації. Спробуйте ще раз.', {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: false,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "light",
+    transition: Bounce,
+  });
+  const notifyWrongDataErr = () => toast.error('Невірні облікові дані.', {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: false,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "light",
+    transition: Bounce,
+  });
+  const notifyPasswordRecoveryErr = () => toast.error('Невірні облікові дані.', {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: false,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "light",
+    transition: Bounce,
+  });
+  const notifyAllInputAreNecessaryWarning = () => toast.warning('Заповніть усі поля.', {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: false,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "light",
+    transition: Bounce,
+  })
+  const notifyEmailIsNecessaryWarning = () => toast.warning('Заповніть усі поля.', {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: false,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "light",
+    transition: Bounce,
+  })
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError(''); // Скидаємо помилку при зміні
@@ -32,11 +137,11 @@ const LoginPage = () => {
     if (isRegister) {
       // Логіка реєстрації
       if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
-        setError('Усі поля є обов’язковими');
+        notifyAllInputAreNecessaryWarning();
         return;
       }
       if (formData.password !== formData.confirmPassword) {
-        setError('Паролі не збігаються');
+        notifyPasswordConfirmationErr();
         return;
       }
       try {
@@ -47,18 +152,21 @@ const LoginPage = () => {
           password: formData.password,
         });
         console.log('Відповідь від сервера:', response.data);
-        setSuccess('Реєстрація успішна! Ви можете увійти.');
+        notifySuccessReg();
         setFormData({ username: '', email: '', password: '', confirmPassword: '' }); // Скидання форми
         localStorage.setItem('accessToken', response.data.accessToken); // Збереження токенів
         localStorage.setItem('refreshToken', response.data.refreshToken);
+        setTimeout(() => {
+          navigate('/profile');
+        }, 2000);
       } catch (error) {
         console.error('Помилка реєстрації:', error.response?.data || error.message);
-        setError(error.response?.data?.message || 'Помилка реєстрації. Спробуйте ще раз.');
+        notifyLoginErr();
       }
     } else {
       // Логіка входу
       if (!formData.email || !formData.password) {
-        setError('Email і пароль є обов’язковими');
+        notifyEmailIsNecessaryWarning();
         return;
       }
       try {
@@ -68,13 +176,16 @@ const LoginPage = () => {
           password: formData.password,
         });
         console.log('Відповідь від сервера:', response.data);
-        setSuccess('Успішний вхід!');
+        notifySuccessLog();
         localStorage.setItem('accessToken', response.data.accessToken); // Збереження токенів
         localStorage.setItem('refreshToken', response.data.refreshToken);
         // TODO: Перенаправлення на іншу сторінку (наприклад, профіль)
+        setTimeout(() => {
+          navigate('/profile');
+        }, 2000);
       } catch (error) {
         console.error('Помилка входу:', error.response?.data || error.message);
-        setError(error.response?.data?.message || 'Невірні облікові дані.');
+        notifyWrongDataErr();
       }
     }
   };
@@ -86,24 +197,25 @@ const LoginPage = () => {
   const handleResetPassword = async (e) => {
     e.preventDefault();
     if (!resetEmail) {
-      setError('Будь ласка, введіть email');
+      notifyEmailIsNecessaryWarning();
       return;
     }
     try {
       // TODO: Замінити на реальний endpoint для скидання пароля
       console.log('Відправка email для скидання пароля:', resetEmail);
       // Приклад: await axios.post('http://localhost:4000/api/reset-password', { email: resetEmail });
-      setSuccess('Інструкції відправлено на ваш email');
+      notifyLetterHasBeenSentOnEmail();
       setShowReset(false);
       setResetEmail('');
     } catch (error) {
       console.error('Помилка скидання пароля:', error.message);
-      setError('Помилка відправки. Спробуйте ще раз.');
+      notifyPasswordRecoveryErr();
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#F4EFFF] to-[#744ce9]/10">
+      <ToastContainer />
       <h1 className="sr-only">Авторизація</h1>
       <form
         className="bg-white p-10 rounded-xl shadow-md w-full max-w-md transition-all duration-300"
