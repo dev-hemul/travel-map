@@ -23,6 +23,7 @@ const LoginPage = () => {
 
   const navigate = useNavigate();
 
+
   const notifySuccessReg = () => toast.success('Реєстрація успішна! Ви можете увійти');
   const notifySuccessLog = () => toast.success('Успішний вхід!');
   const notifyLetterHasBeenSentOnEmail = () => toast.success('Лист підтвердження було надіслано на ваш Email');
