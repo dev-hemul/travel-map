@@ -21,6 +21,7 @@
     "express-validator": "^7.2.1",
     "grammy": "^1.36.3",
     "http-errors": "^2.0.0",
+    "jsonwebtoken": "^9.0.2",
     "jws": "^4.0.0",
     "mongoose": "^8.14.2",
     "multer": "2.0.2",
