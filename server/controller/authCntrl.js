@@ -11,10 +11,10 @@ export const register = async (req, res) => {
     const existingEmail = await User.findOne({ email });
     const existingUsername = await User.findOne({ username })
     if (existingEmail) {
-      return res.status(400).json({ message: 'Користувач уже існує' });
+      return res.status(400).json({ field: 'email', message: 'Користувач уже існує' }); // status field added
     }
     if (existingUsername){
-      return res.status(400).json({ message: 'Цей логін вже зайнято'})
+      return res.status(400).json({ field: 'username', message: 'Цей логін вже зайнято'}) // status field added
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ username, email, password: hashedPassword });
@@ -22,7 +22,7 @@ export const register = async (req, res) => {
 
     const savedUser = await User.findById(user._id);
     if (!savedUser) {
-      return res.status(400).json({ message: 'Користувача не знайдено.' });
+      return res.status(400).json({ field: 'unknown', message: 'Користувача не знайдено.' }); // status field added
     }
 
     const accessToken = jwt.sign({ userId: savedUser._id }, JWT_SECRET, { expiresIn: '1h' });
@@ -32,10 +32,10 @@ export const register = async (req, res) => {
     user.refreshToken = refreshToken;
     await user.save();
 
-    res.status(201).json({ accessToken, refreshToken, user: { id: user._id, username, email } });
+    res.status(201).json({ accessToken, refreshToken, user: { id: user._id, username, email } }); // status field added
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Помилка сервера', error: error.message });
+    res.status(500).json({ field: 'serverRegisterError', message: 'Помилка сервера', error: error.message }); // status field added
   }
 };
 
@@ -44,19 +44,19 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: 'Невірний логін' });
+      return res.status(401).json({ field: 'unknown', message: 'Невірний логін' }); // status field added
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      return res.status(401).json({ message: 'Невірний пароль' });
+      return res.status(401).json({ field: 'wrongPassword', message: 'Невірний пароль' }); // status field added
     }
 
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
     res.json({ token, user: { id: user._id, username: user.username, email: user.email } });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Помилка сервера' });
+    res.status(500).json({ field: 'serverLoginErr', message: 'Помилка сервера' }); // status field added
   }
 };
 
