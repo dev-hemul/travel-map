@@ -22,15 +22,15 @@ class AuthController {
         return res.status(400).json({ message: 'Помилка при реєстрації', errors });
       }
 
-      const { login, password, email } = req.body;
-      const candidate = await User.findOne({ login });
+      const { username, password, email } = req.body;
+      const candidate = await User.findOne({ username });
       if (candidate) {
         return res.status(400).json({ message: 'Користувач з таким логіном вже існує!' });
       }
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
       const userRole = await Role.findOne({ value: 'USER' });
-      const user = new User({ login, password: hashedPassword, email, roles: [userRole.value] });
+      const user = new User({ username, password: hashedPassword, email, roles: [userRole.value] });
       await user.save();
       return res.json({ message: 'Новий користувач успішно зареєстрований!' });
     } catch (e) {
@@ -41,8 +41,8 @@ class AuthController {
 
   async login(req, res) {
     try {
-      const { login, password, email } = req.body;
-      const user = await User.findOne({ login });
+      const { password, email } = req.body;
+      const user = await User.findOne({ email });
       if (!user) {
         return res.status(400).json({ message: `Користувач ${user} не знайдений` });
       }
@@ -55,13 +55,14 @@ class AuthController {
       return res.json({ token });
     } catch (e) {
       console.log(e);
-      res.status(400).json({ message: 'Login error' });
+      res.status(400).json({ message: 'username error' });
     }
   }
 
   async getUsers(req, res) {
     try {
-      res.json('server work');
+      const users = await User.find();
+      res.json(users);
     } catch (e) {
       console.log(e);
       res.status(400).json();
