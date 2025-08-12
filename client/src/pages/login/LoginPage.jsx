@@ -23,18 +23,18 @@ const LoginPage = () => {
 
   const navigate = useNavigate();
 
-  const notifySuccessReg = () => toast.success('Реєстрація успішна! Ви можете увійти.');
+  const notifySuccessReg = () => toast.success('Реєстрація успішна! Ви можете увійти');
   const notifySuccessLog = () => toast.success('Успішний вхід!');
   const notifyLetterHasBeenSentOnEmail = () => toast.success('Лист підтвердження було надіслано на ваш Email');
   const notifyPasswordConfirmationErr = () => toast.error('Паролі не збігаються');
   const notifyCurrentEmailErr = () => toast.error('Такий email вже зайнятий');
   const notifyCurrentLoginErr = () => toast.error('Такий логін вже зайнятий');
   const notifyWrongPasswordErr = () => toast.error('Невірний пароль.');
-  const notifyCurrentUserDoesntExist = () => toast.error('Такого користувача не існує.');
-  const notifyServerErr = () => toast.error('Помилка сервера.', );
-  const notifyPasswordRecoveryErr = () => toast.error('Невірні облікові дані.');
-  const notifyAllInputAreNecessaryWarning = () => toast.warning('Заповніть усі поля.')
-  const notifyEmailIsNecessaryWarning = () => toast.warning('Заповніть усі поля.')
+  const notifyCurrentUserDoesntExist = () => toast.error('Такого користувача не існує');
+  const notifyServerErr = () => toast.error('Помилка сервера', );
+  const notifyPasswordRecoveryErr = () => toast.error('Невірні облікові дані');
+  const notifyAllInputAreNecessaryWarning = () => toast.warning('Заповніть усі поля')
+  const notifyEmailIsNecessaryWarning = () => toast.warning('Заповніть усі поля')
   
 
   const handleChange = (e) => {
@@ -81,6 +81,8 @@ const LoginPage = () => {
           notifyCurrentLoginErr();
         } else if (field === 'serverRegisterError') {
           notifyServerErr();
+        } else {
+          toast.error('Виникла помилка при надсиланні даних. Будь ласка, перевірте ваше підключення до мережі')
         }
         
       }
@@ -112,6 +114,8 @@ const LoginPage = () => {
           notifyServerErr();
         } else if(field === 'wrongPassword'){
           notifyWrongPasswordErr();
+        } else {
+          toast.error('Виникла помилка при надсиланні даних. Будь ласка, перевірте ваше підключення до мережі')
         }
       }
     }
