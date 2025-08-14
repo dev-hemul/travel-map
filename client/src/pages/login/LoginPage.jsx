@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaGoogle, FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-import LoginTelegramButton from './TelegramLoginButton';
-import { ToastContainer, toast, Bounce } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
+import React, { useState } from 'react';
+import { FaGoogle, FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast, Bounce } from 'react-toastify';
+
+import LoginTelegramButton from './TelegramLoginButton';
+
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const LoginPage = () => {
   const [isRegister, setIsRegister] = useState(false);
