@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaGoogle, FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
@@ -7,7 +8,6 @@ import { ToastContainer, toast, Bounce } from 'react-toastify';
 import LoginTelegramButton from './TelegramLoginButton';
 
 import 'react-toastify/dist/ReactToastify.css';
-
 
 const LoginPage = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -27,6 +27,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   const notifySuccessReg = () => toast.success('Реєстрація успішна! Ви можете увійти');
+
   const notifySuccessLog = () => toast.success('Успішний вхід!');
   const notifyLetterHasBeenSentOnEmail = () => toast.success('Лист підтвердження було надіслано на ваш Email');
   const notifyPasswordConfirmationErr = () => toast.error('Паролі не збігаються');
@@ -86,8 +87,7 @@ const LoginPage = () => {
           notifyServerErr();
         } else {
           toast.error('Виникла помилка при надсиланні даних. Будь ласка, перевірте ваше підключення до мережі')
-        }
-        
+        }     
       }
     } else {
       // Логіка входу
