@@ -117,11 +117,8 @@ const LoginPage = () => {
           notifyServerErr();
         } else if(field === 'wrongPassword'){
           notifyWrongPasswordErr();
-<<<<<<< HEAD
         } else {
           toast.error('Виникла помилка при надсиланні даних. Будь ласка, перевірте ваше підключення до мережі')
-=======
->>>>>>> 38ec38066a623d142429f141ad9e4a8ef3c3b50a
         }
       }
     }
