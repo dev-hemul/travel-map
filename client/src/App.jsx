@@ -9,7 +9,7 @@ import SupportModalWrapper from './components/support/supportModalWrapper';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
 
-function App() {
+    function App() {
   return (
     <div className="min-h-screen dark:bg-gray-900 bg-gray-50 relative">
       <Routes>

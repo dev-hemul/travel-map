@@ -19,6 +19,7 @@ const MapView = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [options, setOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
+
   // Стейт для модального вікна і даних маркерів
   const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState({
