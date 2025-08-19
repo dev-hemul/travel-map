@@ -223,7 +223,7 @@ const MapView = () => {
   }, [mapType, markers]);
 
   useEffect(() => {
-    // Проверяем URL параметры при загрузке маркеров
+    // Перевіряємо URL параметри
     if (markers.length > 0 && mapInstance.current) {
       const lat = searchParams.get('lat');
       const lng = searchParams.get('lng');
