@@ -11,7 +11,7 @@ import announcementsRouter from './routes/annoucementsAdding.js';
 import authRouter from './routes/auth.js';
 import getReportsRouter from './routes/main.js';
 import marker from './routes/markerRouter.js';
-import profileEdditRouter from './routes/profileChanges.js';
+import profileEditRouter from './routes/profileChanges.js';
 import supportRouter from './routes/support.js';
 const app = express();
 
@@ -35,7 +35,7 @@ app.use(express.static(path.join(__dirname, '../client')));
 app.use('/', announcementsRouter);
 app.use('/', supportRouter);
 app.use('/', getReportsRouter);
-app.use('/', profileEdditRouter);
+app.use('/', profileEditRouter);
 app.use('/', marker);
 app.use('/api', authRouter);
 
