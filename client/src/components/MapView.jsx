@@ -511,7 +511,7 @@ const MapView = () => {
 
       setModalOpen(false);
     } catch (err) {
-      console.error('Ошибка при отправке:', err);
+      console.error('Помилка при відправці:', err);
     } finally {
       setLoading(false);
     }
