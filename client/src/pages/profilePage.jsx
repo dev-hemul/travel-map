@@ -1,6 +1,6 @@
 import axios from "axios";
 import { motion } from "framer-motion";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   FiUpload,
   FiTrash,
@@ -10,6 +10,8 @@ import {
   FiMoon,
   FiMessageCircle,
   FiUsers,
+  FiMenu,
+  FiX
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
@@ -31,6 +33,25 @@ const ProfilePage = () => {
   const fileInputRef = useRef(null);
   const [focusedField, setFocusedField] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      if (window.innerWidth > 768) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isLargeScreen = windowWidth >= 1200;
+  const isMediumScreen = windowWidth >= 768 && windowWidth < 1200;
+  const isSmallScreen = windowWidth >= 576 && windowWidth < 768;
+  const isXSmallScreen = windowWidth < 576;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -107,6 +128,10 @@ const ProfilePage = () => {
     navigate("/logout");
   };
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
     <div className="max-w-auto min-h-full mx-auto px-4 py-8 bg-white rounded-lg mb-10">
       <style jsx>{`
@@ -119,23 +144,76 @@ const ProfilePage = () => {
           outline-offset: 2px;
           border-radius: 0.375rem;
         }
+        
+        @media (max-width: 1200px) {
+          .responsive-grid {
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+          }
+        }
+        
+        @media (max-width: 768px) {
+          .responsive-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+          }
+          
+          .avatar-container {
+            width: 120px;
+            height: 120px;
+          }
+          
+          .top-bar-grid {
+            grid-template-columns: 1fr auto;
+            gap: 0.5rem;
+          }
+        }
+        
+        @media (max-width: 576px) {
+          .avatar-container {
+            width: 100px;
+            height: 100px;
+          }
+          
+          .input-grid {
+            grid-template-columns: 1fr;
+          }
+          
+          .top-bar-items {
+            flex-wrap: wrap;
+            justify-content: center;
+          }
+        }
       `}</style>
 
       {/* Топ-бар */}
-      <div className="flex flex-col sm:flex-row items-center sm:justify-between bg-[#F4EFFF] rounded-xl px-4 py-2 mb-6 gap-4 border border-gray-300 shadow-lg">
-        <motion.button
-          onClick={() => navigate("/")}
-          whileHover={{
-            scale: 1.05,
-            backgroundColor: "#FFFFFF",
-            color: "#744ce9",
-          }}
-          whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-2 text-sm bg-[#744ce9] text-white px-4 py-2 rounded-md shadow transition-all duration-50 cursor-pointer border-2 border-[#744ce9] w-full sm:w-auto justify-center"
-        >
-          <FiArrowLeft />
-          Повернутись до карти
-        </motion.button>
+      <div className="flex flex-col sm:flex-row items-center sm:justify-between bg-[#F4EFFF] rounded-xl px-4 py-2 mb-6 gap-4 border border-gray-300 shadow-lg top-bar-grid">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          {isXSmallScreen && (
+            <motion.button
+              onClick={toggleMobileMenu}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="text-[#744ce9] text-xl p-2 rounded cursor-pointer"
+            >
+              {isMobileMenuOpen ? <FiX /> : <FiMenu />}
+            </motion.button>
+          )}
+          
+          <motion.button
+            onClick={() => navigate("/")}
+            whileHover={{
+              scale: 1.05,
+              backgroundColor: "#FFFFFF",
+              color: "#744ce9",
+            }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-2 text-sm bg-[#744ce9] text-white px-4 py-2 rounded-md shadow transition-all duration-50 cursor-pointer border-2 border-[#744ce9] w-full sm:w-auto justify-center"
+          >
+            <FiArrowLeft />
+            {!isXSmallScreen && "Повернутись до карти"}
+          </motion.button>
+        </div>
 
         <div className="relative w-full max-w-3xl">
           <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -146,7 +224,7 @@ const ProfilePage = () => {
           />
         </div>
 
-        <div className="flex items-center gap-3 justify-center w-full sm:w-auto">
+        <div className={`flex items-center gap-3 justify-center w-full sm:w-auto top-bar-items ${isMobileMenuOpen ? 'flex' : 'hidden sm:flex'}`}>
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -181,9 +259,11 @@ const ProfilePage = () => {
             </span>
           </motion.button>
 
-          <p className="hidden sm:block text-base font-medium text-gray-700 whitespace-nowrap">
-            Ім'я Прізвище
-          </p>
+          {!isXSmallScreen && (
+            <p className="text-base font-medium text-gray-700 whitespace-nowrap">
+              Ім'я Прізвище
+            </p>
+          )}
 
           {avatarPreview ? (
             <img
@@ -214,11 +294,15 @@ const ProfilePage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="grid grid-cols-1 sm:grid-cols-3 gap-8"
+          className="grid responsive-grid gap-8"
         >
-          <div className="col-span-1 flex flex-col items-center justify-start bg-[#F4EFFF] rounded-xl p-6 shadow-lg">
-            <div className="w-40 h-10"></div>
-            <div className="relative group w-40 h-40 rounded-full overflow-hidden bg-white flex items-center justify-center shadow-md cursor-pointer">
+          <div className="flex flex-col items-center justify-start bg-[#F4EFFF] rounded-xl p-6 shadow-lg">
+            <div className="w-full h-10"></div>
+            <div className="relative group avatar-container rounded-full overflow-hidden bg-white flex items-center justify-center shadow-md cursor-pointer mx-auto"
+                 style={{ 
+                   width: isXSmallScreen ? '100px' : isSmallScreen ? '120px' : '160px',
+                   height: isXSmallScreen ? '100px' : isSmallScreen ? '120px' : '160px'
+                 }}>
               {avatarPreview ? (
                 <img
                   src={avatarPreview}
@@ -261,8 +345,8 @@ const ProfilePage = () => {
                 </button>
               </div>
             </div>
-            <div className="w-40 h-10"></div>
-            <p className="text-center text-base text-gray-500 mt-2">
+            <div className="w-full h-10"></div>
+            <p className="text-center text-sm md:text-base text-gray-500 mt-2">
               Підтримка: JPG, PNG, WEBP. До 10 МБ
             </p>
             <input
@@ -272,16 +356,19 @@ const ProfilePage = () => {
               accept="image/jpeg, image/png, image/webp"
               className="hidden"
             />
-            <p className="text-center text-base text-gray-400 mt-4">Ваш ID: 22222</p>
-            <p className="text-center text-base text-gray-400">
+            <p className="text-center text-sm md:text-base text-gray-400 mt-4">Ваш ID: 22222</p>
+            <p className="text-center text-sm md:text-base text-gray-400">
               Дата реєстрації: 2024-06-20
             </p>
           </div>
 
-          <div className="col-span-1 sm:col-span-2 space-y-6 bg-white rounded-xl p-6 border border-gray-200 shadow-lg">
-            <h2 className="text-2xl font-semibold text-[#744ce9]">Особисті дані</h2>
+          <div className="space-y-6 bg-white rounded-xl p-6 border border-gray-200 shadow-lg">
+            <h2 className="text-xl md:text-2xl font-semibold text-[#744ce9]">Особисті дані</h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid input-grid gap-4"
+                 style={{ 
+                   gridTemplateColumns: isXSmallScreen ? '1fr' : isSmallScreen ? '1fr' : 'repeat(2, 1fr)'
+                 }}>
               {[
                 "firstName",
                 "lastName",
@@ -293,7 +380,7 @@ const ProfilePage = () => {
                 <div key={name} className="relative w-full">
                   <label
                     htmlFor={name}
-                    className="block text-lg text-gray-500 mb-1"
+                    className="block text-base md:text-lg text-gray-500 mb-1"
                   >
                     {name === "firstName"
                       ? "Ім'я"
@@ -328,7 +415,7 @@ const ProfilePage = () => {
                     onChange={handleChange}
                     onFocus={() => setFocusedField(name)}
                     onBlur={() => setFocusedField(null)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] focus:border-transparent"
+                    className="w-full p-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] focus:border-transparent"
                   />
                 </div>
               ))}
@@ -343,7 +430,7 @@ const ProfilePage = () => {
                 disabled={isSubmitting}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`px-6 py-2 rounded-lg transition-all ${
+                className={`px-4 md:px-6 py-2 text-sm md:text-base rounded-lg transition-all ${
                   isSubmitting
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-[#32CD32] hover:bg-[#2EB94D] text-white"
