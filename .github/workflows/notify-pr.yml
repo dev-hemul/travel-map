@@ -1,8 +1,7 @@
 name: Notify team on PR events
-
 on:
   pull_request:
-    types: [opened, reopened, closed]   # Реагуємо на створення, reopen і закриття PR
+    types: [opened, reopened, closed]
 
 jobs:
   notify:
@@ -12,41 +11,50 @@ jobs:
       - name: Notify when PR opened or reopened
         if: ${{ github.event.action == 'opened' || github.event.action == 'reopened' }}
         run: |
-          MESSAGE="🆕 Новий Pull Request від *${{ github.event.pull_request.user.login }}*
+          MESSAGE=$(cat <<'EOF'
+          🆕 Новий Pull Request від *${{ github.event.pull_request.user.login }}*
 
-*Назва:* ${{ github.event.pull_request.title }}
-*Гілка:* ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}
-🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})"
+          *Назва:* ${{ github.event.pull_request.title }}
+          *Гілка:* ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}
+          🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
+          EOF
+          )
 
-          curl -s -X POST https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendMessage \
-            -d chat_id=${{ secrets.TG_CHAT_ID }} \
-            -d parse_mode="Markdown" \
-            -d text="$MESSAGE"
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendMessage" \
+            --data-urlencode "chat_id=${{ secrets.TG_CHAT_ID }}" \
+            --data-urlencode "parse_mode=Markdown" \
+            --data-urlencode "text=$MESSAGE"
 
       - name: Notify when PR merged
         if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == true }}
         run: |
-          MESSAGE="✅ Pull Request *#${{ github.event.pull_request.number }}* був злитий в гілку *${{ github.event.pull_request.base.ref }}*
+          MESSAGE=$(cat <<'EOF'
+          ✅ Pull Request *#${{ github.event.pull_request.number }}* був злитий в гілку *${{ github.event.pull_request.base.ref }}*
 
-Автор: ${{ github.event.pull_request.user.login }}
-🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
+          Автор: ${{ github.event.pull_request.user.login }}
+          🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
 
-👉 Не забудьте зробити \`git pull\`!"
+          👉 Не забудьте зробити `git pull`!
+          EOF
+          )
 
-          curl -s -X POST https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendMessage \
-            -d chat_id=${{ secrets.TG_CHAT_ID }} \
-            -d parse_mode="Markdown" \
-            -d text="$MESSAGE"
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendMessage" \
+            --data-urlencode "chat_id=${{ secrets.TG_CHAT_ID }}" \
+            --data-urlencode "parse_mode=Markdown" \
+            --data-urlencode "text=$MESSAGE"
 
       - name: Notify when PR closed without merge
         if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == false }}
         run: |
-          MESSAGE="⚠️ Pull Request *#${{ github.event.pull_request.number }}* був закритий без merge.
+          MESSAGE=$(cat <<'EOF'
+          ⚠️ Pull Request *#${{ github.event.pull_request.number }}* був закритий без merge.
 
-Автор: ${{ github.event.pull_request.user.login }}
-🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})"
+          Автор: ${{ github.event.pull_request.user.login }}
+          🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
+          EOF
+          )
 
-          curl -s -X POST https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendMessage \
-            -d chat_id=${{ secrets.TG_CHAT_ID }} \
-            -d parse_mode="Markdown" \
-            -d text="$MESSAGE"
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendMessage" \
+            --data-urlencode "chat_id=${{ secrets.TG_CHAT_ID }}" \
+            --data-urlencode "parse_mode=Markdown" \
+            --data-urlencode "text=$MESSAGE"
