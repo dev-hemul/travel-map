@@ -38,7 +38,7 @@ jobs:
         run: |
           DESCRIPTION="${{ github.event.pull_request.body }}"
           if [ -n "$DESCRIPTION" ]; then
-            DESC_TEXT="*Опис:* $DESCRIPTION\n"
+            DESC_TEXT=$(printf "*Опис:* %s\n" "$DESCRIPTION")
           else
             DESC_TEXT=""
           fi
@@ -66,7 +66,7 @@ jobs:
         run: |
           DESCRIPTION="${{ github.event.pull_request.body }}"
           if [ -n "$DESCRIPTION" ]; then
-            DESC_TEXT="*Опис:* $DESCRIPTION\n"
+            DESC_TEXT=$(printf "*Опис:* %s\n" "$DESCRIPTION")
           else
             DESC_TEXT=""
           fi
