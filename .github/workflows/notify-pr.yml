@@ -13,7 +13,7 @@ jobs:
         run: |
           DESCRIPTION="${{ github.event.pull_request.body }}"
           if [ -n "$DESCRIPTION" ]; then
-            DESC_TEXT="*Опис:* $DESCRIPTION\n"
+            DESC_TEXT=$(printf "*Опис:* %s\n" "$DESCRIPTION")
           else
             DESC_TEXT=""
           fi
@@ -59,8 +59,10 @@ jobs:
             --data-urlencode "parse_mode=Markdown" \
             --data-urlencode "text=$MESSAGE"
 
-      - name: 🔴 Notify when PR closed without merge
+      - name: 🔴 Notify when PR closed without merge (with review comment)
         if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == false }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           DESCRIPTION="${{ github.event.pull_request.body }}"
           if [ -n "$DESCRIPTION" ]; then
@@ -69,11 +71,30 @@ jobs:
             DESC_TEXT=""
           fi
 
+          # Отримати останній review PR
+          REPO="${{ github.repository }}"
+          OWNER="${REPO%%/*}"
+          NAME="${REPO#*/}"
+          NUMBER=${{ github.event.pull_request.number }}
+
+          LAST_REVIEW=$(gh api repos/$OWNER/$NAME/pulls/$NUMBER/reviews --jq '.[-1]')
+
+          REVIEW_BODY=$(echo "$LAST_REVIEW" | jq -r '.body // empty')
+          REVIEW_AUTHOR=$(echo "$LAST_REVIEW" | jq -r '.user.login // empty')
+          REVIEW_STATE=$(echo "$LAST_REVIEW" | jq -r '.state // empty')
+
+          COMMENT_TEXT=""
+          if [ -n "$REVIEW_BODY" ] && [ "$REVIEW_STATE" != "COMMENTED" ]; then
+            # Додаємо тільки якщо review не пустий і був APPROVED або CHANGES_REQUESTED
+            COMMENT_TEXT=$(printf "\n📝 Коментар перед закриттям (від @%s):\n%s" "$REVIEW_AUTHOR" "$REVIEW_BODY")
+          fi
+
           MESSAGE=$(cat <<EOF
-          🔴 Pull Request *#${{ github.event.pull_request.number }}* був закритий без merge (злиття)
+          🔴 Pull Request *#${NUMBER}* був закритий без merge
 
           Автор: ${{ github.event.pull_request.user.login }}
           $DESC_TEXT
+          $COMMENT_TEXT
           🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
           EOF
           )
