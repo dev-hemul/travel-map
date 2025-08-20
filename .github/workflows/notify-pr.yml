@@ -8,14 +8,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Notify when PR opened or reopened
+      - name: 🆕🔵 Notify when PR opened or reopened
         if: ${{ github.event.action == 'opened' || github.event.action == 'reopened' }}
         run: |
-          MESSAGE=$(cat <<'EOF'
-          🆕 Новий Pull Request від *${{ github.event.pull_request.user.login }}*
+          DESCRIPTION="${{ github.event.pull_request.body }}"
+          if [ -n "$DESCRIPTION" ]; then
+            DESC_TEXT="*Опис:* $DESCRIPTION\n"
+          else
+            DESC_TEXT=""
+          fi
+
+          MESSAGE=$(cat <<EOF
+          🆕🔵 Новий Pull Request від *${{ github.event.pull_request.user.login }}*
 
           *Назва:* ${{ github.event.pull_request.title }}
           *Гілка:* ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}
+          $DESC_TEXT
           🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
           EOF
           )
@@ -25,16 +33,24 @@ jobs:
             --data-urlencode "parse_mode=Markdown" \
             --data-urlencode "text=$MESSAGE"
 
-      - name: Notify when PR merged
+      - name: ✅🟢 Notify when PR merged
         if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == true }}
         run: |
-          MESSAGE=$(cat <<'EOF'
-          ✅ Pull Request *#${{ github.event.pull_request.number }}* був злитий в гілку *${{ github.event.pull_request.base.ref }}*
+          DESCRIPTION="${{ github.event.pull_request.body }}"
+          if [ -n "$DESCRIPTION" ]; then
+            DESC_TEXT="*Опис:* $DESCRIPTION\n"
+          else
+            DESC_TEXT=""
+          fi
+
+          MESSAGE=$(cat <<EOF
+          ✅🟢 Pull Request *#${{ github.event.pull_request.number }}* був злитий в гілку *${{ github.event.pull_request.base.ref }}*
 
           Автор: ${{ github.event.pull_request.user.login }}
+          $DESC_TEXT
           🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
 
-          👉 Не забудьте зробити `git pull`!
+          👉 Не забудьте зробити \`git pull\`!
           EOF
           )
 
@@ -43,13 +59,21 @@ jobs:
             --data-urlencode "parse_mode=Markdown" \
             --data-urlencode "text=$MESSAGE"
 
-      - name: Notify when PR closed without merge
+      - name: ❌🔴 Notify when PR closed without merge
         if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == false }}
         run: |
-          MESSAGE=$(cat <<'EOF'
-          ⚠️ Pull Request *#${{ github.event.pull_request.number }}* був закритий без merge.
+          DESCRIPTION="${{ github.event.pull_request.body }}"
+          if [ -n "$DESCRIPTION" ]; then
+            DESC_TEXT="*Опис:* $DESCRIPTION\n"
+          else
+            DESC_TEXT=""
+          fi
+
+          MESSAGE=$(cat <<EOF
+          ❌🔴 Pull Request *#${{ github.event.pull_request.number }}* був закритий без merge (злиття)
 
           Автор: ${{ github.event.pull_request.user.login }}
+          $DESC_TEXT
           🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
           EOF
           )
