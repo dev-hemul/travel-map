@@ -351,10 +351,7 @@ const MapView = () => {
 
         try {
           // Завантажуємо файл на сервер
-          const response = await axios.post('http://localhost:4000/api/upload', fileData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
+          const response = await axios.post('http://localhost:4000/upload', fileData, {
             onUploadProgress: progressEvent => {
               const percentCompleted = Math.round(
                 (progressEvent.loaded * 100) / progressEvent.total
@@ -800,7 +797,6 @@ const MapView = () => {
                   multiple
                 />
 
-                {/* Замінюємо label на div з drag-and-drop функціональністю */}
                 <div
                   className={`border-2 border-dashed rounded-xl transition-all ${
                     isDragging

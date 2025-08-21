@@ -4,7 +4,52 @@ import Marker from '../model/marker.js';
 // Создание нового маркера
 export const createMarker = async (req, res) => {
   try {
-    const marker = new Marker(req.body);
+    // Если пришёл файл от multer/cloudinary — берём URL
+    const avatarUrl = req.file ? req.file.path || req.file.url : '';
+
+    // Нормализация данных из body (поддержка как JSON, так и multipart/form-data)
+    const {
+      title,
+      category,
+      description = '',
+      private: isPrivate = false,
+      lat,
+      lng,
+      tags = [],
+      fileUrls = [],
+    } = req.body;
+
+    if (!title || !category || lat === undefined || lng === undefined) {
+      return res
+        .status(400)
+        .json({ error: 'Отсутствуют обязательные поля: title, category, lat, lng' });
+    }
+
+    const normalizeArray = v => {
+      if (Array.isArray(v)) return v;
+      if (typeof v === 'string' && v.length)
+        return v.includes(',')
+          ? v
+              .split(',')
+              .map(s => s.trim())
+              .filter(Boolean)
+          : [v];
+      return [];
+    };
+
+    const markerData = {
+      title,
+      category,
+      description,
+      private: isPrivate === true || isPrivate === 'true',
+      lat: Number(lat),
+      lng: Number(lng),
+      tags: normalizeArray(tags),
+      fileUrls: normalizeArray(fileUrls),
+      avatarUrl,
+    };
+
+    const marker = new Marker(markerData);
     await marker.save();
     res.status(201).json(marker);
   } catch (error) {
