@@ -3,18 +3,18 @@ import bcrypt from 'bcrypt';
 import User from '../model/user.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const REFRESH_SECRET = process.env.REFRESH_SECRET
+const REFRESH_SECRET = process.env.REFRESH_SECRET;
 
 export const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
     const existingEmail = await User.findOne({ email });
-    const existingUsername = await User.findOne({ username })
+    const existingUsername = await User.findOne({ username });
     if (existingEmail) {
       return res.status(400).json({ field: 'email', message: 'Користувач уже існує' }); // status field added
     }
-    if (existingUsername){
-      return res.status(400).json({ field: 'username', message: 'Цей логін вже зайнято'}) // status field added
+    if (existingUsername) {
+      return res.status(400).json({ field: 'username', message: 'Цей логін вже зайнято' }); // status field added
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ username, email, password: hashedPassword });
@@ -31,11 +31,12 @@ export const register = async (req, res) => {
 
     user.refreshToken = refreshToken;
     await user.save();
-
     res.status(201).json({ accessToken, refreshToken, user: { id: user._id, username, email } }); // status field added
   } catch (error) {
     console.error(error);
-    res.status(500).json({ field: 'serverRegisterError', message: 'Помилка сервера', error: error.message }); // status field added
+    res
+      .status(500)
+      .json({ field: 'serverRegisterError', message: 'Помилка сервера', error: error.message }); // status field added
   }
 };
 
@@ -86,7 +87,7 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-  export const getRefreshToken = async (req, res) => {
+export const getRefreshToken = async (req, res) => {
   try {
     const { refreshToken } = req.body;
 
