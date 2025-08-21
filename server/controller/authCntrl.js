@@ -1,42 +1,26 @@
-
-import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import User from '../model/user.js';
+import { createTokens, verifyToken, removeRefTokenByIss } from './../utils/authUtil.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const REFRESH_SECRET = process.env.REFRESH_SECRET
 
 export const register = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
-    const existingEmail = await User.findOne({ email });
-    const existingUsername = await User.findOne({ username })
-    if (existingEmail) {
-      return res.status(400).json({ field: 'email', message: 'Користувач уже існує' }); // status field added
-    }
-    if (existingUsername){
-      return res.status(400).json({ field: 'username', message: 'Цей логін вже зайнято'}) // status field added
-    }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, email, password: hashedPassword });
-    await user.save();
+      const { username, email, password } = req.body;
+      const existingUser = await User.findOne({ email });
+      if (existingUser) return res.status(400).json({ message: 'Користувач уже існує' });
 
-    const savedUser = await User.findById(user._id);
-    if (!savedUser) {
-      return res.status(400).json({ field: 'unknown', message: 'Користувача не знайдено.' }); // status field added
-    }
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = new User({ username, email, password: hashedPassword });
+      await user.save();
 
-    const accessToken = jwt.sign({ userId: savedUser._id }, JWT_SECRET, { expiresIn: '1h' });
+      const { accessT, refreshT } = await createTokens(user._id);
+      user.refreshToken = refreshT;
+      await user.save();
 
-    const refreshToken = jwt.sign({ userId: user._id }, REFRESH_SECRET, { expiresIn: '30d' });
-
-    user.refreshToken = refreshToken;
-    await user.save();
-
-    res.status(201).json({ accessToken, refreshToken, user: { id: user._id, username, email } }); // status field added
+      res.status(200).json({ accessToken: accessT, refreshToken: refreshT, user: { id: user._id, username, email } });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ field: 'serverRegisterError', message: 'Помилка сервера', error: error.message }); // status field added
+      console.error(error);
+      res.status(500).json({ message: 'Помилка сервера', error: error.message });
 
   }
 };
