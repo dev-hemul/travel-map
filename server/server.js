@@ -36,8 +36,8 @@ app.use('/', announcementsRouter);
 app.use('/', supportRouter);
 app.use('/', getReportsRouter);
 app.use('/', profileEdditRouter);
-app.use('/', marker);
 app.use('/api', authRouter);
+app.use('/', marker);
 
 // Обробка 404
 app.use((req, res, next) => {
