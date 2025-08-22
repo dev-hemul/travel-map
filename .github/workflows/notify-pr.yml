@@ -73,20 +73,23 @@ jobs:
             DESC_TEXT=""
           fi
 
-          # Отримати останній review PR
           REPO="${{ github.repository }}"
           OWNER="${REPO%%/*}"
           NAME="${REPO#*/}"
           NUMBER=${{ github.event.pull_request.number }}
 
+          # Берем последний комментарий к PR (issue comment)
           LAST_COMMENT=$(gh api repos/$OWNER/$NAME/issues/$NUMBER/comments --jq '.[-1]')
           COMMENT_BODY=$(echo "$LAST_COMMENT" | jq -r '.body // empty')
           COMMENT_AUTHOR=$(echo "$LAST_COMMENT" | jq -r '.user.login // empty')
-          REVIEW_STATE=$(echo "$LAST_REVIEW" | jq -r '.state // empty')
+
+          # Убираем пробелы/переносы для корректного сравнения
+          CLEAN_DESCRIPTION=$(echo "$DESCRIPTION" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+          CLEAN_COMMENT=$(echo "$COMMENT_BODY" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 
           COMMENT_TEXT=""
-          if [ -n "$COMMENT_BODY" ] && [ "$COMMENT_BODY" != "$DESCRIPTION" ]; then
-          COMMENT_TEXT=$(printf "\n-----------------------------------------------------------\n📝 Коментар скасованого PR (від @%s):\n```\n%s\n```" "$COMMENT_AUTHOR" "$COMMENT_BODY")
+          if [ -n "$CLEAN_COMMENT" ] && [ "$CLEAN_COMMENT" != "$CLEAN_DESCRIPTION" ]; then
+            COMMENT_TEXT=$(printf "\n-----------------------------------------------------------\n📝 Коментар скасованого PR (від @%s):\n```\n%s\n```" "$COMMENT_AUTHOR" "$CLEAN_COMMENT")
           fi
 
           MESSAGE=$(cat <<EOF
