@@ -85,7 +85,7 @@ jobs:
           REVIEW_STATE=$(echo "$LAST_REVIEW" | jq -r '.state // empty')
 
           COMMENT_TEXT=""
-          if [ -n "$COMMENT_BODY" ]; then
+          if [ -n "$COMMENT_BODY" ] && [ "$COMMENT_BODY" != "$DESCRIPTION" ]; then
           COMMENT_TEXT=$(printf "\n-----------------------------------------------------------\n📝 Коментар скасованого PR (від @%s):\n```\n%s\n```" "$COMMENT_AUTHOR" "$COMMENT_BODY")
           fi
 
