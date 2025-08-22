@@ -25,6 +25,8 @@ jobs:
           *Гілка:* ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}
           $DESC_TEXT
           🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
+          -----------------------------------------------------------
+          💡 А ти перевірив свій код і текст задачі?)
           EOF
           )
 
@@ -84,8 +86,7 @@ jobs:
           REVIEW_STATE=$(echo "$LAST_REVIEW" | jq -r '.state // empty')
 
           COMMENT_TEXT=""
-          if [ -n "$REVIEW_BODY" ] && [ "$REVIEW_STATE" != "COMMENTED" ]; then
-            # Додаємо тільки якщо review не пустий і був APPROVED або CHANGES_REQUESTED
+          if [ -n "$REVIEW_BODY" ]; then
             COMMENT_TEXT=$(printf "\n📝 Коментар перед закриттям (від @%s):\n%s" "$REVIEW_AUTHOR" "$REVIEW_BODY")
           fi
 
