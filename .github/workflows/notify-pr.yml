@@ -8,23 +8,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # -----------------------------
+      # PR Відкритий або переоткритий
+      # -----------------------------
       - name: 🔵 Notify when PR opened or reopened
         if: ${{ github.event.action == 'opened' || github.event.action == 'reopened' }}
         run: |
           DESCRIPTION="${{ github.event.pull_request.body }}"
+          DESC_TEXT=""
           if [ -n "$DESCRIPTION" ]; then
-            DESC_TEXT=$(printf "*Опис:* %s\n" "$DESCRIPTION")
-          else
-            DESC_TEXT=""
+            DESC_TEXT="*Опис:* $DESCRIPTION"
           fi
 
           MESSAGE=$(cat <<EOF
           🔵 Новий Pull Request від *${{ github.event.pull_request.user.login }}*
-
+          
           *Назва:* ${{ github.event.pull_request.title }}
           *Гілка:* ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}
           $DESC_TEXT
           🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
+
+          -----------------------------------------------------------
+          💡 А ти перевірив свій код і текст задачі?
           EOF
           )
 
@@ -33,23 +38,25 @@ jobs:
             --data-urlencode "parse_mode=Markdown" \
             --data-urlencode "text=$MESSAGE"
 
+      # -----------------------------
+      # PR замержен
+      # -----------------------------
       - name: 🟢 Notify when PR merged
         if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == true }}
         run: |
           DESCRIPTION="${{ github.event.pull_request.body }}"
+          DESC_TEXT=""
           if [ -n "$DESCRIPTION" ]; then
             DESC_TEXT="*Опис:* $DESCRIPTION\n"
-          else
-            DESC_TEXT=""
           fi
 
           MESSAGE=$(cat <<EOF
           🟢 Pull Request *#${{ github.event.pull_request.number }}* був злитий в гілку *${{ github.event.pull_request.base.ref }}*
-
+          
           Автор: ${{ github.event.pull_request.user.login }}
           $DESC_TEXT
           🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
-
+          
           👉 Не забудьте зробити \`git pull\`!
           EOF
           )
@@ -59,42 +66,23 @@ jobs:
             --data-urlencode "parse_mode=Markdown" \
             --data-urlencode "text=$MESSAGE"
 
-      - name: 🔴 Notify when PR closed without merge (with review comment)
+      # -----------------------------
+      # PR закритий без merge
+      # -----------------------------
+      - name: 🔴 Notify when PR closed without merge
         if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == false }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          DESCRIPTION="${{ github.event.pull_request.body }}"
-          if [ -n "$DESCRIPTION" ]; then
-            DESC_TEXT="*Опис:* $DESCRIPTION\n"
-          else
-            DESC_TEXT=""
-          fi
-
-          # Отримати останній review PR
-          REPO="${{ github.repository }}"
-          OWNER="${REPO%%/*}"
-          NAME="${REPO#*/}"
           NUMBER=${{ github.event.pull_request.number }}
-
-          LAST_REVIEW=$(gh api repos/$OWNER/$NAME/pulls/$NUMBER/reviews --jq '.[-1]')
-
-          REVIEW_BODY=$(echo "$LAST_REVIEW" | jq -r '.body // empty')
-          REVIEW_AUTHOR=$(echo "$LAST_REVIEW" | jq -r '.user.login // empty')
-          REVIEW_STATE=$(echo "$LAST_REVIEW" | jq -r '.state // empty')
-
-          COMMENT_TEXT=""
-          if [ -n "$REVIEW_BODY" ] && [ "$REVIEW_STATE" != "COMMENTED" ]; then
-            # Додаємо тільки якщо review не пустий і був APPROVED або CHANGES_REQUESTED
-            COMMENT_TEXT=$(printf "\n📝 Коментар перед закриттям (від @%s):\n%s" "$REVIEW_AUTHOR" "$REVIEW_BODY")
+          DESCRIPTION="${{ github.event.pull_request.body }}"
+          DESC_TEXT=""
+          if [ -n "$DESCRIPTION" ]; then
+            DESC_TEXT="*Опис:* $DESCRIPTION"
           fi
 
           MESSAGE=$(cat <<EOF
           🔴 Pull Request *#${NUMBER}* був закритий без merge
-
-          Автор: ${{ github.event.pull_request.user.login }}
+          
           $DESC_TEXT
-          $COMMENT_TEXT
           🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
           EOF
           )
