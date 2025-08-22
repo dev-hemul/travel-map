@@ -86,7 +86,7 @@ jobs:
 
           COMMENT_TEXT=""
           if [ -n "$COMMENT_BODY" ]; then
-          COMMENT_TEXT=$(printf "\n📝 Коментар перед закриттям (від @%s):\n%s" "$COMMENT_AUTHOR" "$COMMENT_BODY")
+          COMMENT_TEXT=$(printf "\n-----------------------------------------------------------\n📝 Коментар скасованого PR (від @%s):\n```\n%s\n```" "$COMMENT_AUTHOR" "$COMMENT_BODY")
           fi
 
           MESSAGE=$(cat <<EOF
