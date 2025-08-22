@@ -7,8 +7,8 @@ import createHttpError from 'http-errors';
 import morgan from 'morgan';
 
 // Роути
-import announcementsRouter from './routes/annoucementsAdding.js';
 import getReportsRouter from './routes/main.js';
+import announcementsRouter from './routes/annoucementsAdding.js';
 import marker from './routes/markerRouter.js';
 import profileEdditRouter from './routes/profileChanges.js';
 import supportRouter from './routes/support.js';
