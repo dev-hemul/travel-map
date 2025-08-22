@@ -19,9 +19,9 @@ router.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-router.post('/marker', createMarker); // Создание
-router.get('/markers', getMarkers); // Чтение
-router.put('/marker/:id', updateMarker); // Обновление
-router.delete('/marker/:id', deleteMarker); // Удаление
+router.post('/marker', createMarker);
+router.get('/markers', getMarkers);
+router.put('/marker/:id', updateMarker);
+router.delete('/marker/:id', deleteMarker);
 
 export default router;

@@ -20,13 +20,12 @@ const storage = new CloudinaryStorage({
       folder: 'mediafiles-marker',
       resource_type: 'auto',
       allowed_formats: ['jpg', 'png', 'jpeg', 'gif', 'webp', 'mp4', 'mov', 'webm'],
-      // Применяем трансформации только к изображениям
       transformation: isImage
         ? [
             {
               width: 800,
               height: 600,
-              crop: 'limit', // Сохраняет пропорции, не превышает указанные размеры
+              crop: 'limit',
               quality: 'auto:good',
               fetch_format: 'auto',
             },
@@ -39,7 +38,7 @@ const storage = new CloudinaryStorage({
 const upload = multer({
   storage,
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB лимит
+    fileSize: 50 * 1024 * 1024,
   },
 });
 

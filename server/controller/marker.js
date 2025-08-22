@@ -1,13 +1,10 @@
 // server/controllers/markerController.js
 import Marker from '../model/marker.js';
 
-// Создание нового маркера
 export const createMarker = async (req, res) => {
   try {
-    // Если пришёл файл от multer/cloudinary — берём URL
     const avatarUrl = req.file ? req.file.path || req.file.url : '';
 
-    // Нормализация данных из body (поддержка как JSON, так и multipart/form-data)
     const {
       title,
       category,
@@ -20,9 +17,7 @@ export const createMarker = async (req, res) => {
     } = req.body;
 
     if (!title || !category || lat === undefined || lng === undefined) {
-      return res
-        .status(400)
-        .json({ error: 'Отсутствуют обязательные поля: title, category, lat, lng' });
+      return res.status(400).json({ error: 'Відсутні обовязкові поля: title, category, lat, lng' });
     }
 
     const normalizeArray = v => {
@@ -57,7 +52,6 @@ export const createMarker = async (req, res) => {
   }
 };
 
-// Получение всех маркеров
 export const getMarkers = async (req, res) => {
   try {
     const markers = await Marker.find();
@@ -67,13 +61,12 @@ export const getMarkers = async (req, res) => {
   }
 };
 
-// Обновление маркера
 export const updateMarker = async (req, res) => {
   try {
     const { id } = req.params;
     const updatedMarker = await Marker.findByIdAndUpdate(id, req.body, { new: true });
     if (!updatedMarker) {
-      return res.status(404).json({ error: 'Маркер не найден' });
+      return res.status(404).json({ error: 'Маркер не знайдений' });
     }
     res.status(200).json(updatedMarker);
   } catch (error) {
@@ -81,15 +74,14 @@ export const updateMarker = async (req, res) => {
   }
 };
 
-// Удаление маркера (пустая болванка)
 export const deleteMarker = async (req, res) => {
   try {
     const { id } = req.params;
     const deletedMarker = await Marker.findByIdAndDelete(id);
     if (!deletedMarker) {
-      return res.status(404).json({ error: 'Маркер не найден' });
+      return res.status(404).json({ error: 'Маркер не знайдений' });
     }
-    res.status(200).json({ message: 'Маркер удалён' });
+    res.status(200).json({ message: 'Маркер видалений' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
