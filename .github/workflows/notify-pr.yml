@@ -79,7 +79,8 @@ jobs:
           NUMBER=${{ github.event.pull_request.number }}
 
           # Берем последний комментарий к PR (issue comment)
-          LAST_COMMENT=$(gh api repos/$OWNER/$NAME/issues/$NUMBER/comments --jq '.[-1]')
+          LAST_COMMENT=$(gh api repos/$OWNER/$NAME/issues/$NUMBER/comments \
+          --jq '[.[] | select(.body != "" and .body != "'"$DESCRIPTION"'")] | .[-1]')
           COMMENT_BODY=$(echo "$LAST_COMMENT" | jq -r '.body // empty')
           COMMENT_AUTHOR=$(echo "$LAST_COMMENT" | jq -r '.user.login // empty')
 
@@ -88,8 +89,8 @@ jobs:
           CLEAN_COMMENT=$(echo "$COMMENT_BODY" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 
           COMMENT_TEXT=""
-          if [ -n "$CLEAN_COMMENT" ] && [ "$CLEAN_COMMENT" != "$CLEAN_DESCRIPTION" ]; then
-          COMMENT_TEXT=$(printf "\n-----------------------------------------------------------\n📝 Коментар скасованого PR (від @%s):\n```\n%s\n```" "$COMMENT_AUTHOR" "$CLEAN_COMMENT")
+          if [ -n "$COMMENT_BODY" ]; then
+          COMMENT_TEXT=$(printf "\n-----------------------------------------------------------\n📝 Коментар скасованого PR (від @%s):\n```\n%s\n```" "$COMMENT_AUTHOR" "$COMMENT_BODY")
           fi
 
           MESSAGE=$(cat <<EOF
