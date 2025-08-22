@@ -81,6 +81,7 @@ jobs:
           # Берем последний комментарий к PR (issue comment)
           LAST_COMMENT=$(gh api repos/$OWNER/$NAME/issues/$NUMBER/comments \
           --jq '[.[] | select(.body != "" and .body != "'"$DESCRIPTION"'")] | .[-1]')
+          
           COMMENT_BODY=$(echo "$LAST_COMMENT" | jq -r '.body // empty')
           COMMENT_AUTHOR=$(echo "$LAST_COMMENT" | jq -r '.user.login // empty')
 
