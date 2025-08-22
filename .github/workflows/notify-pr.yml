@@ -85,13 +85,9 @@ jobs:
           COMMENT_BODY=$(echo "$LAST_COMMENT" | jq -r '.body // empty')
           COMMENT_AUTHOR=$(echo "$LAST_COMMENT" | jq -r '.user.login // empty')
 
-          # Убираем пробелы/переносы для корректного сравнения
-          CLEAN_DESCRIPTION=$(echo "$DESCRIPTION" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-          CLEAN_COMMENT=$(echo "$COMMENT_BODY" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-
           COMMENT_TEXT=""
           if [ -n "$COMMENT_BODY" ]; then
-            COMMENT_TEXT=$(printf "📝 Коментар скасованого PR (від @%s):\n```\n%s\n```" "$COMMENT_AUTHOR" "$COMMENT_BODY")
+          COMMENT_TEXT=$(printf "📝 Коментар скасованого PR (від @%s):\n```\n%s\n```" "$COMMENT_AUTHOR" "$COMMENT_BODY")
           fi
 
           MESSAGE=$(cat <<EOF
