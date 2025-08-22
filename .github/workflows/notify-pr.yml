@@ -91,14 +91,12 @@ jobs:
 
           COMMENT_TEXT=""
           if [ -n "$COMMENT_BODY" ]; then
-            COMMENT_TEXT=$(printf "-----------------------------------------------------------\n📝 Коментар скасованого PR (від @%s):\n" "$COMMENT_AUTHOR" "$COMMENT_BODY")
+            COMMENT_TEXT=$(printf "📝 Коментар скасованого PR (від @%s):\n```\n%s\n```" "$COMMENT_AUTHOR" "$COMMENT_BODY")
           fi
 
           MESSAGE=$(cat <<EOF
           🔴 Pull Request *#${NUMBER}* був закритий без merge
 
-          Автор: ${{ github.event.pull_request.user.login }}
-          $DESC_TEXT
           $COMMENT_TEXT
           🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
           EOF
