@@ -79,10 +79,9 @@ jobs:
           NAME="${REPO#*/}"
           NUMBER=${{ github.event.pull_request.number }}
 
-          LAST_REVIEW=$(gh api repos/$OWNER/$NAME/pulls/$NUMBER/reviews --jq '.[-1]')
-
-          REVIEW_BODY=$(echo "$LAST_REVIEW" | jq -r '.body // empty')
-          REVIEW_AUTHOR=$(echo "$LAST_REVIEW" | jq -r '.user.login // empty')
+          LAST_COMMENT=$(gh api repos/$OWNER/$NAME/pulls/$NUMBER/comments --jq '.[-1]')
+          REVIEW_BODY=$(echo "$LAST_COMMENT" | jq -r '.body // empty')
+          REVIEW_AUTHOR=$(echo "$LAST_COMMENT" | jq -r '.user.login // empty')
           REVIEW_STATE=$(echo "$LAST_REVIEW" | jq -r '.state // empty')
 
           COMMENT_TEXT=""
