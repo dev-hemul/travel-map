@@ -17,7 +17,7 @@ jobs:
           DESCRIPTION="${{ github.event.pull_request.body }}"
           DESC_TEXT=""
           if [ -n "$DESCRIPTION" ]; then
-            DESC_TEXT="*Опис:* $DESCRIPTION\n"
+            DESC_TEXT="*Опис:* $DESCRIPTION"
           fi
 
           MESSAGE=$(cat <<EOF
