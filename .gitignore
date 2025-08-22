@@ -13,6 +13,7 @@ dist
 .env.production
 .env.development
 dist-ssr
+./keys
 *.local
 
 # Editor directories and files

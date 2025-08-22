@@ -17,5 +17,7 @@
     "globals": "^16.1.0",
     "prettier": "^3.5.3"
   },
-  "dependencies": {}
+  "dependencies": {
+    "react-toastify": "^11.0.5"
+  }
 }
