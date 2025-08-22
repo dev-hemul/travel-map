@@ -89,7 +89,7 @@ jobs:
 
           COMMENT_TEXT=""
           if [ -n "$CLEAN_COMMENT" ] && [ "$CLEAN_COMMENT" != "$CLEAN_DESCRIPTION" ]; then
-            COMMENT_TEXT=$(printf "\n-----------------------------------------------------------\n📝 Коментар скасованого PR (від @%s):\n```\n%s\n```" "$COMMENT_AUTHOR" "$CLEAN_COMMENT")
+          COMMENT_TEXT=$(printf "\n-----------------------------------------------------------\n📝 Коментар скасованого PR (від @%s):\n```\n%s\n```" "$COMMENT_AUTHOR" "$CLEAN_COMMENT")
           fi
 
           MESSAGE=$(cat <<EOF
