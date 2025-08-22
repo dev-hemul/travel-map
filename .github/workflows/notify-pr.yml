@@ -2,20 +2,24 @@ name: Notify team on PR events
 on:
   pull_request:
     types: [opened, reopened, closed]
+  issue_comment:
+    types: [created]
 
 jobs:
   notify:
     runs-on: ubuntu-latest
 
     steps:
+      # -----------------------------
+      # PR открыт или переоткрыт
+      # -----------------------------
       - name: 🔵 Notify when PR opened or reopened
-        if: ${{ github.event.action == 'opened' || github.event.action == 'reopened' }}
+        if: ${{ github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened') }}
         run: |
           DESCRIPTION="${{ github.event.pull_request.body }}"
+          DESC_TEXT=""
           if [ -n "$DESCRIPTION" ]; then
-            DESC_TEXT=$(printf "*Опис:* %s\n" "$DESCRIPTION")
-          else
-            DESC_TEXT=""
+            DESC_TEXT="*Опис:* $DESCRIPTION\n"
           fi
 
           MESSAGE=$(cat <<EOF
@@ -25,8 +29,9 @@ jobs:
           *Гілка:* ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}
           $DESC_TEXT
           🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
+
           -----------------------------------------------------------
-          💡 А ти перевірив свій код і текст задачі?)
+          💡 А ти перевірив свій код і текст задачі?
           EOF
           )
 
@@ -35,14 +40,16 @@ jobs:
             --data-urlencode "parse_mode=Markdown" \
             --data-urlencode "text=$MESSAGE"
 
+      # -----------------------------
+      # PR замержен
+      # -----------------------------
       - name: 🟢 Notify when PR merged
-        if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == true }}
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true }}
         run: |
           DESCRIPTION="${{ github.event.pull_request.body }}"
+          DESC_TEXT=""
           if [ -n "$DESCRIPTION" ]; then
             DESC_TEXT="*Опис:* $DESCRIPTION\n"
-          else
-            DESC_TEXT=""
           fi
 
           MESSAGE=$(cat <<EOF
@@ -61,40 +68,53 @@ jobs:
             --data-urlencode "parse_mode=Markdown" \
             --data-urlencode "text=$MESSAGE"
 
-      - name: 🔴 Notify when PR closed without merge (with review comment)
-        if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == false }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # -----------------------------
+      # PR закрыт без merge
+      # -----------------------------
+      - name: 🔴 Notify when PR closed without merge
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == false }}
         run: |
+          NUMBER=${{ github.event.pull_request.number }}
           DESCRIPTION="${{ github.event.pull_request.body }}"
+          DESC_TEXT=""
           if [ -n "$DESCRIPTION" ]; then
             DESC_TEXT="*Опис:* $DESCRIPTION\n"
-          else
-            DESC_TEXT=""
-          fi
-
-          REPO="${{ github.repository }}"
-          OWNER="${REPO%%/*}"
-          NAME="${REPO#*/}"
-          NUMBER=${{ github.event.pull_request.number }}
-
-          # Берем последний комментарий к PR (issue comment)
-          LAST_COMMENT=$(gh api repos/$OWNER/$NAME/issues/$NUMBER/comments \
-          --jq '[.[] | select(.body != "" and .body != "'"$DESCRIPTION"'")] | .[-1]')
-          
-          COMMENT_BODY=$(echo "$LAST_COMMENT" | jq -r '.body // empty')
-          COMMENT_AUTHOR=$(echo "$LAST_COMMENT" | jq -r '.user.login // empty')
-
-          COMMENT_TEXT=""
-          if [ -n "$COMMENT_BODY" ]; then
-          COMMENT_TEXT=$(printf "📝 Коментар скасованого PR (від @%s):\n```\n%s\n```" "$COMMENT_AUTHOR" "$COMMENT_BODY")
           fi
 
           MESSAGE=$(cat <<EOF
           🔴 Pull Request *#${NUMBER}* був закритий без merge
-
-          $COMMENT_TEXT
+          
+          $DESC_TEXT
           🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
+          EOF
+          )
+
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendMessage" \
+            --data-urlencode "chat_id=${{ secrets.TG_CHAT_ID }}" \
+            --data-urlencode "parse_mode=Markdown" \
+            --data-urlencode "text=$MESSAGE"
+
+      # -----------------------------
+      # Комментарий к PR (включая Close with comment)
+      # -----------------------------
+      - name: 📝 Notify comment on PR
+        if: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request }}
+        run: |
+          COMMENT_BODY="${{ github.event.comment.body }}"
+          COMMENT_AUTHOR="${{ github.event.comment.user.login }}"
+          PR_NUMBER="${{ github.event.issue.number }}"
+          PR_URL="https://github.com/${{ github.repository }}/pull/${PR_NUMBER}}"
+
+          # Игнорируем пустые комментарии
+          if [ -z "$COMMENT_BODY" ]; then
+            exit 0
+          fi
+
+          COMMENT_TEXT=$(printf "📝 Коментар PR (від @%s):\n```\n%s\n```" "$COMMENT_AUTHOR" "$COMMENT_BODY")
+
+          MESSAGE=$(cat <<EOF
+          $COMMENT_TEXT
+          🔗 [Дивитись PR]($PR_URL)
           EOF
           )
 
