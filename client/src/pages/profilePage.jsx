@@ -11,7 +11,8 @@ import {
   FiMessageCircle,
   FiUsers,
   FiMenu,
-  FiX
+  FiX,
+  FiMap
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
@@ -150,6 +151,10 @@ const ProfilePage = () => {
             grid-template-columns: 1fr 2fr;
             gap: 1.5rem;
           }
+          .avatar-block {
+            width: 100%;
+            margin-left: 1%;
+          }
         }
         
         @media (max-width: 768px) {
@@ -171,8 +176,8 @@ const ProfilePage = () => {
         
         @media (max-width: 576px) {
           .avatar-container {
-            width: 100px;
-            height: 100px;
+            width: [50%];
+            height: [50%];
           }
           
           .input-grid {
@@ -182,6 +187,10 @@ const ProfilePage = () => {
           .top-bar-items {
             flex-wrap: wrap;
             justify-content: center;
+          }
+          .back-to-map-button {
+            width: 100%;
+            
           }
         }
       `}</style>
@@ -208,10 +217,10 @@ const ProfilePage = () => {
               color: "#744ce9",
             }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2 text-sm bg-[#744ce9] text-white px-4 py-2 rounded-md shadow transition-all duration-50 cursor-pointer border-2 border-[#744ce9] w-full sm:w-auto justify-center"
+            className="flex items-center gap-2 text-sm bg-[#744ce9] text-white px-4 py-2 rounded-md shadow transition-all duration-50 cursor-pointer border-2 border-[#744ce9] w-full sm:w-auto justify-center back-to-map-button"
           >
-            <FiArrowLeft />
-            {!isXSmallScreen && "Повернутись до карти"}
+            <FiArrowLeft size={20} />
+            {!isXSmallScreen ? "Повернутись до карти" : <FiMap size={20} />}
           </motion.button>
         </div>
 
@@ -296,7 +305,7 @@ const ProfilePage = () => {
           transition={{ duration: 0.5 }}
           className="grid responsive-grid gap-8"
         >
-          <div className="flex flex-col items-center justify-start bg-[#F4EFFF] rounded-xl p-6 shadow-lg">
+          <div className="flex flex-col items-center justify-start bg-[#F4EFFF] rounded-xl p-6 shadow-lg w-[40%] ml-[30%] avatar-block">
             <div className="w-full h-10"></div>
             <div className="relative group avatar-container rounded-full overflow-hidden bg-white flex items-center justify-center shadow-md cursor-pointer mx-auto"
                  style={{ 
