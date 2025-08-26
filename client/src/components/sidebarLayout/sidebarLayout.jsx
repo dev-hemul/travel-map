@@ -29,7 +29,7 @@ const SidebarLayout = ({ children }) => {
       setShowToggleButton(true);
     } else {
       // Для екранів між 768px і 1200px
-      setIsSidebarOpen(true);
+      setIsSidebarOpen(false);
       setShowToggleButton(true);
     }
   }, [windowWidth]);
