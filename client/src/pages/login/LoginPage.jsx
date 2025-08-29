@@ -60,7 +60,7 @@ const LoginPage = () => {
       }
       try {
         console.log('Відправка на /api/register...');
-        const response = await axios.post('http://localhost:4000/api/register', {
+        const response = await axios.post('http://localhost:4000/register', {
           username: formData.username,
           email: formData.email,
           password: formData.password,
@@ -92,7 +92,7 @@ const LoginPage = () => {
       }
       try {
         console.log('Відправка на /api/login...');
-        const response = await axios.post('http://localhost:4000/api/login', {
+        const response = await axios.post('http://localhost:4000/login', {
           email: formData.email,
           password: formData.password,
         });
