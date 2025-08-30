@@ -13,8 +13,12 @@ dist
 .env.production
 .env.development
 dist-ssr
-./keys
 *.local
+
+# Ігнорування ключів
+server/keys/privateKey.pem
+server/keys/publicKey.pem
+
 
 # Editor directories and files
 .vscode/*
