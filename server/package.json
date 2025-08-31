@@ -19,7 +19,6 @@
     "dotenv": "^16.5.0",
     "express": "4.21.0",
     "express-rate-limit": "^7.5.0",
-    "fs": "^0.0.1-security",
     "grammy": "^1.36.3",
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^9.0.2",

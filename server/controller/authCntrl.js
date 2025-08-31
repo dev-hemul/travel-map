@@ -87,7 +87,6 @@ export const getRefreshToken = async (req, res) => {
     const tokenDoc = await Tokens.findOne({ token: refreshToken });
     if (!tokenDoc) return res.status(403).json({ message: 'Invalid refresh token' });
 
-    const decoded = verifyToken(tokenDoc.jti); // Перевірка jti
     const user = await User.findById(tokenDoc.params.iss);
 
     if (!user || user.refreshToken !== refreshToken) return res.status(403).json({ message: 'Invalid refresh token' });
