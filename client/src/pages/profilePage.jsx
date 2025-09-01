@@ -121,6 +121,7 @@ const ProfilePage = () => {
         }
         @media (min-width: 640px) and (max-width: 767px) {
           .responsive-grid { grid-template-columns: 1fr; gap: 1rem; }
+          .container { width: 90%; margin-left: 9%;}
         }
         @media (max-width: 639px) {
           .responsive-grid { grid-template-columns: 1fr; gap: 1rem; }

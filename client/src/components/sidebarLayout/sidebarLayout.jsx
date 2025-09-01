@@ -37,7 +37,7 @@ const SidebarLayout = ({ children }) => {
   const baseLinkStyles = "py-2 px-4 rounded-lg flex items-center transition-all duration-200 ease-in-out";
 
   const activeStyle = ({ isActive }) => {
-    if (windowWidth < breakPoint640 && isSidebarOpen) {
+    if (windowWidth < breakPoint768 && isSidebarOpen) {
       return `${baseLinkStyles} ${
         isActive
           ? "bg-[#744ce9] text-white"
@@ -68,7 +68,7 @@ const SidebarLayout = ({ children }) => {
   return (
     <div className="flex min-h-screen bg-[#F3F3F3]">
       {/* Mobile toggle button when sidebar is closed */}
-      {windowWidth < breakPoint640 && !isSidebarOpen && (
+      {windowWidth < breakPoint768 && !isSidebarOpen && (
         <button
           onClick={() => setIsSidebarOpen(true)}
           className="fixed top-4 left-1 z-60 w-10 h-10 bg-[#744ce9] text-white rounded-full flex items-center justify-center shadow-lg"
@@ -82,11 +82,11 @@ const SidebarLayout = ({ children }) => {
       <motion.div
         className="fixed left-0 top-0 h-full bg-white p-6 flex flex-col shadow-lg z-50"
         animate={{ 
-          width: windowWidth < breakPoint640 ? (isSidebarOpen ? "100%" : 0) : (isSidebarOpen ? 256 : 64)
+          width: windowWidth < breakPoint768 ? (isSidebarOpen ? "100%" : 0) : (isSidebarOpen ? 256 : 64)
         }}
         transition={{ type: "tween", duration: 0.3 }}
       >
-        {showToggleButton && windowWidth >= breakPoint640 && (
+        {showToggleButton && windowWidth >= breakPoint768 && (
           <motion.button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="absolute top-4 z-50 w-8 h-8 bg-[#744ce9] text-white rounded-full flex items-center justify-center shadow-lg"
@@ -98,7 +98,7 @@ const SidebarLayout = ({ children }) => {
         )}
 
         {/* Mobile close button */}
-        {windowWidth < breakPoint640 && isSidebarOpen && (
+        {windowWidth < breakPoint768 && isSidebarOpen && (
           <button
             onClick={() => setIsSidebarOpen(false)}
             className="absolute top-4 right-4 z-50 w-10 h-10 bg-[#744ce9] text-white rounded-full flex items-center justify-center shadow-lg"
@@ -132,7 +132,7 @@ const SidebarLayout = ({ children }) => {
                 key={link.to} 
                 to={link.to} 
                 className={activeStyle}
-                onClick={() => windowWidth < breakPoint640 && setIsSidebarOpen(false)}
+                onClick={() => windowWidth < breakPoint768 && setIsSidebarOpen(false)}
               >
                 <div className="flex items-center">
                   {link.icon}
@@ -156,12 +156,12 @@ const SidebarLayout = ({ children }) => {
 
       <motion.div
         animate={{ 
-          marginLeft: windowWidth < breakPoint640 ? 0 : (isSidebarOpen ? 256 : 64),
-          opacity: windowWidth < breakPoint640 && isSidebarOpen ? 0.3 : 1
+          marginLeft: windowWidth < breakPoint768 ? 0 : (isSidebarOpen ? 256 : 64),
+          opacity: windowWidth < breakPoint768 && isSidebarOpen ? 0.3 : 1
         }}
         transition={{ type: "tween", duration: 0.3 }}
         className="flex-1 p-8"
-        onClick={() => windowWidth < breakPoint640 && isSidebarOpen && setIsSidebarOpen(false)}
+        onClick={() => windowWidth < breakPoint768 && isSidebarOpen && setIsSidebarOpen(false)}
       >
         {children}
       </motion.div>
