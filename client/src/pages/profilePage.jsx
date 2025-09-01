@@ -108,7 +108,7 @@ const ProfilePage = () => {
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   return (
-    <div className="min-h-full mx-auto px-4 py-8 bg-white rounded-lg mb-10">
+    <div className="min-h-full mx-auto px-4 py-8 bg-white rounded-lg mb-10 container">
       <style jsx>{`
         :focus:not(:focus-visible) { outline: none; box-shadow: none; }
         :focus-visible { outline: 2px solid #744ce9; outline-offset: 2px; border-radius: 0.375rem; }
@@ -124,6 +124,7 @@ const ProfilePage = () => {
         }
         @media (max-width: 639px) {
           .responsive-grid { grid-template-columns: 1fr; gap: 1rem; }
+          .container { width: 90%; margin-left: 9%;}
         }
       `}</style>
 
