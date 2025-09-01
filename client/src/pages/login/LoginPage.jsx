@@ -45,7 +45,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Форма відправлена, isRegister:', isRegister); // Діагностика
+    console.log('Форма відправлена, isRegister:', isRegister); 
     console.log('Дані форми:', formData);
 
     if (isRegister) {
@@ -59,7 +59,7 @@ const LoginPage = () => {
         return;
       }
       try {
-        console.log('Відправка на /api/register...');
+        console.log('Відправка на /register...');
         const response = await axios.post('http://localhost:4000/register', {
           username: formData.username,
           email: formData.email,
@@ -74,15 +74,9 @@ const LoginPage = () => {
           navigate('/profile');
         }, 2000);
       } catch (error) {
-        const field = error.response?.data?.field;
-        if(field === 'email') {
-          notifyCurrentEmailErr();
-        } else if (field === 'username') {
-          notifyCurrentLoginErr();
-        } else if (field === 'serverRegisterError') {
-          notifyServerErr();
-        }
-        
+        console.log('Помилка реєстрації:', error.response?.data);
+        const message = error.response?.data?.message || 'Помилка сервера';
+        toast.error(message); // Просте виведення повідомлення
       }
     } else {
       // Логіка входу
@@ -91,7 +85,7 @@ const LoginPage = () => {
         return;
       }
       try {
-        console.log('Відправка на /api/login...');
+        console.log('Відправка на /login...');
         const response = await axios.post('http://localhost:4000/login', {
           email: formData.email,
           password: formData.password,
@@ -105,14 +99,9 @@ const LoginPage = () => {
           navigate('/profile');
         }, 2000);
       } catch (error) {
-        const field = error.response?.data?.field;
-        if(field === 'unknown') {
-          notifyCurrentUserDoesntExist();
-        } else if(field === 'serverLoginError'){
-          notifyServerErr();
-        } else if(field === 'wrongPassword'){
-          notifyWrongPasswordErr();
-        }
+        console.log('Помилка входу:', error.response?.data);
+        const message = error.response?.data?.message || 'Помилка сервера';
+        toast.error(message); // Просте виведення повідомлення
       }
     }
   };
