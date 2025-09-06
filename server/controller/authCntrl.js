@@ -3,13 +3,13 @@ import jwt from 'jsonwebtoken';
 import { nanoid } from 'nanoid';
 import User from '../model/user.js';
 import Tokens from '../model/token.js';
-import { readFileSync } from 'fs'; // Залишаємо fs
+import { readFileSync } from 'fs';
 
 const privateKey = readFileSync('keys/privateKey.pem', 'utf8');
 const publicKey = readFileSync('keys/publicKey.pem', 'utf8');
 const alg = 'RS512';
-const lifedur = 15 * 60 * 1000; // 15 хвилин для access token
-const refreshLifedur = 7 * 24 * 60 * 60 * 1000; // 7 днів для refresh token
+const lifedur = 1 * 60 * 1000; // 1 minute for access token
+const refreshLifedur = 2 * 60 * 1000; // 2 minutes for refresh token
 
 if (!privateKey || !publicKey) {
   throw new Error('Ключі не ініціалізовані в файлах keys/');
@@ -27,18 +27,24 @@ export const register = async (req, res) => {
     const user = new User({ username, email, password: hashedPassword, provider: 'local' });
     await user.save();
 
+    // Delete any existing tokens for this user
+    await Tokens.deleteMany({ userId: user._id });
+
     const { accessT, refreshT } = await createTokens(user._id);
-    if (!refreshT || !accessT) throw new Error('Помилка генерації токенів');
 
-    await Tokens.create({ refreshToken: refreshT, userId: user._id, expiresAt: Date.now() + refreshLifedur });
-
+    // Set cookie using res.cookie
     res.cookie('refreshToken', refreshT, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      httpOnly: false, // Set to false for testing
+      secure: false, 
+      sameSite: 'lax', 
       maxAge: refreshLifedur,
     });
-    res.status(200).json({ accessToken: accessT, user: { id: user._id, username, email } });
+
+    console.log('Register: Cookie встановлено:', refreshT);
+    res.status(200).json({ 
+      accessToken: accessT, 
+      user: { id: user._id, username, email } 
+    });
   } catch (error) {
     console.error('Register error:', error);
     res.status(500).json({ message: 'Помилка сервера' });
@@ -48,25 +54,122 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: 'Такого користувача не існує' });
-    if (!await bcrypt.compare(password, user.password)) return res.status(401).json({ message: 'Неправильний пароль' });
+    if (!user) {
+      return res.status(404).json({ message: 'Такого користувача не існує' });
+    }
+    
+    if (!await bcrypt.compare(password, user.password)) {
+      return res.status(401).json({ message: 'Неправильний пароль' });
+    }
+
+    // Delete old tokens
+    await Tokens.deleteMany({ userId: user._id });
 
     const { accessT, refreshT } = await createTokens(user._id);
-    if (!refreshT || !accessT) throw new Error('Помилка генерації токенів');
 
-    await Tokens.create({ refreshToken: refreshT, userId: user._id, expiresAt: Date.now() + refreshLifedur });
-
+    // Set cookie using res.cookie (NOT setHeader)
     res.cookie('refreshToken', refreshT, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      httpOnly: false, // Set to false for testing so you can see it in document.cookie
+      secure: false,
+      sameSite: 'lax',
       maxAge: refreshLifedur,
     });
-    res.json({ accessToken: accessT, user: { id: user._id, username: user.username, email: user.email } });
+    console.log('Login: Cookie встановлено:', refreshT);
+    
+    res.json({ 
+      accessToken: accessT, 
+      user: { 
+        id: user._id, 
+        username: user.username, 
+        email: user.email 
+      }
+    });
+    
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Помилка сервера' });
+  }
+};
+
+export const getRefreshToken = async (req, res) => {
+  try {
+    console.log('=== DEBUG INFO ===');
+    console.log('All headers:', req.headers);
+    console.log('Cookie header:', req.headers.cookie);
+    console.log('Parsed cookies from cookieParser:', req.cookies);
+    
+    // Try multiple ways to get refresh token
+    let refreshToken = null;
+    
+    // Method 1: cookieParser
+    if (req.cookies && req.cookies.refreshToken) {
+      refreshToken = req.cookies.refreshToken;
+      console.log('Found via cookieParser:', refreshToken);
+    }
+    
+    // Method 2: manual parsing
+    if (!refreshToken && req.headers.cookie) {
+      const cookies = req.headers.cookie.split('; ');
+      const refreshCookie = cookies.find(row => row.startsWith('refreshToken='));
+      if (refreshCookie) {
+        refreshToken = refreshCookie.split('=')[1];
+        console.log('Found via manual parsing:', refreshToken);
+      }
+    }
+    
+    console.log('Final refreshToken:', refreshToken);
+    
+    if (!refreshToken) {
+      console.log('No refresh token found, returning 400');
+      return res.status(400).json({ message: 'Refresh token required' });
+    }
+
+    // Find token in database
+    const tokenDoc = await Tokens.findOne({ refreshToken });
+    if (!tokenDoc) {
+      console.log('Token not found in database');
+      return res.status(403).json({ message: 'Invalid refresh token' });
+    }
+
+    // Check if expired
+    if (tokenDoc.expiresAt < Date.now()) {
+      console.log('Token expired');
+      await Tokens.findByIdAndDelete(tokenDoc._id);
+      return res.status(403).json({ message: 'Refresh token expired' });
+    }
+
+    // Find user
+    const user = await User.findById(tokenDoc.userId);
+    if (!user) {
+      console.log('User not found');
+      return res.status(403).json({ message: 'User not found' });
+    }
+
+    // Delete old token
+    await Tokens.findByIdAndDelete(tokenDoc._id);
+
+    // Generate new tokens
+    const { accessT, refreshT } = await createTokens(user._id);
+
+    // Set new refresh token cookie
+    res.cookie('refreshToken', refreshT, {
+      httpOnly: false, // Set to false for testing so you can see it in document.cookie
+      secure: false,
+      sameSite: 'lax',
+      maxAge: refreshLifedur,
+    });
+    console.log('New tokens generated and cookie set');
+    
+    res.status(200).json({ 
+      accessToken: accessT,
+      message: 'Tokens refreshed successfully'
+    });
+
+  } catch (error) {
+    console.error('RefreshToken error:', error);
+    res.status(500).json({ message: 'Помилка оновлення токена' });
   }
 };
 
@@ -92,50 +195,20 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-export const getRefreshToken = async (req, res) => {
-  try {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) return res.status(400).json({ message: 'Refresh token required' });
-
-    const tokenDoc = await Tokens.findOne({ refreshToken });
-    if (!tokenDoc) return res.status(403).json({ message: 'Invalid refresh token' });
-
-    const user = await User.findById(tokenDoc.userId);
-    if (!user) return res.status(403).json({ message: 'Invalid refresh token' });
-
-    await Tokens.findByIdAndDelete(tokenDoc._id); // Видаляємо старий
-
-    const { accessT, refreshT } = await createTokens(user._id);
-    if (!refreshT || !accessT) throw new Error('Помилка генерації токенів');
-
-    await Tokens.create({ refreshToken: refreshT, userId: user._id, expiresAt: Date.now() + refreshLifedur });
-
-    res.cookie('refreshToken', refreshT, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: refreshLifedur,
-    });
-
-    res.status(200).json({ accessToken: accessT });
-  } catch (error) {
-    console.error('RefreshToken error:', error);
-    res.status(500).json({ message: 'Помилка оновлення токена' });
-  }
-};
-
 export const logout = async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'Токен не надано' });
 
     const userId = verifyToken(token);
-    await Tokens.deleteMany({ userId }); // Видаляємо усі токени для користувача
+    await Tokens.deleteMany({ userId }); 
+    
     res.clearCookie('refreshToken', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      httpOnly: false,
+      secure: false,
+      sameSite: 'lax',
     });
+    
     res.status(200).json({ message: 'Успішний вихід' });
   } catch (error) {
     console.error('Logout error:', error);
@@ -143,7 +216,7 @@ export const logout = async (req, res) => {
   }
 };
 
-// Функції для створення та верифікації токенів
+// Helper functions
 const createAccessT = (payload) => {
   const expiration = Math.floor(Date.now() / 1000) + Math.floor(lifedur / 1000);
   payload.exp = expiration;
@@ -151,16 +224,24 @@ const createAccessT = (payload) => {
   return { token };
 };
 
-const createRefreshT = async (userId) => {
-  const refreshToken = nanoid();
-  await Tokens.create({ refreshToken, userId, expiresAt: Date.now() + refreshLifedur });
-  return refreshToken;
+const createRefreshT = (userId) => {
+  return nanoid();
 };
 
 const createTokens = async (userId) => {
   if (!userId) throw new Error('userId is undefined');
+  
   const { token: accessT } = createAccessT({ iss: userId });
-  const refreshT = await createRefreshT(userId);
+  const refreshT = createRefreshT(userId);
+  
+  // Create token in database
+  await Tokens.create({ 
+    refreshToken: refreshT, 
+    userId, 
+    expiresAt: Date.now() + refreshLifedur 
+  });
+  
+  console.log('Tokens created:', { accessT: accessT.substring(0, 20) + '...', refreshT });
   return { accessT, refreshT };
 };
 

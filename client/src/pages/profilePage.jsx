@@ -112,6 +112,24 @@ const ProfilePage = () => {
       `}</style>
 
       {/* Топ-бар */}
+      <button onClick={async () => {
+    try {
+        // Add more debugging
+        console.log('Document cookies:', document.cookie);
+        
+        const response = await axios.post('http://localhost:4000/refresh-token', {}, { 
+            withCredentials: true,
+            headers: { 
+                'Content-Type': 'application/json' 
+            }
+        });
+        
+        localStorage.setItem('accessToken', response.data.accessToken);
+        console.log('Відповідь:', response.data);
+    } catch (error) {
+        console.error('Помилка:', error.response?.data, error.response?.headers, error.response?.status);
+    }
+}}>Оновити токен</button>
       <div className="flex items-center justify-between bg-[#F4EFFF] rounded-xl px-4 py-2 mb-6 gap-4 border border-gray-300 shadow-lg">
         <motion.button
           onClick={() => navigate("/")}
