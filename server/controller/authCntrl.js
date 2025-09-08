@@ -8,8 +8,8 @@ import { readFileSync } from 'fs';
 const privateKey = readFileSync('keys/privateKey.pem', 'utf8');
 const publicKey = readFileSync('keys/publicKey.pem', 'utf8');
 const alg = 'RS512';
-const lifedur = 10000; // 1 minute for access token
-const refreshLifedur = 20000; // 2 minutes for refresh token
+const lifedur = 10000; // 10 sec
+const refreshLifedur = 20000; // 20 sec
 
 if (!privateKey || !publicKey) {
   throw new Error('Ключі не ініціалізовані в файлах keys/');
