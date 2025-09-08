@@ -236,30 +236,52 @@ const SidePanel = ({ isOpen, onClose, markerData, onEdit, onDelete }) => {
                 </div>
               )}
 
-              {/* Изображения */}
+              {/* Медиафайлы (изображения и видео) */}
               {markerData.fileUrls && markerData.fileUrls.length > 0 && (
                 <div>
                   <h3 className="text-base font-semibold text-gray-500 uppercase mb-2">
-                    Зображення
+                    Медіафайли
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
-                    {markerData.fileUrls.map((url, index) => (
-                      <div
-                        key={index}
-                        className="aspect-square bg-gray-100 rounded-lg overflow-hidden"
-                      >
-                        <img
-                          src={url}
-                          alt={`Зображення ${index + 1}`}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
-                          onClick={() => {
-                            if (!showDeleteConfirm && !showShareModal) {
-                              window.open(url, '_blank');
-                            }
-                          }}
-                        />
-                      </div>
-                    ))}
+                    {markerData.fileUrls.map((url, index) => {
+                      // Определяем тип файла по расширению URL
+                      const isVideo = /\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(url);
+
+                      return (
+                        <div
+                          key={index}
+                          className="bg-gray-100 rounded-lg overflow-hidden"
+                          style={{ minHeight: '120px', maxHeight: '200px' }}
+                        >
+                          {isVideo ? (
+                            <video
+                              src={url}
+                              className="w-full h-full object-contain cursor-pointer"
+                              controls
+                              preload="metadata"
+                              onClick={() => {
+                                if (!showDeleteConfirm && !showShareModal) {
+                                  window.open(url, '_blank');
+                                }
+                              }}
+                            >
+                              Ваш браузер не поддерживает воспроизведение видео.
+                            </video>
+                          ) : (
+                            <img
+                              src={url}
+                              alt={`Зображення ${index + 1}`}
+                              className="w-full h-full object-contain hover:scale-105 transition-transform cursor-pointer"
+                              onClick={() => {
+                                if (!showDeleteConfirm && !showShareModal) {
+                                  window.open(url, '_blank');
+                                }
+                              }}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
