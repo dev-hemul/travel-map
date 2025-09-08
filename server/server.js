@@ -26,20 +26,6 @@ app.use(cors({
     optionsSuccessStatus: 200
 }));
 
-// Remove your manual CORS headers since we're using the cors package
-// app.use((req, res, next) => {
-//     res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-//     res.header('Access-Control-Allow-Credentials', 'true');
-//     res.header('Access-Control-Expose-Headers', 'Set-Cookie');
-//     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-//     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-//     next();
-// });
-
-// app.options('*', (req, res) => {
-//     res.sendStatus(204);
-// });
-
 app.use(express.json());
 app.use(cookieParser());
 
@@ -56,15 +42,6 @@ app.use('/', profileEdditRouter);
 app.use('/', marker);
 app.use('/', authRouter);
 
-// app.get('/test-cookie', (req, res) => {
-//     res.cookie('testCookie', 'test123', {
-//         maxAge: 120000,
-//         httpOnly: false, // Allow JS access for testing
-//         secure: false,
-//         sameSite: 'lax'
-//     });
-//     res.send('Cookie встановлено');
-// });
 
 // Обробка 404
 app.use((req, res, next) => {

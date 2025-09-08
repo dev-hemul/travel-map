@@ -8,8 +8,8 @@ import { readFileSync } from 'fs';
 const privateKey = readFileSync('keys/privateKey.pem', 'utf8');
 const publicKey = readFileSync('keys/publicKey.pem', 'utf8');
 const alg = 'RS512';
-const lifedur = 1 * 60 * 1000; // 1 minute for access token
-const refreshLifedur = 2 * 60 * 1000; // 2 minutes for refresh token
+const lifedur = 10000; // 1 minute for access token
+const refreshLifedur = 20000; // 2 minutes for refresh token
 
 if (!privateKey || !publicKey) {
   throw new Error('Ключі не ініціалізовані в файлах keys/');
@@ -100,73 +100,41 @@ export const getRefreshToken = async (req, res) => {
     console.log('Cookie header:', req.headers.cookie);
     console.log('Parsed cookies from cookieParser:', req.cookies);
     
-    // Try multiple ways to get refresh token
     let refreshToken = null;
-    
-    // Method 1: cookieParser
+
     if (req.cookies && req.cookies.refreshToken) {
       refreshToken = req.cookies.refreshToken;
-      console.log('Found via cookieParser:', refreshToken);
+      console.log('рефрештокен:', refreshToken);
     }
+  
     
-    // Method 2: manual parsing
-    if (!refreshToken && req.headers.cookie) {
-      const cookies = req.headers.cookie.split('; ');
-      const refreshCookie = cookies.find(row => row.startsWith('refreshToken='));
-      if (refreshCookie) {
-        refreshToken = refreshCookie.split('=')[1];
-        console.log('Found via manual parsing:', refreshToken);
-      }
-    }
-    
-    console.log('Final refreshToken:', refreshToken);
-    
-    if (!refreshToken) {
-      console.log('No refresh token found, returning 400');
-      return res.status(400).json({ message: 'Refresh token required' });
-    }
+    if (!refreshToken) return res.status(400).json({ message: 'Refresh token required' });
 
-    // Find token in database
     const tokenDoc = await Tokens.findOne({ refreshToken });
-    if (!tokenDoc) {
-      console.log('Token not found in database');
-      return res.status(403).json({ message: 'Invalid refresh token' });
-    }
-
-    // Check if expired
+    if (!tokenDoc) return res.status(403).json({ message: 'Invalid refresh token' });
+    
     if (tokenDoc.expiresAt < Date.now()) {
-      console.log('Token expired');
-      await Tokens.findByIdAndDelete(tokenDoc._id);
-      return res.status(403).json({ message: 'Refresh token expired' });
+      console.log('Token expired at:', new Date(tokenDoc.expiresAt).toLocaleString());
+      await Tokens.findByIdAndDelete(tokenDoc._id); 
+      return res.status(403).json({ message: 'Refresh token has expired' }); 
     }
 
-    // Find user
     const user = await User.findById(tokenDoc.userId);
-    if (!user) {
-      console.log('User not found');
-      return res.status(403).json({ message: 'User not found' });
-    }
+    if (!user) return res.status(403).json({ message: 'User not found' });
 
-    // Delete old token
-    await Tokens.findByIdAndDelete(tokenDoc._id);
+    await Tokens.findByIdAndDelete(tokenDoc._id); 
 
-    // Generate new tokens
     const { accessT, refreshT } = await createTokens(user._id);
+    if (!refreshT || !accessT) throw new Error('Помилка генерації токенів');
 
-    // Set new refresh token cookie
     res.cookie('refreshToken', refreshT, {
-      httpOnly: false, // Set to false for testing so you can see it in document.cookie
+      httpOnly: false, 
       secure: false,
       sameSite: 'lax',
-      maxAge: refreshLifedur,
     });
     console.log('New tokens generated and cookie set');
-    
-    res.status(200).json({ 
-      accessToken: accessT,
-      message: 'Tokens refreshed successfully'
-    });
 
+    res.status(200).json({ accessToken: accessT, message: 'Tokens refreshed successfully' });
   } catch (error) {
     console.error('RefreshToken error:', error);
     res.status(500).json({ message: 'Помилка оновлення токена' });
@@ -215,6 +183,7 @@ export const logout = async (req, res) => {
     res.status(500).json({ message: 'Помилка виходу' });
   }
 };
+
 
 // Helper functions
 const createAccessT = (payload) => {
