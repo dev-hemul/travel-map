@@ -131,6 +131,7 @@ export const getRefreshToken = async (req, res) => {
       httpOnly: false, 
       secure: false,
       sameSite: 'lax',
+      maxAge: refreshLifedur
     });
     console.log('New tokens generated and cookie set');
 
