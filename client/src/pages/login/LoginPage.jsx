@@ -91,17 +91,13 @@ const LoginPage = () => {
             email: formData.email,
             password: formData.password,
         }, {
-            withCredentials: true  // ADD THIS!
+            withCredentials: true 
         });
         
         console.log('Відповідь від сервера:', response.data);
         notifySuccessLog();
         localStorage.setItem('accessToken', response.data.accessToken); 
         
-        // DON'T store refreshToken in localStorage - it should be in httpOnly cookie
-        // localStorage.setItem('refreshToken', response.data.refreshToken);
-        
-        // Check if cookie was set
         console.log('Document cookies after login:', document.cookie);
         
         setTimeout(() => {
