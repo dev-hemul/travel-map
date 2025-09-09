@@ -32,7 +32,6 @@ export const register = async (req, res) => {
 
     const { accessT, refreshT } = await createTokens(user._id);
 
-    // Set cookie using res.cookie
     res.cookie('refreshToken', refreshT, {
       httpOnly: false, // Set to false for testing
       secure: false, 
@@ -41,10 +40,7 @@ export const register = async (req, res) => {
     });
 
     console.log('Register: Cookie встановлено:', refreshT);
-    res.status(200).json({ 
-      accessToken: accessT, 
-      user: { id: user._id, username, email } 
-    });
+    res.status(200).json({ accessToken: accessT }); // Прибрано user
   } catch (error) {
     console.error('Register error:', error);
     res.status(500).json({ message: 'Помилка сервера' });
@@ -69,24 +65,15 @@ export const login = async (req, res) => {
 
     const { accessT, refreshT } = await createTokens(user._id);
 
-    // Set cookie using res.cookie (NOT setHeader)
     res.cookie('refreshToken', refreshT, {
-      httpOnly: false, // Set to false for testing so you can see it in document.cookie
+      httpOnly: false, // Set to false for testing
       secure: false,
       sameSite: 'lax',
       maxAge: refreshLifedur,
     });
     console.log('Login: Cookie встановлено:', refreshT);
     
-    res.json({ 
-      accessToken: accessT, 
-      user: { 
-        id: user._id, 
-        username: user.username, 
-        email: user.email 
-      }
-    });
-    
+    res.json({ accessToken: accessT }); // Прибрано user
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Помилка сервера' });
