@@ -1,9 +1,8 @@
 import mongoose from 'mongoose';
 
 const tokenSchema = new mongoose.Schema({
-    jti: { type: String, required: true },
-    token: { type: String, required: true },
-    params: { type: Object, required: true }
-}, { timestamps: true });
+    refreshToken: { type: String, required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, 
+  }, { timestamps: true });
 
 export default mongoose.model('Token', tokenSchema);
