@@ -70,7 +70,6 @@ const LoginPage = () => {
         notifySuccessReg();
         setFormData({ username: '', email: '', password: '', confirmPassword: '' }); // Скидання форми
         localStorage.setItem('accessToken', response.data.accessToken); // Збереження токенів
-        localStorage.setItem('refreshToken', response.data.refreshToken);
         setTimeout(() => {
           navigate('/profile');
         }, 2000);
@@ -97,6 +96,7 @@ const LoginPage = () => {
         console.log('Відповідь від сервера:', response.data);
         notifySuccessLog();
         localStorage.setItem('accessToken', response.data.accessToken); 
+        console.log(localStorage)
         
         console.log('Document cookies after login:', document.cookie);
         

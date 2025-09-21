@@ -102,9 +102,28 @@ const ProfilePage = () => {
       setIsSubmitting(false);
     }
   };
+  
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
-  const handleLogout = () => navigate("/logout");
+  ////////////// handle Logout
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem('accessToken'); // Якщо зберігається в localStorage
+      await axios.post(
+        'http://localhost:4000/logout',
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      // Очищаємо accessToken
+      localStorage.removeItem('accessToken');
+      // Редірект на головну
+      navigate('/');
+    } catch (error) {
+      console.error('Помилка логауту:', error);
+    }
+  }; 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   return (
