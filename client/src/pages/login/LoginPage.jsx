@@ -96,7 +96,6 @@ const LoginPage = () => {
         console.log('Відповідь від сервера:', response.data);
         notifySuccessLog();
         localStorage.setItem('accessToken', response.data.accessToken); 
-        console.log(localStorage)
         
         console.log('Document cookies after login:', document.cookie);
         

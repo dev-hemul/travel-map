@@ -1,6 +1,5 @@
 import { readFileSync } from 'fs';
 
-import { readFileSync } from 'fs';
 
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -44,7 +43,7 @@ export const register = async (req, res) => {
     });
 
     console.log('Register: Cookie встановлено:', refreshT);
-    res.status(200).json({ accessToken: accessT }); // Прибрано user
+    res.status(200).json({ accessToken: accessT }); 
   } catch (error) {
     console.error('Register error:', error);
     res.status(500).json({ message: 'Помилка сервера' });
@@ -54,6 +53,7 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    
     
     const user = await User.findOne({ email });
     if (!user) {
@@ -80,6 +80,7 @@ export const login = async (req, res) => {
       accessToken: accessT, 
     });
   } catch (error) {
+    console.error('Login error:', error);
     console.error('Login error:', error);
     res.status(500).json({ message: 'Помилка сервера' });
   }
@@ -151,6 +152,7 @@ export const updateProfile = async (req, res) => {
     res.json({ message: 'Профіль оновлено', user });
   } catch (error) {
     console.error('UpdateProfile error:', error);
+    console.error('UpdateProfile error:', error);
     res.status(401).json({ message: 'Невірний токен' });
   }
 };
@@ -173,13 +175,15 @@ export const logout = async (req, res) => {
   } catch (error) {
     console.error('Logout error:', error);
     res.status(500).json({ message: 'Помилка виходу' });
+    console.error('Logout error:', error);
+    res.status(500).json({ message: 'Помилка виходу' });
   }
 };
 // Helper functions
 const createAccessT = (payload) => {
   const expiration = Math.floor(Date.now() / 1000) + Math.floor(lifedur / 1000);
-  payload.exp = expiration; // Встановлюємо тільки exp
-  const token = jwt.sign(payload, privateKey, { algorithm: alg, noTimestamp: true }); // Додаємо noTimestamp
+  payload.exp = expiration; // тільки exp
+  const token = jwt.sign(payload, privateKey, { algorithm: alg, noTimestamp: true }); // Додано noTimestamp
   return { token };
 };
 
