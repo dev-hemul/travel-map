@@ -81,7 +81,6 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    console.error('Login error:', error);
     res.status(500).json({ message: 'Помилка сервера' });
   }
 };
@@ -152,7 +151,6 @@ export const updateProfile = async (req, res) => {
     res.json({ message: 'Профіль оновлено', user });
   } catch (error) {
     console.error('UpdateProfile error:', error);
-    console.error('UpdateProfile error:', error);
     res.status(401).json({ message: 'Невірний токен' });
   }
 };
@@ -173,8 +171,6 @@ export const logout = async (req, res) => {
     
     res.status(200).json({ message: 'Успішний вихід' }); // Повертаємо відповідь для фронту
   } catch (error) {
-    console.error('Logout error:', error);
-    res.status(500).json({ message: 'Помилка виходу' });
     console.error('Logout error:', error);
     res.status(500).json({ message: 'Помилка виходу' });
   }
