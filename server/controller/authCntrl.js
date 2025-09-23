@@ -183,8 +183,8 @@ const createAccessT = (payload) => {
   return { token };
 };
 
-const createRefreshT = (userId) => {
-  return nanoid();
+const createRefreshT = () => {
+  return nanoid(); // Функція використовується в createTokens
 };
 
 const createTokens = async (userId) => {
@@ -209,6 +209,7 @@ const verifyToken = (token) => {
     const decoded = jwt.verify(token, publicKey, { algorithms: [alg] });
     return decoded.id; // Отримуємо id замість iss
   } catch (error) {
+    console.error('Помилка верифікації токена:', error.message); 
     throw new Error('Невірний токен');
   }
 };
