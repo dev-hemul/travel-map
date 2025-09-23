@@ -184,7 +184,7 @@ const createAccessT = (payload) => {
 };
 
 const createRefreshT = () => {
-  return nanoid(); // Функція використовується в createTokens
+  return nanoid(); 
 };
 
 const createTokens = async (userId) => {
