@@ -17,5 +17,7 @@
     "globals": "^16.1.0",
     "prettier": "^3.5.3"
   },
-  "dependencies": {}
+  "dependencies": {
+    "weatherlayers-gl": "^2025.8.0"
+  }
 }

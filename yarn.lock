@@ -101,10 +101,20 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/retry/-/retry-0.4.3.tgz#c2b9d2e374ee62c586d3adbea87199b1d7a7a6ba"
   integrity sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==
 
+"@mapbox/sphericalmercator@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@mapbox/sphericalmercator/-/sphericalmercator-2.0.1.tgz#fd0cbae7e5dc3d22fdb585ecd80cb027d65284b2"
+  integrity sha512-k1vM33y0oGIgip01EqdrWEMZLsYj9fP3jH7PZmeSCsCuubTQGjyrOANGSsqh+JtyqydYfXk9VBUVcyabvNTYXg==
+
 "@rtsao/scc@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@rtsao/scc/-/scc-1.1.0.tgz#927dd2fae9bc3361403ac2c7a00c32ddce9ad7e8"
   integrity sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==
+
+"@scarf/scarf@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@scarf/scarf/-/scarf-1.4.0.tgz#3bbb984085dbd6d982494538b523be1ce6562972"
+  integrity sha512-xxeapPiUXdZAE3che6f3xogoJPeZgig6omHEy1rIY5WVsB3H2BHNnZH+gHG6x91SCWyQCzWGsuL2Hh3ClO5/qQ==
 
 "@types/estree@^1.0.6":
   version "1.0.7"
@@ -306,11 +316,6 @@ chalk@^4.0.0:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
 
-clsx@^2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/clsx/-/clsx-2.1.1.tgz#eed397c9fd8bd882bfb18deab7102049a2f32999"
-  integrity sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==
-
 color-convert@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/color-convert/-/color-convert-2.0.1.tgz#72d3a68d598c9bdb3af2ad1e84f21d896abd4de3"
@@ -323,10 +328,20 @@ color-name@~1.1.4:
   resolved "https://registry.yarnpkg.com/color-name/-/color-name-1.1.4.tgz#c2a09a87acbde69543de6f63fa3995c826c536a2"
   integrity sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==
 
+comlink@^4.4.2:
+  version "4.4.2"
+  resolved "https://registry.yarnpkg.com/comlink/-/comlink-4.4.2.tgz#cbbcd82742fbebc06489c28a183eedc5c60a2bca"
+  integrity sha512-OxGdvBmJuNKSCMO4NTl1L47VRp6xn2wG4F/2hYzB6tiCb709otOxtEYCSvK80PtjODfXXZu8ds+Nw5kVCjqd2g==
+
 concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
   integrity sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==
+
+cpt2js@^1.6.2:
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/cpt2js/-/cpt2js-1.6.2.tgz#de26e60215be8910770196f749d7032df4be2401"
+  integrity sha512-N0ZKwt2VI4Le2XNn2Zh5ES7rbEaDmCOspoDV1rabGlpfnCCGFf/F5+uH+5HhQnrwuYAZPCegZm330boD+lP5aA==
 
 cross-spawn@^7.0.6:
   version "7.0.6"
@@ -766,6 +781,11 @@ for-each@^0.3.3, for-each@^0.3.5:
   dependencies:
     is-callable "^1.2.7"
 
+fsevents@~2.3.2:
+  version "2.3.3"
+  resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-2.3.3.tgz#cac6407785d03675a2a5e1a5305c697b347d90d6"
+  integrity sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==
+
 function-bind@^1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/function-bind/-/function-bind-1.1.2.tgz#2c02d864d97f3ea6c8830c464cbd11ab6eab7a1c"
@@ -787,6 +807,18 @@ functions-have-names@^1.2.3:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/functions-have-names/-/functions-have-names-1.2.3.tgz#0404fe4ee2ba2f607f0e0ec3c80bae994133b834"
   integrity sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==
+
+geodesy-fn@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/geodesy-fn/-/geodesy-fn-1.2.2.tgz#44531e396cdc423a7a0fdfd8e8bd9de237906d6d"
+  integrity sha512-m837H6/kNxfHiS6sXkQgPsRzfs2NkSUJx9l0n/S83X9oC5oq83jZWpntRQEhbXN2J7c+lqwesxKQnT5tMqMWNw==
+
+geokdbush@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/geokdbush/-/geokdbush-2.0.1.tgz#85a4d65f89150f1ad5d8831e01c9b60f2f5a15a2"
+  integrity sha512-0M8so1Qx6+jJ1xpirpCNrgUsWAzIcQ3LrLmh0KJPBYI3gH7vy70nY5zEEjSp9Tn0nBt6Q2Fh922oL08lfib4Zg==
+  dependencies:
+    tinyqueue "^2.0.3"
 
 get-intrinsic@^1.2.4, get-intrinsic@^1.2.5, get-intrinsic@^1.2.6, get-intrinsic@^1.2.7, get-intrinsic@^1.3.0:
   version "1.3.0"
@@ -893,6 +925,11 @@ hasown@^2.0.2:
   integrity sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==
   dependencies:
     function-bind "^1.1.2"
+
+icomesh@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/icomesh/-/icomesh-1.1.0.tgz#6ddd9e6becbbcf55790e9bc092120cf80d68a058"
+  integrity sha512-oi4zxCSQLmna9feZfIyJ+8sXU0u06MTgpyLgqU7F6x1poEmYYaG3bB+kd1TFPBA9Odql0dXVQb0TA5ZG+yKzSw==
 
 ignore@^5.2.0:
   version "5.3.2"
@@ -1159,6 +1196,11 @@ json5@^1.0.2:
     object.assign "^4.1.4"
     object.values "^1.1.6"
 
+kdbush@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/kdbush/-/kdbush-4.0.2.tgz#2f7b7246328b4657dd122b6c7f025fbc2c868e39"
+  integrity sha512-WbCVYJ27Sz8zi9Q7Q0xHC+05iwkm3Znipc2XTlrnJbsHMYktW4hPhXUE8Ys1engBrvffoSCqbil1JQAa7clRpA==
+
 keyv@^4.5.4:
   version "4.5.4"
   resolved "https://registry.yarnpkg.com/keyv/-/keyv-4.5.4.tgz#a879a99e29452f942439f2a405e3af8b31d4de93"
@@ -1377,13 +1419,6 @@ react-is@^16.13.1:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
 
-react-toastify@^11.0.5:
-  version "11.0.5"
-  resolved "https://registry.yarnpkg.com/react-toastify/-/react-toastify-11.0.5.tgz#ce4c42d10eeb433988ab2264d3e445c4e9d13313"
-  integrity sha512-EpqHBGvnSTtHYhCPLxML05NLY2ZX0JURbAdNYa6BUkk+amz4wbKBQvoKQAB0ardvSarUBuY4Q4s1sluAzZwkmA==
-  dependencies:
-    clsx "^2.1.1"
-
 reflect.getprototypeof@^1.0.6, reflect.getprototypeof@^1.0.9:
   version "1.0.10"
   resolved "https://registry.yarnpkg.com/reflect.getprototypeof/-/reflect.getprototypeof-1.0.10.tgz#c629219e78a3316d8b604c765ef68996964e7bf9"
@@ -1432,6 +1467,20 @@ resolve@^2.0.0-next.5:
     is-core-module "^2.13.0"
     path-parse "^1.0.7"
     supports-preserve-symlinks-flag "^1.0.0"
+
+rollup-plugin-worker-factory@^0.5.7:
+  version "0.5.7"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-worker-factory/-/rollup-plugin-worker-factory-0.5.7.tgz#a6043ce4aae34d5b72ff9c1dbd1bef78b79f08b2"
+  integrity sha512-DZ9HOy8FFVnx9in/x2DFrbH2Dj3iBMUm5zuisBnfQst2WcDbNicJLveiytgnoKqXQnBm7TPnlEklp4ce1eT1aw==
+  dependencies:
+    rollup "^2.34.2"
+
+rollup@^2.34.2:
+  version "2.79.2"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-2.79.2.tgz#f150e4a5db4b121a21a747d762f701e5e9f49090"
+  integrity sha512-fS6iqSPZDs3dr/y7Od6y5nha8dW1YnbgtsyotCVvoFGKbERG++CVRFv1meyGDE1SNItQA8BrnCw7ScdAhRJ3XQ==
+  optionalDependencies:
+    fsevents "~2.3.2"
 
 safe-array-concat@^1.1.3:
   version "1.1.3"
@@ -1630,6 +1679,11 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
+tinyqueue@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/tinyqueue/-/tinyqueue-2.0.3.tgz#64d8492ebf39e7801d7bd34062e29b45b2035f08"
+  integrity sha512-ppJZNDuKGgxzkHihX8v9v9G5f+18gzaTfrukGrq6ueg0lmH4nqVnA2IPG0AEH3jKEk2GRJCUhDoqpoiw3PHLBA==
+
 tsconfig-paths@^3.15.0:
   version "3.15.0"
   resolved "https://registry.yarnpkg.com/tsconfig-paths/-/tsconfig-paths-3.15.0.tgz#5299ec605e55b1abb23ec939ef15edaf483070d4"
@@ -1708,6 +1762,21 @@ uri-js@^4.2.2:
   integrity sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==
   dependencies:
     punycode "^2.1.0"
+
+weatherlayers-gl@^2025.8.0:
+  version "2025.8.0"
+  resolved "https://registry.yarnpkg.com/weatherlayers-gl/-/weatherlayers-gl-2025.8.0.tgz#9c30b33d017a5dc5a247061a9386d633ccb8c816"
+  integrity sha512-DLGWryJeKF6ds6xN7/6BU9mrMZeXmkxc7EAvW73bxbzh9qONEZUXucXtr0b6j8bfEeQEnqdkBnBhNebxHjHw0Q==
+  dependencies:
+    "@mapbox/sphericalmercator" "^2.0.1"
+    "@scarf/scarf" "^1.4.0"
+    comlink "^4.4.2"
+    cpt2js "^1.6.2"
+    geodesy-fn "^1.2.2"
+    geokdbush "^2.0.1"
+    icomesh "^1.1.0"
+    kdbush "^4.0.2"
+    rollup-plugin-worker-factory "^0.5.7"
 
 which-boxed-primitive@^1.1.0, which-boxed-primitive@^1.1.1:
   version "1.1.1"
