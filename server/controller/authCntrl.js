@@ -1,13 +1,9 @@
 import { readFileSync } from 'fs';
-
-
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { nanoid } from 'nanoid';
-
 import User from '../model/user.js';
 import Tokens from '../model/token.js';
-
 
 const privateKey = readFileSync('keys/privateKey.pem', 'utf8');
 const publicKey = readFileSync('keys/publicKey.pem', 'utf8');
@@ -32,7 +28,6 @@ export const register = async (req, res) => {
     await user.save();
 
     await Tokens.deleteMany({ userId: user._id });
-
     const { accessT, refreshT } = await createTokens(user._id);
 
     res.cookie('refreshToken', refreshT, {
@@ -41,9 +36,7 @@ export const register = async (req, res) => {
       sameSite: 'lax',
       maxAge: refreshLifedur,
     });
-
-    console.log('Register: Cookie встановлено:', refreshT);
-    res.status(200).json({ accessToken: accessT }); 
+    res.status(200).json({ accessToken: accessT });
   } catch (error) {
     console.error('Register error:', error);
     res.status(500).json({ message: 'Помилка сервера' });
@@ -53,19 +46,11 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    
-    
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'Такого користувача не існує' });
-    }
-    
-    if (!await bcrypt.compare(password, user.password)) {
-      return res.status(401).json({ message: 'Неправильний пароль' });
-    }
+    if (!user) return res.status(404).json({ message: 'Такого користувача не існує' });
+    if (!await bcrypt.compare(password, user.password)) return res.status(401).json({ message: 'Неправильний пароль' });
 
     await Tokens.deleteMany({ userId: user._id });
-
     const { accessT, refreshT } = await createTokens(user._id);
 
     res.cookie('refreshToken', refreshT, {
@@ -74,11 +59,7 @@ export const login = async (req, res) => {
       sameSite: 'lax',
       maxAge: refreshLifedur,
     });
-    console.log('Login: Cookie встановлено:', refreshT);
-    
-    res.json({ 
-      accessToken: accessT, 
-    });
+    res.json({ accessToken: accessT });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Помилка сервера' });
@@ -87,46 +68,29 @@ export const login = async (req, res) => {
 
 export const getRefreshToken = async (req, res) => {
   try {
-    console.log('=== DEBUG INFO ===');
-    console.log('All headers:', req.headers);
-    console.log('Cookie header:', req.headers.cookie);
-    console.log('Parsed cookies from cookieParser:', req.cookies);
-    
-    let refreshToken = null;
-
-    if (req.cookies && req.cookies.refreshToken) {
-      refreshToken = req.cookies.refreshToken;
-      console.log('рефрештокен:', refreshToken);
-    }
-  
+    let refreshToken = req.cookies.refreshToken;
     if (!refreshToken) return res.status(400).json({ message: 'Refresh token required' });
 
     const tokenDoc = await Tokens.findOne({ refreshToken });
     if (!tokenDoc) return res.status(403).json({ message: 'Invalid refresh token' });
-    
     if (tokenDoc.expiresAt < Date.now()) {
-      console.log('Token expired at:', new Date(tokenDoc.expiresAt).toLocaleString());
-      await Tokens.findByIdAndDelete(tokenDoc._id); 
-      return res.status(403).json({ message: 'Refresh token has expired' }); 
+      await Tokens.findByIdAndDelete(tokenDoc._id);
+      return res.status(403).json({ message: 'Refresh token has expired' });
     }
 
     const user = await User.findById(tokenDoc.userId);
     if (!user) return res.status(403).json({ message: 'User not found' });
 
-    await Tokens.findByIdAndDelete(tokenDoc._id); 
-
+    await Tokens.findByIdAndDelete(tokenDoc._id);
     const { accessT, refreshT } = await createTokens(user._id);
-    if (!refreshT || !accessT) throw new Error('Помилка генерації токенів');
 
     res.cookie('refreshToken', refreshT, {
-      httpOnly: false, 
+      httpOnly: false,
       secure: false,
       sameSite: 'lax',
-      maxAge: refreshLifedur
+      maxAge: refreshLifedur,
     });
-    console.log('New tokens generated and cookie set');
-
-    res.status(200).json({ accessToken: accessT, message: 'Tokens refreshed successfully' });
+    res.status(200).json({ accessToken: accessT });
   } catch (error) {
     console.error('RefreshToken error:', error);
     res.status(500).json({ message: 'Помилка оновлення токена' });
@@ -135,15 +99,15 @@ export const getRefreshToken = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
+    const { username, email } = req.body;
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'Токен не надано' });
 
-    const userId = verifyToken(token);
-    const user = await User.findById(userId);
+    const decoded = jwt.verify(token, publicKey, { algorithms: [alg] });
+    const user = await User.findById(decoded.id);
 
     if (!user) return res.status(401).json({ message: 'Невірний токен для юзера' });
 
-    const { username, email } = req.body;
     user.username = username || user.username;
     user.email = email || user.email;
 
@@ -160,56 +124,42 @@ export const logout = async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'Токен не надано' });
 
-    const userId = verifyToken(token);
-    await Tokens.deleteMany({ userId }); // Видаляємо усі refreshToken для користувача
-    
+    const decoded = jwt.verify(token, publicKey, { algorithms: [alg] });
+    await Tokens.deleteMany({ userId: decoded.id });
+
     res.clearCookie('refreshToken', {
       httpOnly: false,
       secure: false,
       sameSite: 'lax',
     });
-    
-    res.status(200).json({ message: 'Успішний вихід' }); // Повертаємо відповідь для фронту
+    res.status(200).json({ message: 'Успішний вихід' });
   } catch (error) {
     console.error('Logout error:', error);
     res.status(500).json({ message: 'Помилка виходу' });
   }
 };
+
 // Helper functions
 const createAccessT = (payload) => {
   const expiration = Math.floor(Date.now() / 1000) + Math.floor(lifedur / 1000);
-  payload.exp = expiration; // тільки exp
-  const token = jwt.sign(payload, privateKey, { algorithm: alg, noTimestamp: true }); // Додано noTimestamp
-  return { token };
+  payload.exp = expiration;
+  return { token: jwt.sign(payload, privateKey, { algorithm: alg, noTimestamp: true }) };
 };
 
-const createRefreshT = () => {
-  return nanoid(); 
+const createRefreshT = (userId) => {
+  return nanoid();
 };
 
 const createTokens = async (userId) => {
   if (!userId) throw new Error('userId is undefined');
-  
-  const payload = { id: userId }; // Замінюємо iss на id
+  const payload = { id: userId };
   const { token: accessT } = createAccessT(payload);
   const refreshT = createRefreshT(userId);
-  
-  await Tokens.create({ 
-    refreshToken: refreshT, 
-    userId, 
-    expiresAt: Date.now() + refreshLifedur 
-  });
-  
-  console.log('Tokens created:', { accessT: accessT.substring(0, 20) + '...', refreshT });
-  return { accessT, refreshT };
-};
 
-const verifyToken = (token) => {
-  try {
-    const decoded = jwt.verify(token, publicKey, { algorithms: [alg] });
-    return decoded.id; // Отримуємо id замість iss
-  } catch (error) {
-    console.error('Помилка верифікації токена:', error.message); 
-    throw new Error('Невірний токен');
-  }
+  await Tokens.create({
+    refreshToken: refreshT,
+    userId,
+    expiresAt: Date.now() + refreshLifedur
+  });
+  return { accessT, refreshT };
 };

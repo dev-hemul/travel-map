@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaGoogle, FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import LoginTelegramButton from './TelegramLoginButton';
@@ -36,8 +36,35 @@ const LoginPage = () => {
   const notifyAllInputAreNecessaryWarning = () => toast.warning('Заповніть усі поля.')
   const notifyEmailIsNecessaryWarning = () => toast.warning('Заповніть усі поля.')
   
-  
-  
+  // перевірка токенів
+ useEffect(() => {
+  const accessToken = localStorage.getItem('accessToken');
+  const refreshToken = document.cookie.split('; ').find(row => row.startsWith('refreshToken='))?.split('=')[1];
+
+  if (accessToken && refreshToken) {
+    axios.post('http://localhost:4000/profile', {}, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then(res => {
+        if (res.status === 200) navigate('/profile');
+      })
+      .catch(() => {
+        if (refreshToken) {
+          axios.post('http://localhost:4000/refresh-token', {}, {
+            headers: { Authorization: `Bearer ${refreshToken}` },
+          })
+            .then(res => {
+              if (res.data.accessToken) {
+                localStorage.setItem('accessToken', res.data.accessToken);
+                navigate('/profile');
+              }
+            })
+            .catch(() => navigate('/login'));
+        }
+      });
+  }
+}, [navigate]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError(''); // Скидаємо помилку при зміні

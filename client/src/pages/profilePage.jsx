@@ -65,6 +65,36 @@ const ProfilePage = () => {
     setInitialFormData(mockProfileData);
   }, []);
 
+  /// nеревірка токенів
+
+  useEffect(() => {
+  const accessToken = localStorage.getItem('accessToken');
+  const refreshToken = document.cookie.split('; ').find(row => row.startsWith('refreshToken='))?.split('=')[1];
+
+  if (!accessToken && !refreshToken) {
+    navigate('/login');
+    return;
+  }
+  if (!accessToken && refreshToken) {
+    axios.post('http://localhost:4000/refresh-token', {}, {
+      headers: { Authorization: `Bearer ${refreshToken}` },
+    })
+      .then(res => {
+        if (res.data.accessToken) {
+          localStorage.setItem('accessToken', res.data.accessToken);
+        } else {
+          navigate('/login');
+        }
+      })
+      .catch(() => navigate('/login'));
+  } else {
+    axios.post('http://localhost:4000/profile', {}, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .catch(() => navigate('/login')); // Перевірка валідності
+  }
+}, [navigate]);
+
   const isLargeScreen = windowWidth >= 1200;
   const isMediumScreen = windowWidth >= 768 && windowWidth < 1200;
   const isSmallScreen = windowWidth >= 640 && windowWidth < 768;

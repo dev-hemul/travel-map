@@ -5,6 +5,7 @@ import express from 'express';
 import createHttpError from 'http-errors';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import authMiddleware from './middlewares/auth.js'; 
 
 // Роути
 import announcementsRouter from './routes/annoucementsAdding.js';
@@ -12,18 +13,17 @@ import getReportsRouter from './routes/main.js';
 import marker from './routes/markerRouter.js';
 import profileEdditRouter from './routes/profileChanges.js';
 import supportRouter from './routes/support.js';
-import authRouter from './routes/auth.js'
-
+import authRouter from './routes/auth.js';
 
 const app = express();
 
 // Middleware
 app.use(morgan('combined'));
 
-// CORS configuration - THIS IS THE KEY FIX
+// CORS configuration
 app.use(cors({
-    origin: 'http://localhost:5173', 
-    credentials: true, 
+    origin: 'http://localhost:5173',
+    credentials: true,
     optionsSuccessStatus: 200
 }));
 
@@ -35,7 +35,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, '../client')));
 
-// Підключення роутів тут
+// Підключення роутів
 app.use('/', announcementsRouter);
 app.use('/', supportRouter);
 app.use('/', getReportsRouter);
@@ -43,7 +43,7 @@ app.use('/', profileEdditRouter);
 app.use('/', marker);
 app.use('/', authRouter);
 
-
+app.use('/profile', authMiddleware); 
 
 // Обробка 404
 app.use((req, res, next) => {
