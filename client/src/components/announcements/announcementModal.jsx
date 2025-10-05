@@ -61,7 +61,7 @@ export default function AnnouncementModal() {
 
             {/* Панель сайдбару */}
             <motion.div
-              className="fixed top-0 left-0 h-full w-96 z-999 flex flex-col bg-gradient-to-br from-white to-gray-50 text-gray-900 border-r border-gray-200 shadow-2xl"
+              className="fixed top-0 left-0 h-full w-96 z-1000 flex flex-col bg-gradient-to-br from-white to-gray-50 text-gray-900 border-r border-gray-200 shadow-2xl"
               initial={{ x: '-100%', opacity: 0 }}
               animate={{
                 x: 0,
