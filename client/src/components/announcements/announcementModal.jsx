@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaBullhorn, FaTimes, FaPlus, FaRegCommentDots } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 export default function AnnouncementModal() {
+  const navigate = useNavigate();
   const [showSidebar, setShowSidebar] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [announcements, setAnnouncements] = useState([
@@ -92,19 +94,9 @@ export default function AnnouncementModal() {
               animate={{
                 x: 0,
                 opacity: 1,
-                transition: {
-                  duration: 0.4,
-                  ease: [0.25, 0.1, 0.25, 1],
-                },
+                transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] },
               }}
-              exit={{
-                x: '-100%',
-                opacity: 0,
-                transition: {
-                  duration: 0.3,
-                  ease: 'easeIn',
-                },
-              }}
+              exit={{ x: '-100%', opacity: 0, transition: { duration: 0.3, ease: 'easeIn' } }}
             >
               {/* Header */}
               <div className="relative p-6 rounded-br-2xl bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
@@ -131,6 +123,7 @@ export default function AnnouncementModal() {
               <div className="flex-1 flex flex-col p-6 space-y-6 min-h-0">
                 {/* Кнопка додавання */}
                 <motion.button
+                  onClick={() => navigate('/create-announcement')} 
                   className="w-full py-3.5 rounded-xl font-semibold text-white shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -146,34 +139,20 @@ export default function AnnouncementModal() {
                       key={a.id}
                       className="p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
                       initial={{ opacity: 0, y: 20 }}
-                      animate={{
-                        opacity: 1,
-                        y: 0,
-                        transition: { duration: 0.3, delay: index * 0.1 },
-                      }}
+                      animate={{ opacity: 1, y: 0, transition: { duration: 0.3, delay: index * 0.1 } }}
                       whileHover={{ borderColor: '#3b82f6' }}
                     >
                       {/* Фото */}
                       <div className="w-full h-40 mb-3 rounded-lg overflow-hidden">
-                        <img
-                          src={a.image}
-                          alt={a.title}
-                          className="w-full h-full object-cover"
-                        />
+                        <img src={a.image} alt={a.title} className="w-full h-full object-cover" />
                       </div>
 
                       {/* Заголовок і опис */}
-                      <h3 className="font-bold text-lg mb-1 text-gray-800">
-                        {a.title}
-                      </h3>
-                      <p className="text-gray-600 text-sm leading-relaxed mb-2">
-                        {a.description}
-                      </p>
+                      <h3 className="font-bold text-lg mb-1 text-gray-800">{a.title}</h3>
+                      <p className="text-gray-600 text-sm leading-relaxed mb-2">{a.description}</p>
 
                       {/* Адреса */}
-                      <p className="text-gray-500 text-xs italic mb-3">
-                        {a.address}
-                      </p>
+                      <p className="text-gray-500 text-xs italic mb-3">{a.address}</p>
 
                       {/* Нижня частина */}
                       <div className="flex justify-between items-center pt-3 border-t border-gray-200">

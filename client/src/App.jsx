@@ -1,12 +1,13 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 
-import AnnouncementModal from './components/announcements/AnnouncementModal'
+import AnnouncementModal from './components/announcements/announcementModal';
 import MapView from './components/MapView';
 import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
+import CreateAnnouncementPage from './components/announcements/createAnnouncementPage';
 
 function App() {
   return (
@@ -20,6 +21,15 @@ function App() {
               <SupportModalWrapper />
               <AnnouncementModal />
             </>
+          }
+        />
+        {/* Додайте цей маршрут */}
+        <Route
+          path="/create-announcement"
+          element={
+            
+              <CreateAnnouncementPage />
+           
           }
         />
         <Route
@@ -66,7 +76,7 @@ function App() {
           path="/auth"
           element={
             <SidebarLayout>
-              <div>налаштування авторизації</div>
+              <div>Налаштування авторизації</div>
             </SidebarLayout>
           }
         />
