@@ -17,7 +17,7 @@ export default function AnnouncementModal() {
       id: 2,
       title: 'Друга пропозиція',
       description: 'Опис другої пропозиції',
-      image: 'https://images.unsplash.com/photo-1505691723518-36a3dd6d2a02?auto=format&fit=crop&w=800&q=60',
+      image: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=60',
       address: 'Київська область, м. Буча',
     },
     {
