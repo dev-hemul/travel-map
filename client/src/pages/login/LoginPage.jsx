@@ -70,7 +70,6 @@ const LoginPage = () => {
         notifySuccessReg();
         setFormData({ username: '', email: '', password: '', confirmPassword: '' }); // Скидання форми
         localStorage.setItem('accessToken', response.data.accessToken); // Збереження токенів
-        localStorage.setItem('refreshToken', response.data.refreshToken);
         setTimeout(() => {
           navigate('/profile');
         }, 2000);

@@ -12,7 +12,9 @@ import {
   FiUsers,
   FiMenu,
   FiX,
-  FiMap
+  FiMap,
+  FiEdit2,
+  FiCheck
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
@@ -26,6 +28,7 @@ const ProfilePage = () => {
     email: "",
     phone: "",
   });
+  const [initialFormData, setInitialFormData] = useState({});
   const [avatar, setAvatar] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,6 +39,7 @@ const ProfilePage = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [isEditing, setIsEditing] = useState(false); 
 
   useEffect(() => {
     const handleResize = () => {
@@ -44,6 +48,21 @@ const ProfilePage = () => {
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    // Тут має бути запит до API для отримання даних профілю
+    const mockProfileData = {
+      firstName: "Іван",
+      lastName: "Іванов",
+      middleName: "Іванович",
+      location: "Київ, Україна",
+      email: "ivanov@example.com",
+      phone: "+380991234567",
+    };
+    
+    setFormData(mockProfileData);
+    setInitialFormData(mockProfileData);
   }, []);
 
   const isLargeScreen = windowWidth >= 1200;
@@ -75,6 +94,7 @@ const ProfilePage = () => {
   };
 
   const triggerFileInput = () => fileInputRef.current.click();
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -93,6 +113,8 @@ const ProfilePage = () => {
       );
       if (response.status === 200) {
         setIsSuccess(true);
+        setInitialFormData(formData); // Оновлюємо початкові дані
+        setIsEditing(false); // Виходимо з режиму редагування
         setTimeout(() => setIsSuccess(false), 3000);
       }
     } catch (err) {
@@ -102,9 +124,37 @@ const ProfilePage = () => {
       setIsSubmitting(false);
     }
   };
+  
+
+  const toggleEditMode = () => {
+    if (isEditing) {
+      // При скасуванні редагування повертаємо початкові значення
+      setFormData(initialFormData);
+    }
+    setIsEditing(!isEditing);
+    setError(null);
+  };
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
-  const handleLogout = () => navigate("/logout");
+  ////////////// handle Logout
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem('accessToken'); // Якщо зберігається в localStorage
+      await axios.post(
+        'http://localhost:4000/logout',
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      // Очищаємо accessToken
+      localStorage.removeItem('accessToken');
+      // Редірект на головну
+      navigate('/');
+    } catch (error) {
+      console.error('Помилка логауту:', error);
+    }
+  }; 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   return (
@@ -129,79 +179,77 @@ const ProfilePage = () => {
         }
       `}</style>
 
-<div className="flex flex-col sm:flex-row items-center sm:justify-between bg-[#F4EFFF] rounded-xl px-4 py-2 mb-6 gap-4 border border-gray-300 shadow-lg">
+      <div className="flex flex-col sm:flex-row items-center sm:justify-between bg-[#F4EFFF] rounded-xl px-4 py-2 mb-6 gap-4 border border-gray-300 shadow-lg">
+        <motion.button
+          onClick={() => navigate("/")}
+          whileHover={{ scale: 1.05, backgroundColor: "#FFFFFF", color: "#744ce9" }}
+          whileTap={{ scale: 0.95 }}
+          className="flex items-center gap-2 text-sm bg-[#744ce9] text-white w-full sm:w-auto py-2 px-4 rounded-md shadow transition-all duration-50 cursor-pointer border-2 border-[#744ce9] justify-center"
+        >
+          <FiMap size={20} />
+          <FiArrowLeft size={20} />
+          <span>Повернутись до карти</span>
+        </motion.button>
 
-  <motion.button
-    onClick={() => navigate("/")}
-    whileHover={{ scale: 1.05, backgroundColor: "#FFFFFF", color: "#744ce9" }}
-    whileTap={{ scale: 0.95 }}
-    className="flex items-center gap-2 text-sm bg-[#744ce9] text-white w-full sm:w-auto py-2 px-4 rounded-md shadow transition-all duration-50 cursor-pointer border-2 border-[#744ce9] justify-center"
-  >
-    <FiMap size={20} />
-    <FiArrowLeft size={20} />
-    <span>Повернутись до карти</span>
-  </motion.button>
+        <div className="relative w-full max-w-3xl mt-2 sm:mt-0">
+          <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Пошук..."
+            className="bg-white text-sm text-gray-700 placeholder-gray-400 pl-10 pr-4 py-2 rounded-md w-full shadow-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#744ce9] focus:border-transparent"
+          />
+        </div>
 
-  <div className="relative w-full max-w-3xl mt-2 sm:mt-0">
-    <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-    <input
-      type="text"
-      placeholder="Пошук..."
-      className="bg-white text-sm text-gray-700 placeholder-gray-400 pl-10 pr-4 py-2 rounded-md w-full shadow-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#744ce9] focus:border-transparent"
-    />
-  </div>
+        {/* Праві іконки */}
+        {windowWidth >= 1200 ? (
+          <div className="flex items-center gap-3">
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleDarkMode} className="text-[#744ce9] text-xl p-2 rounded cursor-pointer"><FiMoon /></motion.button>
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="text-[#744ce9] text-xl p-2 relative rounded cursor-pointer">
+              <FiMessageCircle />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+            </motion.button>
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="text-[#744ce9] text-xl p-2 relative rounded cursor-pointer">
+              <FiUsers />
+              <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">5</span>
+            </motion.button>
+            
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-[#744ce9] text-white flex items-center justify-center text-sm font-semibold shadow">ІП</div>
+              <p className="text-base font-medium text-gray-700 whitespace-nowrap">Ім'я Прізвище</p>
+            </div>
 
-  {/* Праві іконки */}
-  {windowWidth >= 1200 ? (
-    <div className="flex items-center gap-3">
-      <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleDarkMode} className="text-[#744ce9] text-xl p-2 rounded cursor-pointer"><FiMoon /></motion.button>
-      <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="text-[#744ce9] text-xl p-2 relative rounded cursor-pointer">
-        <FiMessageCircle />
-        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
-      </motion.button>
-      <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="text-[#744ce9] text-xl p-2 relative rounded cursor-pointer">
-        <FiUsers />
-        <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">5</span>
-      </motion.button>
-      
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-[#744ce9] text-white flex items-center justify-center text-sm font-semibold shadow">ІП</div>
-        <p className="text-base font-medium text-gray-700 whitespace-nowrap">Ім'я Прізвище</p>
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={handleLogout} className="text-[#dc2626] text-xl p-2 rounded cursor-pointer"><FiLogOut /></motion.button>
+          </div>
+        ) : windowWidth >= 768 ? (
+          <motion.button
+            onClick={toggleMobileMenu}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="mt-2 text-[#744ce9] text-xl p-2 rounded cursor-pointer flex items-center justify-center"
+          >
+            {isMobileMenuOpen ? <FiX /> : <FiMenu />}
+          </motion.button>
+        ) : (
+          <motion.button
+            onClick={toggleMobileMenu}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="mt-2 text-[#744ce9] text-xl p-2 rounded cursor-pointer flex items-center justify-center"
+          >
+            {isMobileMenuOpen ? <FiX /> : <FiMenu />}
+          </motion.button>
+        )}
       </div>
 
-      <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={handleLogout} className="text-[#dc2626] text-xl p-2 rounded cursor-pointer"><FiLogOut /></motion.button>
-    </div>
-  ) : windowWidth >= 768 ? (
-    <motion.button
-      onClick={toggleMobileMenu}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      className="mt-2 text-[#744ce9] text-xl p-2 rounded cursor-pointer flex items-center justify-center"
-    >
-      {isMobileMenuOpen ? <FiX /> : <FiMenu />}
-    </motion.button>
-  ) : (
-    <motion.button
-      onClick={toggleMobileMenu}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      className="mt-2 text-[#744ce9] text-xl p-2 rounded cursor-pointer flex items-center justify-center"
-    >
-      {isMobileMenuOpen ? <FiX /> : <FiMenu />}
-    </motion.button>
-  )}
-</div>
-
-{isMobileMenuOpen && windowWidth < 1200 && (
-  <div className="flex flex-col gap-2 mb-4">
-    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={toggleDarkMode} className="flex items-center gap-2 text-[#744ce9] text-base p-2 border rounded">Тема <FiMoon /></motion.button>
-    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-2 text-[#744ce9] text-base p-2 border rounded">Повідомлення <FiMessageCircle /></motion.button>
-    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-2 text-[#744ce9] text-base p-2 border rounded">Друзі <FiUsers /></motion.button>
-    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-2 text-[#744ce9] text-base p-2 border rounded">Профіль <div className="w-6 h-6 rounded-full bg-[#744ce9] text-white flex items-center justify-center text-xs font-semibold">ІП</div></motion.button>
-    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleLogout} className="flex items-center gap-2 text-[#dc2626] text-base p-2 border rounded">Вихід <FiLogOut /></motion.button>
-  </div>
-)}
-
+      {isMobileMenuOpen && windowWidth < 1200 && (
+        <div className="flex flex-col gap-2 mb-4">
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={toggleDarkMode} className="flex items-center gap-2 text-[#744ce9] text-base p-2 border rounded">Тема <FiMoon /></motion.button>
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-2 text-[#744ce9] text-base p-2 border rounded">Повідомлення <FiMessageCircle /></motion.button>
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-2 text-[#744ce9] text-base p-2 border rounded">Друзі <FiUsers /></motion.button>
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-2 text-[#744ce9] text-base p-2 border rounded">Профіль <div className="w-6 h-6 rounded-full bg-[#744ce9] text-white flex items-center justify-center text-xs font-semibold">ІП</div></motion.button>
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleLogout} className="flex items-center gap-2 text-[#dc2626] text-base p-2 border rounded">Вихід <FiLogOut /></motion.button>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="grid gap-8" style={{ gridTemplateColumns: windowWidth >= 1200 ? '1fr 2fr' : '1fr' }}>
@@ -209,10 +257,12 @@ const ProfilePage = () => {
             <div className="relative group rounded-full overflow-hidden bg-white flex items-center justify-center shadow-md cursor-pointer"
                  style={{ width: isXSmallScreen ? '100px' : isSmallScreen ? '120px' : '160px', height: isXSmallScreen ? '100px' : isSmallScreen ? '120px' : '160px' }}>
               {avatarPreview ? <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" /> : <span className="text-[#744ce9] text-4xl font-semibold">ІП</span>}
-              <div className="absolute inset-x-0 bottom-[-0.1%] h-2/6 bg-[#744ce9b3] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-1">
-                <button type="button" onClick={triggerFileInput} className="text-white text-xl cursor-pointer p-2 rounded-lg hover:bg-[#5d39b380] transition-all duration-200"><FiUpload /></button>
-                <button type="button" onClick={() => { setAvatar(null); setAvatarPreview(null); fileInputRef.current.value = null; }} className="text-white text-xl cursor-pointer p-2 rounded-lg hover:bg-[#5d39b380] transition-all duration-200"><FiTrash /></button>
-              </div>
+              {isEditing && (
+                <div className="absolute inset-x-0 bottom-[-0.1%] h-2/6 bg-[#744ce9b3] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-1">
+                  <button type="button" onClick={triggerFileInput} className="text-white text-xl cursor-pointer p-2 rounded-lg hover:bg-[#5d39b380] transition-all duration-200"><FiUpload /></button>
+                  <button type="button" onClick={() => { setAvatar(null); setAvatarPreview(null); fileInputRef.current.value = null; }} className="text-white text-xl cursor-pointer p-2 rounded-lg hover:bg-[#5d39b380] transition-all duration-200"><FiTrash /></button>
+                </div>
+              )}
             </div>
             <input type="file" ref={fileInputRef} onChange={handleAvatarChange} accept="image/jpeg, image/png, image/webp" className="hidden" />
             <p className="text-center text-sm text-gray-500 mt-2">Підтримка: JPG, PNG, WEBP. До 10 МБ</p>
@@ -221,7 +271,29 @@ const ProfilePage = () => {
           </div>
 
           <div className="space-y-6 bg-white rounded-xl p-6 border border-gray-200 shadow-lg">
-            <h2 className="text-xl md:text-2xl font-semibold text-[#744ce9]">Особисті дані</h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl md:text-2xl font-semibold text-[#744ce9]">Особисті дані</h2>
+              <motion.button
+                type="button"
+                onClick={toggleEditMode}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isEditing ? "bg-gray-300 hover:bg-gray-400" : "bg-[#744ce9] hover:bg-[#5d39b3] text-white"} focus:outline-none focus:ring-2 focus:ring-[#744ce9] focus:ring-offset-2 cursor-pointer`}
+              >
+                {isEditing ? (
+                  <>
+                    <FiX size={16} />
+                    <span>Скасувати</span>
+                  </>
+                ) : (
+                  <>
+                    <FiEdit2 size={16} />
+                    <span>Редагувати</span>
+                  </>
+                )}
+              </motion.button>
+            </div>
+            
             <div className="grid gap-4" style={{ gridTemplateColumns: windowWidth < 1200 ? '1fr' : 'repeat(2, 1fr)' }}>
               {["firstName","lastName","middleName","location","email","phone"].map((name) => (
                 <div key={name} className="relative w-full">
@@ -235,18 +307,33 @@ const ProfilePage = () => {
                     placeholder={`Уведіть ваше ${name === "firstName" ? "ім'я" : name === "lastName" ? "прізвище" : name === "middleName" ? "по батькові" : name === "location" ? "місце проживання" : name === "email" ? "email" : "телефон"}`}
                     value={formData[name]}
                     onChange={handleChange}
-                    className="w-full p-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] focus:border-transparent"
+                    disabled={!isEditing}
+                    className={`w-full p-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] focus:border-transparent ${
+                      !isEditing 
+                        ? "bg-white cursor-not-allowed text-gray-600" 
+                        : "bg-gray-100 text-[#744ce9]"
+                    }`}
                   />
                 </div>
               ))}
             </div>
-            <div className="flex flex-col sm:flex-row justify-end items-center gap-4">
-              {error && <p className="text-red-500 text-sm">{error}</p>}
-              {isSuccess && <p className="text-green-600 text-sm">Зміни успішно збережено!</p>}
-              <motion.button type="submit" disabled={isSubmitting} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className={`px-4 md:px-6 py-2 text-sm md:text-base rounded-lg transition-all ${isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-[#32CD32] hover:bg-[#2EB94D] text-white"} focus:outline-none focus:ring-2 focus:ring-[#744ce9] focus:ring-offset-2 cursor-pointer border-none font-semibold`}>
-                {isSubmitting ? "Збереження..." : "Зберегти зміни"}
-              </motion.button>
-            </div>
+            
+            {isEditing && (
+              <div className="flex flex-col sm:flex-row justify-end items-center gap-4">
+                {error && <p className="text-red-500 text-sm">{error}</p>}
+                {isSuccess && <p className="text-green-600 text-sm">Зміни успішно збережено!</p>}
+                <motion.button 
+                  type="submit" 
+                  disabled={isSubmitting} 
+                  whileHover={{ scale: 1.05 }} 
+                  whileTap={{ scale: 0.95 }} 
+                  className={`flex items-center gap-2 px-4 md:px-6 py-2 text-sm md:text-base rounded-lg transition-all ${isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-[#32CD32] hover:bg-[#2EB94D] text-white"} focus:outline-none focus:ring-2 focus:ring-[#744ce9] focus:ring-offset-2 cursor-pointer border-none font-semibold`}
+                >
+                  <FiCheck size={16} />
+                  {isSubmitting ? "Збереження..." : "Зберегти зміни"}
+                </motion.button>
+              </div>
+            )}
           </div>
         </motion.div>
       </form>

@@ -1,5 +1,5 @@
-import path from 'path';
 import { fileURLToPath } from 'url';
+import path from 'path';
 import cors from 'cors';
 import express from 'express';
 import createHttpError from 'http-errors';
@@ -14,6 +14,7 @@ import profileEdditRouter from './routes/profileChanges.js';
 import supportRouter from './routes/support.js';
 import authRouter from './routes/auth.js'
 
+
 const app = express();
 
 // Middleware
@@ -21,8 +22,8 @@ app.use(morgan('combined'));
 
 // CORS configuration - THIS IS THE KEY FIX
 app.use(cors({
-    origin: 'http://localhost:5173', // Your frontend URL
-    credentials: true, // Allow cookies to be sent
+    origin: 'http://localhost:5173', 
+    credentials: true, 
     optionsSuccessStatus: 200
 }));
 
@@ -41,6 +42,7 @@ app.use('/', getReportsRouter);
 app.use('/', profileEdditRouter);
 app.use('/', marker);
 app.use('/', authRouter);
+
 
 
 // Обробка 404
