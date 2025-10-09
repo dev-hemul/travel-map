@@ -8,8 +8,8 @@ import Tokens from '../model/token.js';
 const privateKey = readFileSync('keys/privateKey.pem', 'utf8');
 const publicKey = readFileSync('keys/publicKey.pem', 'utf8');
 const alg = 'RS512';
-const lifedur = 10000; // 10 сек
-const refreshLifedur = 20000; // 20 сек
+const lifedur = 10 * 1000; // 10 секунд
+const refreshLifedur = 20 * 1000; // 20 секунд
 
 if (!privateKey || !publicKey) {
   throw new Error('Ключі не ініціалізовані в файлах keys/');
@@ -37,6 +37,7 @@ export const register = async (req, res) => {
       maxAge: refreshLifedur,
     });
     res.status(200).json({ accessToken: accessT });
+    console.log('Register successful:', { userId: user._id, refreshToken: refreshT });
   } catch (error) {
     console.error('Register error:', error);
     res.status(500).json({ message: 'Помилка сервера' });
@@ -60,6 +61,7 @@ export const login = async (req, res) => {
       maxAge: refreshLifedur,
     });
     res.json({ accessToken: accessT });
+    console.log('Login successful:', { userId: user._id, refreshToken: refreshT });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Помилка сервера' });
@@ -67,33 +69,27 @@ export const login = async (req, res) => {
 };
 
 export const getRefreshToken = async (req, res) => {
-  try {
-    let refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) return res.status(400).json({ message: 'Refresh token required' });
+  const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+  if (!refreshToken) {
+    console.log('Refresh token not provided');
+    return res.status(401).json({ message: 'Refresh token not provided' });
+  }
 
+  try {
+    // Перевірка refreshToken у БД
     const tokenDoc = await Tokens.findOne({ refreshToken });
-    if (!tokenDoc) return res.status(403).json({ message: 'Invalid refresh token' });
-    if (tokenDoc.expiresAt < Date.now()) {
-      await Tokens.findByIdAndDelete(tokenDoc._id);
-      return res.status(403).json({ message: 'Refresh token has expired' });
+    if (!tokenDoc || tokenDoc.expiresAt < Date.now()) {
+      console.log('Refresh token expired or not found:', refreshToken);
+      return res.status(401).json({ message: 'Refresh token expired or invalid' });
     }
 
-    const user = await User.findById(tokenDoc.userId);
-    if (!user) return res.status(403).json({ message: 'User not found' });
-
-    await Tokens.findByIdAndDelete(tokenDoc._id);
-    const { accessT, refreshT } = await createTokens(user._id);
-
-    res.cookie('refreshToken', refreshT, {
-      httpOnly: false,
-      secure: false,
-      sameSite: 'lax',
-      maxAge: refreshLifedur,
-    });
-    res.status(200).json({ accessToken: accessT });
+    // Створюємо новий accessToken
+    const { accessT } = createAccessT({ id: tokenDoc.userId });
+    res.json({ accessToken: accessT });
+    console.log('Refresh successful, new access token issued for user:', tokenDoc.userId);
   } catch (error) {
-    console.error('RefreshToken error:', error);
-    res.status(500).json({ message: 'Помилка оновлення токена' });
+    console.error('Refresh error:', error);
+    res.status(401).json({ message: 'Invalid refresh token' });
   }
 };
 
@@ -152,14 +148,17 @@ const createRefreshT = (userId) => {
 
 const createTokens = async (userId) => {
   if (!userId) throw new Error('userId is undefined');
-  const payload = { id: userId };
-  const { token: accessT } = createAccessT(payload);
+  
+  const { token: accessT } = createAccessT({ id: userId });
   const refreshT = createRefreshT(userId);
-
-  await Tokens.create({
-    refreshToken: refreshT,
-    userId,
-    expiresAt: Date.now() + refreshLifedur
+  
+  await Tokens.deleteMany({ userId });
+  await Tokens.create({ 
+    refreshToken: refreshT, 
+    userId, 
+    expiresAt: new Date(Date.now() + refreshLifedur) 
   });
+  
+  console.log('Tokens created:', { userId, refreshToken: refreshT });
   return { accessT, refreshT };
 };
