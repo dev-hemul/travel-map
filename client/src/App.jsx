@@ -2,8 +2,7 @@ import React, { useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode'; // Коректний імпорт
 
-import Announcements from './components/announcements/announcementModalWrapper';
-import SearchBar from './components/announcements/SearchBar';
+import AnnouncementModal from './components/announcements/AnnouncementModal'
 import MapView from './components/MapView';
 import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
@@ -80,7 +79,7 @@ function App() {
             <>
               <MapView />
               <SupportModalWrapper />
-              {/*<Announcements />*/}
+              <AnnouncementModal />
             </>
           }
         />
