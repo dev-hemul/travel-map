@@ -1021,7 +1021,7 @@ const MapView = () => {
         onDelete={handleDeleteMarker}
       />
 
-      <div className="absolute top-4 right-4 flex gap-3 z-10" style={{ zIndex: 1000 }}>
+      <div className="absolute top-4 right-4 flex gap-3 z-10" style={{ zIndex: 997 }}>
         <AuthMenu />
         <LayersSwitcher mapType={mapType} setMapType={setMapType} />
         <WeatherWidget />

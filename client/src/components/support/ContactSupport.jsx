@@ -7,7 +7,7 @@ export default function ContactSupport({ onOpenForm, telegramLink }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-10 right-5 z-[1000]">
+    <div className="fixed bottom-10 right-5 z-[997]">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-4 py-2 bg-white text-gray-800 rounded-full shadow-md
