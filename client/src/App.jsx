@@ -1,9 +1,7 @@
 import React, { useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode'; // Коректний імпорт
-
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 import Announcements from './components/announcements/announcementModalWrapper';
-import SearchBar from './components/announcements/SearchBar';
 import MapView from './components/MapView';
 import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
@@ -12,68 +10,94 @@ import ProfilePage from './pages/profilePage';
 import axios from 'axios';
 
 function App() {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); 
+  const location = useLocation();
 
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      const accessToken = localStorage.getItem('accessToken');
-      const refreshToken = document.cookie.split('; ').find(row => row.startsWith('refreshToken='))?.split('=')[1];
+  // захищені роути
+  const protectedRoutes = ['/profile', '/announcements', '/routes', '/support', '/settings', '/auth'];
 
-      if (!accessToken && !refreshToken) {
-        console.log('No tokens - redirecting to login');
-        navigate('/login');
-        return;
-      }
+  // Функція перевірки токенів
+  const checkTokens = async () => {
+    const accessToken = localStorage.getItem('accessToken'); 
+    const refreshToken = document.cookie.split('; ').find(row => row.startsWith('refreshToken='))?.split('=')[1]; // Витягуємо refresh token
 
-      if (accessToken) {
-        try {
-          const decoded = jwtDecode(accessToken);
-          const now = Date.now() / 1000;
-          if (decoded.exp < now + 3) { // Оновлюємо за 3 сек до смерті
-            console.log('Access token expiring soon, refreshing...');
-            try {
-              const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
-              localStorage.setItem('accessToken', response.data.accessToken);
-              console.log('Refresh successful');
-            } catch (refreshError) {
-              console.log('Refresh failed:', refreshError.response?.status, refreshError.response?.data);
-              localStorage.removeItem('accessToken');
-              document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-              navigate('/login');
-              return;
-            }
-          }
-        } catch (error) {
-          console.log('Token decode error:', error.message);
-          if (refreshToken) {
-            try {
-              const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
-              localStorage.setItem('accessToken', response.data.accessToken);
-              console.log('Refresh with refresh token successful');
-            } catch (refreshError) {
-              console.log('Refresh failed:', refreshError.response?.status, refreshError.response?.data);
-              localStorage.removeItem('accessToken');
-              document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-              navigate('/login');
-              return;
-            }
-          } else {
-            console.log('No refresh token - logging out');
-            localStorage.removeItem('accessToken');
-            document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-            navigate('/login');
+    // якщо немає токенів і користувач на захищеному роуті, перенаправляємо на логін
+    if (!accessToken && !refreshToken && protectedRoutes.includes(location.pathname)) {
+      console.log('немає токенів, захищений роут, редірект на логін');
+      navigate('/login', { replace: true });
+      return;
+    }
+
+    // якщо немає токенів, але роут не захищений, залишаємо користувача на сторінці, не викидаємо на сторінку логіна
+    if (!accessToken && !refreshToken) {
+      console.log('немає токенів, користувач не залогінений, дозволено переглядати незахищені роути');
+      return;
+    }
+
+    // Якщо є аксестокен, перевіряємо його
+    if (accessToken) {
+      try {
+        const decoded = jwtDecode(accessToken); 
+        const now = Date.now() / 1000; 
+        if (decoded.exp < now + 3) { 
+          console.log('Access token expiring soon, refreshing...');
+          try {
+            const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true }); 
+            localStorage.setItem('accessToken', response.data.accessToken); 
+            console.log('Refresh successful');
+          } catch (refreshError) {
+            console.log('Refresh failed:', refreshError.response?.status, refreshError.response?.data);
+            localStorage.removeItem('accessToken'); 
+            document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'; 
+            navigate('/login', { replace: true }); /
             return;
           }
         }
+      } catch (error) {
+        console.log('Token decode error:', error.message);
+        if (refreshToken) { // якщо є рефрештокен, оновлюємо його
+          try {
+            const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
+            localStorage.setItem('accessToken', response.data.accessToken);
+            console.log('Refresh with refresh token successful');
+          } catch (refreshError) {
+            console.log('Refresh failed:', refreshError.response?.status, refreshError.response?.data);
+            localStorage.removeItem('accessToken');
+            document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            navigate('/login', { replace: true });
+            return;
+          }
+        } else {
+          console.log('No refresh token - logging out');
+          localStorage.removeItem('accessToken');
+          document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          navigate('/login', { replace: true });
+          return;
+        }
       }
-    }, 3000); // Кожні 3 секунди
+    }
+  };
 
-    return () => clearInterval(interval);
-  }, [navigate]);
+  useEffect(() => {
+    checkTokens();
+
+    // періодична перевірка, щоб вчасно викидати користувча
+    const accessToken = localStorage.getItem('accessToken');
+    const refreshToken = document.cookie.split('; ').find(row => row.startsWith('refreshToken='))?.split('=')[1];
+    let interval;
+    if (accessToken || refreshToken) {
+      interval = setInterval(checkTokens, 3000); 
+    }
+
+    return () => {
+      if (interval) clearInterval(interval); 
+    };
+  }, [navigate, location.pathname]); 
 
   return (
     <div className="min-h-screen dark:bg-gray-900 bg-gray-50 relative">
       <Routes>
+        {/* Публічні роути */}
         <Route
           path="/"
           element={
@@ -84,6 +108,9 @@ function App() {
             </>
           }
         />
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* Захищені роути */}
         <Route
           path="/profile"
           element={
@@ -132,7 +159,6 @@ function App() {
             </SidebarLayout>
           }
         />
-        <Route path="/login" element={<LoginPage />} />
       </Routes>
     </div>
   );
