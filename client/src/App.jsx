@@ -1,7 +1,7 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-
-import AnnouncementModal from './components/announcements/AnnouncementModal'
+import React, { useEffect } from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'; // Додано useNavigate
+import { jwtDecode } from 'jwt-decode'; // Додано jwtDecode
+import AnnouncementModal from './components/announcements/AnnouncementModal';
 import MapView from './components/MapView';
 import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
@@ -10,65 +10,65 @@ import ProfilePage from './pages/profilePage';
 import axios from 'axios';
 
 function App() {
-  const navigate = useNavigate(); 
-  const location = useLocation();
+  const navigate = useNavigate(); // Хук для редиректів
+  const location = useLocation(); // Хук для поточного роута
 
-  // захищені роути
+  // Захищені роути
   const protectedRoutes = ['/profile', '/announcements', '/routes', '/support', '/settings', '/auth'];
 
   // Функція перевірки токенів
   const checkTokens = async () => {
-    const accessToken = localStorage.getItem('accessToken'); 
-    const refreshToken = document.cookie.split('; ').find(row => row.startsWith('refreshToken='))?.split('=')[1]; // Витягуємо refresh token
+    const accessToken = localStorage.getItem('accessToken');
+    const refreshToken = document.cookie.split('; ').find(row => row.startsWith('refreshToken='))?.split('=')[1];
 
     // якщо немає токенів і користувач на захищеному роуті, перенаправляємо на логін
     if (!accessToken && !refreshToken && protectedRoutes.includes(location.pathname)) {
-      console.log('немає токенів, захищений роут, редірект на логін');
+      console.log('Немає токенів, захищений роут, редирект на логін');
       navigate('/login', { replace: true });
       return;
     }
 
-    // якщо немає токенів, але роут не захищений, залишаємо користувача на сторінці, не викидаємо на сторінку логіна
+    // якщо немає токенів, але роут не захищений, дозволяємо залишатися на незахищених сторінках
     if (!accessToken && !refreshToken) {
-      console.log('немає токенів, користувач не залогінений, дозволено переглядати незахищені роути');
+      console.log('Немає токенів, користувач не залогінений, дозволено переглядати незахищені роути');
       return;
     }
 
-    // Якщо є аксестокен, перевіряємо його
+    // якщо є аксестокен, перевіряємо його
     if (accessToken) {
       try {
-        const decoded = jwtDecode(accessToken); 
-        const now = Date.now() / 1000; 
-        if (decoded.exp < now + 3) { 
-          console.log('Access token expiring soon, refreshing...');
+        const decoded = jwtDecode(accessToken);
+        const now = Date.now() / 1000;
+        if (decoded.exp < now + 3) {
+          console.log('Access token скоро закінчиться, оновлюємо...');
           try {
-            const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true }); 
-            localStorage.setItem('accessToken', response.data.accessToken); 
-            console.log('Refresh successful');
+            const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
+            localStorage.setItem('accessToken', response.data.accessToken);
+            console.log('Оновлення успішне');
           } catch (refreshError) {
-            console.log('Refresh failed:', refreshError.response?.status, refreshError.response?.data);
-            localStorage.removeItem('accessToken'); 
-            document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'; 
-            navigate('/login', { replace: true }); /
+            console.log('Помилка оновлення:', refreshError.response?.status, refreshError.response?.data);
+            localStorage.removeItem('accessToken');
+            document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            navigate('/login', { replace: true });
             return;
           }
         }
       } catch (error) {
-        console.log('Token decode error:', error.message);
-        if (refreshToken) { // якщо є рефрештокен, оновлюємо його
+        console.log('Помилка декодування токена:', error.message);
+        if (refreshToken) {
           try {
             const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
             localStorage.setItem('accessToken', response.data.accessToken);
-            console.log('Refresh with refresh token successful');
+            console.log('Оновлення за допомогою refresh token успішне');
           } catch (refreshError) {
-            console.log('Refresh failed:', refreshError.response?.status, refreshError.response?.data);
+            console.log('Помилка оновлення:', refreshError.response?.status, refreshError.response?.data);
             localStorage.removeItem('accessToken');
             document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
             navigate('/login', { replace: true });
             return;
           }
         } else {
-          console.log('No refresh token - logging out');
+          console.log('Немає refresh token - вихід');
           localStorage.removeItem('accessToken');
           document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           navigate('/login', { replace: true });
@@ -79,20 +79,20 @@ function App() {
   };
 
   useEffect(() => {
-    checkTokens();
+    checkTokens(); // перевіряємо токени одразу
 
-    // періодична перевірка, щоб вчасно викидати користувча
+    // періодична перевірка для залогінених
     const accessToken = localStorage.getItem('accessToken');
     const refreshToken = document.cookie.split('; ').find(row => row.startsWith('refreshToken='))?.split('=')[1];
     let interval;
     if (accessToken || refreshToken) {
-      interval = setInterval(checkTokens, 3000); 
+      interval = setInterval(checkTokens, 3000);
     }
 
     return () => {
-      if (interval) clearInterval(interval); 
+      if (interval) clearInterval(interval);
     };
-  }, [navigate, location.pathname]); 
+  }, [navigate, location.pathname]);
 
   return (
     <div className="min-h-screen dark:bg-gray-900 bg-gray-50 relative">
