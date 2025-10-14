@@ -33,12 +33,18 @@ app.use((req, res, next) => {
 
 // CORS конфігурація
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: ['http://localhost:5173', 'http://localhost:5174'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  exposedHeaders: ['Set-Cookie'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   optionsSuccessStatus: 200
 }));
+
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  next();
+});
 
 app.use((req, res, next) => {
   console.log('[Крок 1] Після CORS. Cookies:', req.cookies);
@@ -47,7 +53,6 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-app.options('*', cors());
 
 app.use('/login', (req, res, next) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
