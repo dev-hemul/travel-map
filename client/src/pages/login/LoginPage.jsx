@@ -37,29 +37,35 @@ const LoginPage = () => {
   const notifyEmailIsNecessaryWarning = () => toast.warning('Заповніть усі поля.')
   
   // перевірка токенів
- useEffect(() => {
+useEffect(() => {
   const accessToken = localStorage.getItem('accessToken');
   const refreshToken = document.cookie.split('; ').find(row => row.startsWith('refreshToken='))?.split('=')[1];
 
   if (accessToken && refreshToken) {
-    axios.post('http://localhost:4000/profile', {}, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
+    axios
+      .post('http://localhost:4000/profile', {}, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        withCredentials: true, 
+      })
       .then(res => {
         if (res.status === 200) navigate('/profile');
       })
       .catch(() => {
         if (refreshToken) {
-          axios.post('http://localhost:4000/refresh-token', {}, {
-            headers: { Authorization: `Bearer ${refreshToken}` },
-          })
+          axios
+            .post('http://localhost:4000/refresh-token', {}, {
+              withCredentials: true, 
+            })
             .then(res => {
               if (res.data.accessToken) {
                 localStorage.setItem('accessToken', res.data.accessToken);
                 navigate('/profile');
               }
             })
-            .catch(() => navigate('/login'));
+            .catch(() => {
+              navigate('/login');
+              toast.error('Сесія закінчилася. Увійдіть знову.');
+            });
         }
       });
   }
@@ -120,7 +126,7 @@ const LoginPage = () => {
         }, {
             withCredentials: true 
         });
-        
+        console.log('cookies', document.cookie)
         console.log('Відповідь від сервера:', response.data);
         notifySuccessLog();
         localStorage.setItem('accessToken', response.data.accessToken); 

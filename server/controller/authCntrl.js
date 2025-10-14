@@ -142,10 +142,19 @@ export const logout = async (req, res) => {
 };
 
 // Helper functions
-const createAccessT = (payload) => {
-  const expiration = Math.floor(Date.now() / 1000) + Math.floor(lifedur / 1000);
-  payload.exp = expiration;
-  return { token: jwt.sign(payload, privateKey, { algorithm: alg, noTimestamp: true }) };
+export const createAccessT = (payload) => {
+  console.log('[createAccessT] Створюємо accessToken для payload:', payload);
+  try {
+    const accessT = jwt.sign(payload, privateKey, {
+      algorithm: alg,
+      expiresIn: lifedur / 1000
+    });
+    console.log('[createAccessT] Access Token:', accessT);
+    return { accessT };
+  } catch (error) {
+    console.error('[createAccessT] Помилка:', error.message, error.stack);
+    throw error;
+  }
 };
 
 const createRefreshT = (userId) => {

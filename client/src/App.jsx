@@ -36,14 +36,18 @@ function App() {
 
     // якщо є аксестокен, перевіряємо його
     if (accessToken) {
+      console.log('1. accessToken before', accessToken)
       try {
         const decoded = jwtDecode(accessToken);
+        console.log('2. decoded accessToken', decoded)
         const now = Date.now() / 1000;
         if (decoded.exp < now + 3) {
           console.log('Access token скоро закінчиться, оновлюємо...');
           try {
             const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
+            console.log('3.response', response)
             localStorage.setItem('accessToken', response.data.accessToken);
+            console.log('localstorage data', localStorage)
             console.log('Оновлення успішне');
           } catch (refreshError) {
             console.log('Помилка оновлення:', refreshError.response?.status, refreshError.response?.data);
@@ -59,7 +63,7 @@ function App() {
           try {
             const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
             localStorage.setItem('accessToken', response.data.accessToken);
-            console.log('Оновлення за допомогою refresh token успішне');
+            console.log('Оновлення за допомогою refresh token успішне', response.data);
           } catch (refreshError) {
             console.log('Помилка оновлення:', refreshError.response?.status, refreshError.response?.data);
             localStorage.removeItem('accessToken');

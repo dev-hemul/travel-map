@@ -72,8 +72,8 @@ const ProfilePage = () => {
       const accessToken = localStorage.getItem('accessToken');
       const refreshToken = document.cookie.split('; ').find(row => row.startsWith('refreshToken='))?.split('=')[1];
 
-      console.log('AccessToken present:', !!accessToken);
-      console.log('RefreshToken present:', !!refreshToken);
+      console.log('AccessToken present:', accessToken);
+      console.log('RefreshToken present:', refreshToken);
 
       if (!accessToken && !refreshToken) {
         console.log('No tokens - redirect to login');
@@ -83,7 +83,7 @@ const ProfilePage = () => {
       }
 
       if (!accessToken && refreshToken) {
-        console.log('No access, but refresh - trying to refresh');
+        console.log('No accesstoken - trying to refresh');
         try {
           const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
           console.log('Refresh success:', response.status);
