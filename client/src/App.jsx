@@ -10,8 +10,8 @@ import ProfilePage from './pages/profilePage';
 import axios from 'axios';
 
 function App() {
-  const navigate = useNavigate(); // Хук для редиректів
-  const location = useLocation(); // Хук для поточного роута
+  const navigate = useNavigate(); 
+  const location = useLocation(); 
 
   // Захищені роути
   const protectedRoutes = ['/profile', '/announcements', '/routes', '/support', '/settings', '/auth'];

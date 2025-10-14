@@ -92,7 +92,8 @@ const LoginPage = () => {
           username: formData.username,
           email: formData.email,
           password: formData.password,
-        });
+        }, 
+      );
         console.log('Відповідь від сервера:', response.data);
         notifySuccessReg();
         setFormData({ username: '', email: '', password: '', confirmPassword: '' }); // Скидання форми

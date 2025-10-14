@@ -16,41 +16,61 @@ import authRouter from './routes/auth.js';
 
 const app = express();
 
-// Middleware
-app.use(morgan('combined'));
+app.use(morgan('dev'));
 
-// CORS configuration
+app.use((req, res, next) => {
+  console.log(`[Крок 0] Запит: ${req.method} ${req.url}`);
+  console.log('[Крок 0] Origin:', req.headers.origin);
+  console.log('[Крок 0] Raw Cookie Header:', req.headers.cookie);
+  next();
+});
+
+app.use(cookieParser());
+app.use((req, res, next) => {
+  console.log(`[Крок 0.5] Після cookie-parser. Cookies:`, req.cookies);
+  next();
+});
+
+// CORS конфігурація
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   optionsSuccessStatus: 200
 }));
 
+app.use((req, res, next) => {
+  console.log('[Крок 1] Після CORS. Cookies:', req.cookies);
+  console.log('[Крок 1] Response Headers:', res.getHeaders());
+  next();
+});
+
 app.use(express.json());
-app.use(cookieParser());
+app.options('*', cors());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, '../client')));
 
+// Роути
 app.use('/', announcementsRouter);
 app.use('/', supportRouter);
 app.use('/', getReportsRouter);
 app.use('/', marker);
-
 app.use('/', authRouter);
-
-app.use('/profile', profileEdditRouter); 
+app.use('/profile', profileEdditRouter);
 
 // Обробка 404
 app.use((req, res, next) => {
+  console.log('[Крок 404] Не знайдено:', req.method, req.url);
   next(createHttpError(404));
 });
 
 // Обробник помилок
 app.use((err, req, res, next) => {
   const { status = 500, message = 'Internal Server Error' } = err;
-  console.error(status, message);
+  console.error(`[Помилка] ${status}: ${message}`, err.stack);
   res.status(status).json({ error: message });
 });
 

@@ -46,13 +46,16 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
+    console.log('--------------login logs--------------')
     const { email, password } = req.body;
     const user = await User.findOne({ email });
+    console.log('email:', email)
     if (!user) return res.status(404).json({ message: 'Такого користувача не існує' });
     if (!await bcrypt.compare(password, user.password)) return res.status(401).json({ message: 'Неправильний пароль' });
 
     await Tokens.deleteMany({ userId: user._id });
     const { accessT, refreshT } = await createTokens(user._id);
+    console.log('tokens', accessT, refreshT)
 
     res.cookie('refreshToken', refreshT, {
       httpOnly: false,
@@ -60,7 +63,10 @@ export const login = async (req, res) => {
       sameSite: 'lax',
       maxAge: refreshLifedur,
     });
+    console.log('cookies', res.cookie)
+
     res.json({ accessToken: accessT });
+    console.log(res.json)
     console.log('Login successful:', { userId: user._id, refreshToken: refreshT });
   } catch (error) {
     console.error('Login error:', error);
@@ -146,19 +152,21 @@ const createRefreshT = (userId) => {
   return nanoid();
 };
 
-const createTokens = async (userId) => {
-  if (!userId) throw new Error('userId is undefined');
-  
-  const { token: accessT } = createAccessT({ id: userId });
-  const refreshT = createRefreshT(userId);
-  
-  await Tokens.deleteMany({ userId });
-  await Tokens.create({ 
-    refreshToken: refreshT, 
-    userId, 
-    expiresAt: new Date(Date.now() + refreshLifedur) 
-  });
-  
-  console.log('Tokens created:', { userId, refreshToken: refreshT });
-  return { accessT, refreshT };
+export const createTokens = async (userId) => {
+  console.log('[createTokens] Створюємо токени для userId:', userId);
+  try {
+    const accessT = jwt.sign({ id: userId }, privateKey, {
+      algorithm: alg,
+      expiresIn: lifedur / 1000
+    });
+    const refreshT = nanoid();
+    console.log('[createTokens] Access Token:', accessT);
+    console.log('[createTokens] Refresh Token:', refreshT);
+
+    await Tokens.create({ userId, refreshToken: refreshT });
+    return { accessT, refreshT };
+  } catch (error) {
+    console.error('[createTokens] Помилка:', error.message, error.stack);
+    throw error;
+  }
 };
