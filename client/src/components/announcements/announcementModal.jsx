@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaBullhorn, FaTimes, FaPlus, FaRegCommentDots } from 'react-icons/fa';
+<<<<<<< HEAD
 import { useNavigate } from 'react-router-dom';
+=======
+>>>>>>> 04161f6a5a00a7dd0fc1c9daf6eab1c2d9506ec7
 
 export default function AnnouncementModal() {
   const navigate = useNavigate();
@@ -19,7 +22,11 @@ export default function AnnouncementModal() {
       id: 2,
       title: 'Друга пропозиція',
       description: 'Опис другої пропозиції',
+<<<<<<< HEAD
       image: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=60',
+=======
+      image: 'https://images.unsplash.com/photo-1505691723518-36a3dd6d2a02?auto=format&fit=crop&w=800&q=60',
+>>>>>>> 04161f6a5a00a7dd0fc1c9daf6eab1c2d9506ec7
       address: 'Київська область, м. Буча',
     },
     {
@@ -139,11 +146,20 @@ export default function AnnouncementModal() {
                       key={a.id}
                       className="p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
                       initial={{ opacity: 0, y: 20 }}
+<<<<<<< HEAD
                       animate={{ opacity: 1, y: 0, transition: { duration: 0.3, delay: index * 0.1 } }}
+=======
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                        transition: { duration: 0.3, delay: index * 0.1 },
+                      }}
+>>>>>>> 04161f6a5a00a7dd0fc1c9daf6eab1c2d9506ec7
                       whileHover={{ borderColor: '#3b82f6' }}
                     >
                       {/* Фото */}
                       <div className="w-full h-40 mb-3 rounded-lg overflow-hidden">
+<<<<<<< HEAD
                         <img src={a.image} alt={a.title} className="w-full h-full object-cover" />
                       </div>
 
@@ -153,6 +169,27 @@ export default function AnnouncementModal() {
 
                       {/* Адреса */}
                       <p className="text-gray-500 text-xs italic mb-3">{a.address}</p>
+=======
+                        <img
+                          src={a.image}
+                          alt={a.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+
+                      {/* Заголовок і опис */}
+                      <h3 className="font-bold text-lg mb-1 text-gray-800">
+                        {a.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm leading-relaxed mb-2">
+                        {a.description}
+                      </p>
+
+                      {/* Адреса */}
+                      <p className="text-gray-500 text-xs italic mb-3">
+                        {a.address}
+                      </p>
+>>>>>>> 04161f6a5a00a7dd0fc1c9daf6eab1c2d9506ec7
 
                       {/* Нижня частина */}
                       <div className="flex justify-between items-center pt-3 border-t border-gray-200">
