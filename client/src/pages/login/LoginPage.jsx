@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaGoogle, FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import LoginTelegramButton from './TelegramLoginButton';
-import { ToastContainer, toast, Bounce } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 
@@ -27,11 +27,11 @@ const LoginPage = () => {
   const notifySuccessLog = () => toast.success('Успішний вхід!');
   const notifyLetterHasBeenSentOnEmail = () => toast.success('Лист підтвердження було надіслано на ваш Email');
   const notifyPasswordConfirmationErr = () => toast.error('Паролі не збігаються');
-  const notifyCurrentEmailErr = () => toast.error('Такий email вже зайнятий');
-  const notifyCurrentLoginErr = () => toast.error('Такий логін вже зайнятий');
-  const notifyWrongPasswordErr = () => toast.error('Невірний пароль.');
-  const notifyCurrentUserDoesntExist = () => toast.error('Такого користувача не існує.');
-  const notifyServerErr = () => toast.error('Помилка сервера.', );
+  // const notifyCurrentEmailErr = () => toast.error('Такий email вже зайнятий');
+  // const notifyCurrentLoginErr = () => toast.error('Такий логін вже зайнятий');
+  // const notifyWrongPasswordErr = () => toast.error('Невірний пароль.');
+  // const notifyCurrentUserDoesntExist = () => toast.error('Такого користувача не існує.');
+  // const notifyServerErr = () => toast.error('Помилка сервера.', ); коментую, бо еслінт ругається, але воно було переписано в функції і тут непотрібно
   const notifyPasswordRecoveryErr = () => toast.error('Невірні облікові дані.');
   const notifyAllInputAreNecessaryWarning = () => toast.warning('Заповніть усі поля.')
   const notifyEmailIsNecessaryWarning = () => toast.warning('Заповніть усі поля.')

@@ -157,9 +157,9 @@ export const createAccessT = (payload) => {
   }
 };
 
-const createRefreshT = (userId) => {
-  return nanoid();
-};
+// const createRefreshT = (userId) => {
+//   return nanoid();
+// }; поки закоментую, бо на нього еслінт ругається, якщо будуть помилки, буду розбиратись
 
 export const createTokens = async (userId) => {
   console.log('[createTokens] Створюємо токени для userId:', userId);

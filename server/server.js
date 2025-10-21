@@ -33,12 +33,12 @@ app.use((req, res, next) => {
 
 // CORS конфігурація
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  exposedHeaders: ['Set-Cookie'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 200
+  origin: 'http://localhost:5173', 
+  credentials: true, 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
+  allowedHeaders: ['Content-Type', 'Authorization'], 
+  exposedHeaders: ['Set-Cookie'], 
+  optionsSuccessStatus: 200 
 }));
 
 app.use((req, res, next) => {
@@ -82,7 +82,7 @@ app.use((req, res, next) => {
 });
 
 // Обробник помилок
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   const { status = 500, message = 'Internal Server Error' } = err;
   console.error(`[Помилка] ${status}: ${message}`, err.stack);
   res.status(status).json({ error: message });
