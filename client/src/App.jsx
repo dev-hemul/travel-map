@@ -12,13 +12,11 @@ import axios from 'axios';
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [loading, setLoading] = useState(true); // Стан завантаження для лоадера
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // Стан авторизації
+  const [loading, setLoading] = useState(true); // стан для лоадера
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // стан авторизаціх
 
-  // Захищені роути
   const protectedRoutes = ['/profile', '/announcements', '/routes', '/support', '/settings', '/auth'];
 
-  // Функція перевірки токенів
   const checkTokens = async () => {
     console.log('=== CheckAuth started ===');
     const accessToken = localStorage.getItem('accessToken');
@@ -32,6 +30,8 @@ function App() {
     if (!accessToken && !refreshToken && protectedRoutes.includes(location.pathname)) {
       console.log('No tokens - redirect to login');
       setIsAuthenticated(false);
+      // затримка для спінера
+      await new Promise(resolve => setTimeout(resolve, 1000)); 
       setLoading(false);
       navigate('/login', { replace: true });
       return;
@@ -98,7 +98,6 @@ function App() {
       }
     }
 
-    // Якщо все ок, вважаємо авторизованим
     setIsAuthenticated(true);
     setLoading(false);
   };
@@ -106,7 +105,6 @@ function App() {
   useEffect(() => {
     checkTokens();
 
-    // Періодична перевірка (опціонально, можна відключити)
     let interval;
     const accessToken = localStorage.getItem('accessToken');
     const refreshToken = document.cookie
@@ -121,13 +119,13 @@ function App() {
     };
   }, [navigate, location.pathname]);
 
-  // Лоадер на найвищому рівні
+  // спінер
   if (loading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900 z-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-[#744ce9] mx-auto"></div>
-          <p className="mt-4 text-lg text-[#744ce9] font-medium">Перевірка авторизації...</p>
+          <p className="mt-4 text-lg text-[#744ce9] font-medium">Завантаження...</p>
         </div>
       </div>
     );
