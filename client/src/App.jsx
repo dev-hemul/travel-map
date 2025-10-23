@@ -1,101 +1,64 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
 import AnnouncementModal from './components/announcements/AnnouncementModal';
 import MapView from './components/MapView';
 import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
-import axios from 'axios';
+
+// глобальний аксіос шоб не прописувати кожен раз with cred.
+axios.defaults.withCredentials = true;
 
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [loading, setLoading] = useState(true); // стан для лоадера
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // стан авторизаціх
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const protectedRoutes = ['/profile', '/announcements', '/routes', '/support', '/settings', '/auth'];
 
   const checkTokens = async () => {
     console.log('=== CheckAuth started ===');
     const accessToken = localStorage.getItem('accessToken');
-    const refreshToken = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('refreshToken='))?.split('=')[1];
-
     console.log('AccessToken present:', !!accessToken);
-    console.log('RefreshToken present:', !!refreshToken);
 
-    if (!accessToken && !refreshToken && protectedRoutes.includes(location.pathname)) {
-      console.log('No tokens - redirect to login');
+    if (!accessToken && protectedRoutes.includes(location.pathname)) {
+      console.log('No access token - redirect to login');
       setIsAuthenticated(false);
-      // затримка для спінера
-      await new Promise(resolve => setTimeout(resolve, 1000)); 
+      await new Promise(resolve => setTimeout(resolve, 1000));
       setLoading(false);
       navigate('/login', { replace: true });
       return;
     }
 
-    if (!accessToken && !refreshToken) {
-      console.log('No tokens, allowing public routes');
+    if (!accessToken) {
+      console.log('No access token, allowing public routes');
       setIsAuthenticated(false);
       setLoading(false);
       return;
     }
 
-    if (accessToken) {
-      try {
-        const decoded = jwtDecode(accessToken);
-        const now = Date.now() / 1000;
-        if (decoded.exp < now + 3) {
-          console.log('Access token expires soon, refreshing...');
-          try {
-            const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
-            localStorage.setItem('accessToken', response.data.accessToken);
-            console.log('Refresh successful');
-          } catch (refreshError) {
-            console.log('Refresh error:', refreshError.response?.status, refreshError.response?.data);
-            localStorage.removeItem('accessToken');
-            document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-            if (protectedRoutes.includes(location.pathname)) {
-              navigate('/login', { replace: true });
-            }
-            setIsAuthenticated(false);
-            setLoading(false);
-            return;
-          }
-        }
-      } catch (error) {
-        console.log('Decode error:', error.message);
-        if (refreshToken) {
-          try {
-            const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
-            localStorage.setItem('accessToken', response.data.accessToken);
-            console.log('Refresh with refresh token successful');
-          } catch (refreshError) {
-            console.log('Refresh error:', refreshError.response?.status, refreshError.response?.data);
-            localStorage.removeItem('accessToken');
-            document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-            if (protectedRoutes.includes(location.pathname)) {
-              navigate('/login', { replace: true });
-            }
-            setIsAuthenticated(false);
-            setLoading(false);
-            return;
-          }
-        } else {
-          console.log('No refresh token - logout');
-          localStorage.removeItem('accessToken');
-          document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-          if (protectedRoutes.includes(location.pathname)) {
-            navigate('/login', { replace: true });
-          }
-          setIsAuthenticated(false);
-          setLoading(false);
-          return;
-        }
+    try {
+      const decoded = jwtDecode(accessToken);
+      const now = Date.now() / 1000;
+      if (decoded.exp < now + 3) {
+        console.log('Access token expires soon, refreshing...');
+        const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
+        localStorage.setItem('accessToken', response.data.accessToken);
+        console.log('Refresh successful');
       }
+    } catch (error) {
+      console.log('Decode or refresh error:', error.response?.status, error.response?.data);
+      localStorage.removeItem('accessToken');
+      if (protectedRoutes.includes(location.pathname)) {
+        navigate('/login', { replace: true });
+      }
+      setIsAuthenticated(false);
+      setLoading(false);
+      return;
     }
 
     setIsAuthenticated(true);
@@ -107,11 +70,8 @@ function App() {
 
     let interval;
     const accessToken = localStorage.getItem('accessToken');
-    const refreshToken = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('refreshToken='))?.split('=')[1];
-    if (accessToken || refreshToken) {
-      interval = setInterval(checkTokens, 3000);
+    if (accessToken) {
+      interval = setInterval(checkTokens, 10000); 
     }
 
     return () => {
@@ -119,7 +79,7 @@ function App() {
     };
   }, [navigate, location.pathname]);
 
-  // спінер
+  // Спінер
   if (loading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900 z-50">

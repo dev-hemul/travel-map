@@ -39,34 +39,37 @@ const LoginPage = () => {
   // перевірка токенів
 useEffect(() => {
   const accessToken = localStorage.getItem('accessToken');
-  const refreshToken = document.cookie.split('; ').find(row => row.startsWith('refreshToken='))?.split('=')[1];
+  console.log('Checking auth, accessToken:', accessToken);
 
-  if (accessToken && refreshToken) {
+  if (accessToken) {
     axios
       .post('http://localhost:4000/profile', {}, {
         headers: { Authorization: `Bearer ${accessToken}` },
-        withCredentials: true, 
+        withCredentials: true,
       })
       .then(res => {
+        console.log('Profile check success:', res.status);
         if (res.status === 200) navigate('/profile');
       })
-      .catch(() => {
-        if (refreshToken) {
-          axios
-            .post('http://localhost:4000/refresh-token', {}, {
-              withCredentials: true, 
-            })
-            .then(res => {
-              if (res.data.accessToken) {
-                localStorage.setItem('accessToken', res.data.accessToken);
-                navigate('/profile');
-              }
-            })
-            .catch(() => {
-              navigate('/login');
-              toast.error('Сесія закінчилася. Увійдіть знову.');
-            });
-        }
+      .catch(error => {
+        console.log('Profile check error:', error);
+        axios
+          .post('http://localhost:4000/refresh-token', {}, {
+            withCredentials: true,
+          })
+          .then(res => {
+            console.log('Refresh success, new accessToken:', res.data.accessToken);
+            if (res.data.accessToken) {
+              localStorage.setItem('accessToken', res.data.accessToken);
+              navigate('/profile');
+            }
+          })
+          .catch(error => {
+            console.log('Refresh error:', error.response?.data);
+            localStorage.removeItem('accessToken');
+            navigate('/login');
+            toast.error('Сесія закінчилася. Увійдіть знову.');
+          });
       });
   }
 }, [navigate]);
@@ -98,8 +101,9 @@ useEffect(() => {
           username: formData.username,
           email: formData.email,
           password: formData.password,
-        }, 
+        },  {withCredentials: true}
       );
+  console.log('Заголовки відповіді:', response.headers);
         console.log('Відповідь від сервера:', response.data);
         notifySuccessReg();
         setFormData({ username: '', email: '', password: '', confirmPassword: '' }); // Скидання форми

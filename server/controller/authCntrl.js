@@ -30,20 +30,22 @@ export const register = async (req, res) => {
     await Tokens.deleteMany({ userId: user._id });
     const { accessT, refreshT } = await createTokens(user._id);
 
-    res.cookie('refreshToken', refreshT, {
-      httpOnly: false,
-      secure: false,
-      sameSite: 'lax',
-      maxAge: refreshLifedur,
-    });
+res.cookie('refreshToken', refreshT, {
+  httpOnly: true,
+  secure: true, // Для http://localhost
+  sameSite: 'lax', 
+  maxAge: refreshLifedur,
+  domain: 'localhost', 
+  path: '/', 
+});
+    const setCookieHeader = res.getHeaders()['set-cookie'];
+    console.log('!!!!!!!!!!!!!!!!!!!Set-Cookie header sent:', setCookieHeader);
     res.status(200).json({ accessToken: accessT });
-    console.log('Register successful:', { userId: user._id, refreshToken: refreshT });
   } catch (error) {
     console.error('Register error:', error);
     res.status(500).json({ message: 'Помилка сервера' });
   }
 };
-
 export const login = async (req, res) => {
   try {
     console.log('--------------login logs--------------')
@@ -96,6 +98,7 @@ export const getRefreshToken = async (req, res) => {
   } catch (error) {
     console.error('Refresh error:', error);
     res.status(401).json({ message: 'Invalid refresh token' });
+    
   }
 };
 
