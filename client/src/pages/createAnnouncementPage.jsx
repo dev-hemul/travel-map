@@ -62,7 +62,7 @@ export default function CreateAnnouncementPage() {
   return (
     <div className="min-h-screen bg-white text-gray-900">
       {/* Header */}
-      <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-b-3xl shadow-lg">
+      <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg">
         <div className="p-6 pb-8">
           <div className="flex items-center gap-4 mb-4">
             <motion.button
@@ -83,7 +83,7 @@ export default function CreateAnnouncementPage() {
             </div>
           </div>
         </div>
-        <div className="absolute -bottom-4 left-0 right-0 h-8 bg-white rounded-full"></div>
+        <div className="absolute -bottom-4 left-0 right-0 h-8 bg-white"></div>
       </div>
 
       {/* Content */}

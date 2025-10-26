@@ -7,7 +7,7 @@ import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
-import CreateAnnouncementPage from './components/announcements/createAnnouncementPage';
+import CreateAnnouncementPage from './pages/createAnnouncementPage';
 
 function App() {
   return (
