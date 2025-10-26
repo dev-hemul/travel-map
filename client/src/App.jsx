@@ -8,8 +8,8 @@ import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
+import PrivateRouter from './components/PrivateRouter'; 
 
-// глобальний аксіос шоб не прописувати кожен раз with cred.
 axios.defaults.withCredentials = true;
 
 function App() {
@@ -44,7 +44,7 @@ function App() {
     try {
       const decoded = jwtDecode(accessToken);
       const now = Date.now() / 1000;
-      if (decoded.exp < now + 3) {
+      if (decoded.exp < now + 300) {
         console.log('Access token expires soon, refreshing...');
         const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
         localStorage.setItem('accessToken', response.data.accessToken);
@@ -53,11 +53,11 @@ function App() {
     } catch (error) {
       console.log('Decode or refresh error:', error.response?.status, error.response?.data);
       localStorage.removeItem('accessToken');
+      setIsAuthenticated(false);
+      setLoading(false);
       if (protectedRoutes.includes(location.pathname)) {
         navigate('/login', { replace: true });
       }
-      setIsAuthenticated(false);
-      setLoading(false);
       return;
     }
 
@@ -71,7 +71,8 @@ function App() {
     let interval;
     const accessToken = localStorage.getItem('accessToken');
     if (accessToken) {
-      interval = setInterval(checkTokens, 10000); 
+      // 5 хв
+      interval = setInterval(checkTokens, 300000);
     }
 
     return () => {
@@ -79,7 +80,6 @@ function App() {
     };
   }, [navigate, location.pathname]);
 
-  // Спінер
   if (loading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900 z-50">
@@ -94,77 +94,58 @@ function App() {
   return (
     <div className="min-h-screen dark:bg-gray-900 bg-gray-50 relative">
       <Routes>
-        <Route
-          path="/"
-          element={
-            <>
-              <MapView />
-              <SupportModalWrapper />
-              <AnnouncementModal />
-            </>
-          }
-        />
+        <Route path="/" element={<><MapView /><SupportModalWrapper /><AnnouncementModal /></>} />
         <Route path="/login" element={<LoginPage />} />
-        <Route
-          path="/profile"
-          element={
-            isAuthenticated ? (
+        <Route element={<PrivateRouter isAuthenticated={isAuthenticated} />}>
+          <Route
+            path="/profile"
+            element={
               <SidebarLayout>
                 <ProfilePage />
               </SidebarLayout>
-            ) : null
-          }
-        />
-        <Route
-          path="/announcements"
-          element={
-            isAuthenticated ? (
+            }
+          />
+          <Route
+            path="/announcements"
+            element={
               <SidebarLayout>
                 <div>Оголошення</div>
               </SidebarLayout>
-            ) : null
-          }
-        />
-        <Route
-          path="/routes"
-          element={
-            isAuthenticated ? (
+            }
+          />
+          <Route
+            path="/routes"
+            element={
               <SidebarLayout>
                 <div>Маршрути</div>
               </SidebarLayout>
-            ) : null
-          }
-        />
-        <Route
-          path="/support"
-          element={
-            isAuthenticated ? (
+            }
+          />
+          <Route
+            path="/support"
+            element={
               <SidebarLayout>
                 <div>Підтримка</div>
               </SidebarLayout>
-            ) : null
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            isAuthenticated ? (
+            }
+          />
+          <Route
+            path="/settings"
+            element={
               <SidebarLayout>
                 <div>Налаштування</div>
               </SidebarLayout>
-            ) : null
-          }
-        />
-        <Route
-          path="/auth"
-          element={
-            isAuthenticated ? (
+            }
+          />
+          <Route
+            path="/auth"
+            element={
               <SidebarLayout>
                 <div>налаштування авторизації</div>
               </SidebarLayout>
-            ) : null
-          }
-        />
+            }
+          />
+        </Route>
       </Routes>
     </div>
   );

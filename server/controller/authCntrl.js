@@ -7,9 +7,9 @@ import Tokens from '../model/token.js';
 
 const privateKey = readFileSync('keys/privateKey.pem', 'utf8');
 const publicKey = readFileSync('keys/publicKey.pem', 'utf8');
-const alg = 'RS512';
-const lifedur = 10 * 1000; // 10 секунд
-const refreshLifedur = 20 * 1000; // 20 секунд
+const alg = 'RS512';  
+const lifedur = 7 * 24 * 60 * 1000; // 7 днів
+const refreshLifedur = 21 * 24 * 60 * 1000; // 21 день
 
 if (!privateKey || !publicKey) {
   throw new Error('Ключі не ініціалізовані в файлах keys/');
