@@ -1,19 +1,15 @@
 import { readFileSync } from 'fs';
-
-
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { nanoid } from 'nanoid';
-
 import User from '../model/user.js';
 import Tokens from '../model/token.js';
 
-
 const privateKey = readFileSync('keys/privateKey.pem', 'utf8');
 const publicKey = readFileSync('keys/publicKey.pem', 'utf8');
-const alg = 'RS512';
-const lifedur = 10000; // 10 сек
-const refreshLifedur = 20000; // 20 сек
+const alg = 'RS512';  
+const lifedur = 7 * 24 * 60 * 1000; // 7 днів
+const refreshLifedur = 21 * 24 * 60 * 1000; // 21 день
 
 if (!privateKey || !publicKey) {
   throw new Error('Ключі не ініціалізовані в файлах keys/');
@@ -32,41 +28,36 @@ export const register = async (req, res) => {
     await user.save();
 
     await Tokens.deleteMany({ userId: user._id });
-
     const { accessT, refreshT } = await createTokens(user._id);
 
-    res.cookie('refreshToken', refreshT, {
-      httpOnly: false,
-      secure: false,
-      sameSite: 'lax',
-      maxAge: refreshLifedur,
-    });
-
-    console.log('Register: Cookie встановлено:', refreshT);
-    res.status(200).json({ accessToken: accessT }); 
+res.cookie('refreshToken', refreshT, {
+  httpOnly: true,
+  secure: true, // Для http://localhost
+  sameSite: 'lax', 
+  maxAge: refreshLifedur,
+  domain: 'localhost', 
+  path: '/', 
+});
+    const setCookieHeader = res.getHeaders()['set-cookie'];
+    console.log('!!!!!!!!!!!!!!!!!!!Set-Cookie header sent:', setCookieHeader);
+    res.status(200).json({ accessToken: accessT });
   } catch (error) {
     console.error('Register error:', error);
     res.status(500).json({ message: 'Помилка сервера' });
   }
 };
-
 export const login = async (req, res) => {
   try {
+    console.log('--------------login logs--------------')
     const { email, password } = req.body;
-    
-    
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'Такого користувача не існує' });
-    }
-    
-    if (!await bcrypt.compare(password, user.password)) {
-      return res.status(401).json({ message: 'Неправильний пароль' });
-    }
+    console.log('email:', email)
+    if (!user) return res.status(404).json({ message: 'Такого користувача не існує' });
+    if (!await bcrypt.compare(password, user.password)) return res.status(401).json({ message: 'Неправильний пароль' });
 
     await Tokens.deleteMany({ userId: user._id });
-
     const { accessT, refreshT } = await createTokens(user._id);
+    console.log('tokens', accessT, refreshT)
 
     res.cookie('refreshToken', refreshT, {
       httpOnly: false,
@@ -74,11 +65,11 @@ export const login = async (req, res) => {
       sameSite: 'lax',
       maxAge: refreshLifedur,
     });
-    console.log('Login: Cookie встановлено:', refreshT);
-    
-    res.json({ 
-      accessToken: accessT, 
-    });
+    console.log('cookies', res.cookie)
+
+    res.json({ accessToken: accessT });
+    console.log(res.json)
+    console.log('Login successful:', { userId: user._id, refreshToken: refreshT });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Помилка сервера' });
@@ -86,64 +77,42 @@ export const login = async (req, res) => {
 };
 
 export const getRefreshToken = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+  if (!refreshToken) {
+    console.log('Refresh token not provided');
+    return res.status(401).json({ message: 'Refresh token not provided' });
+  }
+
   try {
-    console.log('=== DEBUG INFO ===');
-    console.log('All headers:', req.headers);
-    console.log('Cookie header:', req.headers.cookie);
-    console.log('Parsed cookies from cookieParser:', req.cookies);
-    
-    let refreshToken = null;
-
-    if (req.cookies && req.cookies.refreshToken) {
-      refreshToken = req.cookies.refreshToken;
-      console.log('рефрештокен:', refreshToken);
-    }
-  
-    if (!refreshToken) return res.status(400).json({ message: 'Refresh token required' });
-
+    // Перевірка refreshToken у БД
     const tokenDoc = await Tokens.findOne({ refreshToken });
-    if (!tokenDoc) return res.status(403).json({ message: 'Invalid refresh token' });
-    
-    if (tokenDoc.expiresAt < Date.now()) {
-      console.log('Token expired at:', new Date(tokenDoc.expiresAt).toLocaleString());
-      await Tokens.findByIdAndDelete(tokenDoc._id); 
-      return res.status(403).json({ message: 'Refresh token has expired' }); 
+    if (!tokenDoc || tokenDoc.expiresAt < Date.now()) {
+      console.log('Refresh token expired or not found:', refreshToken);
+      return res.status(401).json({ message: 'Refresh token expired or invalid' });
     }
 
-    const user = await User.findById(tokenDoc.userId);
-    if (!user) return res.status(403).json({ message: 'User not found' });
-
-    await Tokens.findByIdAndDelete(tokenDoc._id); 
-
-    const { accessT, refreshT } = await createTokens(user._id);
-    if (!refreshT || !accessT) throw new Error('Помилка генерації токенів');
-
-    res.cookie('refreshToken', refreshT, {
-      httpOnly: false, 
-      secure: false,
-      sameSite: 'lax',
-      maxAge: refreshLifedur
-    });
-    console.log('New tokens generated and cookie set');
-
-    res.status(200).json({ accessToken: accessT, message: 'Tokens refreshed successfully' });
+    // Створюємо новий accessToken
+    const { accessT } = createAccessT({ id: tokenDoc.userId });
+    res.json({ accessToken: accessT });
+    console.log('Refresh successful, new access token issued for user:', tokenDoc.userId);
   } catch (error) {
-    console.error('RefreshToken error:', error);
-    res.status(500).json({ message: 'Помилка оновлення токена' });
+    console.error('Refresh error:', error);
+    res.status(401).json({ message: 'Invalid refresh token' });
+    
   }
 };
 
 export const updateProfile = async (req, res) => {
   try {
+    const { username, email } = req.body;
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'Токен не надано' });
 
-    const userId = verifyToken(token);
-    const user = await User.findById(userId);
+    const decoded = jwt.verify(token, publicKey, { algorithms: [alg] });
+    const user = await User.findById(decoded.id);
 
     if (!user) return res.status(401).json({ message: 'Невірний токен для юзера' });
 
-    const { username, email } = req.body;
     user.username = username || user.username;
     user.email = email || user.email;
 
@@ -160,56 +129,56 @@ export const logout = async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'Токен не надано' });
 
-    const userId = verifyToken(token);
-    await Tokens.deleteMany({ userId }); // Видаляємо усі refreshToken для користувача
-    
+    const decoded = jwt.verify(token, publicKey, { algorithms: [alg] });
+    await Tokens.deleteMany({ userId: decoded.id });
+
     res.clearCookie('refreshToken', {
       httpOnly: false,
       secure: false,
       sameSite: 'lax',
     });
-    
-    res.status(200).json({ message: 'Успішний вихід' }); // Повертаємо відповідь для фронту
+    res.status(200).json({ message: 'Успішний вихід' });
   } catch (error) {
     console.error('Logout error:', error);
     res.status(500).json({ message: 'Помилка виходу' });
   }
 };
+
 // Helper functions
-const createAccessT = (payload) => {
-  const expiration = Math.floor(Date.now() / 1000) + Math.floor(lifedur / 1000);
-  payload.exp = expiration; // тільки exp
-  const token = jwt.sign(payload, privateKey, { algorithm: alg, noTimestamp: true }); // Додано noTimestamp
-  return { token };
-};
-
-const createRefreshT = () => {
-  return nanoid(); 
-};
-
-const createTokens = async (userId) => {
-  if (!userId) throw new Error('userId is undefined');
-  
-  const payload = { id: userId }; // Замінюємо iss на id
-  const { token: accessT } = createAccessT(payload);
-  const refreshT = createRefreshT(userId);
-  
-  await Tokens.create({ 
-    refreshToken: refreshT, 
-    userId, 
-    expiresAt: Date.now() + refreshLifedur 
-  });
-  
-  console.log('Tokens created:', { accessT: accessT.substring(0, 20) + '...', refreshT });
-  return { accessT, refreshT };
-};
-
-const verifyToken = (token) => {
+export const createAccessT = (payload) => {
+  console.log('[createAccessT] Створюємо accessToken для payload:', payload);
   try {
-    const decoded = jwt.verify(token, publicKey, { algorithms: [alg] });
-    return decoded.id; // Отримуємо id замість iss
+    const accessT = jwt.sign(payload, privateKey, {
+      algorithm: alg,
+      expiresIn: lifedur / 1000
+    });
+    console.log('[createAccessT] Access Token:', accessT);
+    return { accessT };
   } catch (error) {
-    console.error('Помилка верифікації токена:', error.message); 
-    throw new Error('Невірний токен');
+    console.error('[createAccessT] Помилка:', error.message, error.stack);
+    throw error;
+  }
+};
+
+// const createRefreshT = (userId) => {
+//   return nanoid();
+// }; поки закоментую, бо на нього еслінт ругається, якщо будуть помилки, буду розбиратись
+
+export const createTokens = async (userId) => {
+  console.log('[createTokens] Створюємо токени для userId:', userId);
+  try {
+    const accessT = jwt.sign({ id: userId }, privateKey, {
+      algorithm: alg,
+      expiresIn: lifedur / 1000
+    });
+    const refreshT = nanoid();
+    console.log('[createTokens] Access Token:', accessT);
+    console.log('[createTokens] Refresh Token:', refreshT);
+
+    await Tokens.create({ userId, refreshToken: refreshT });
+    return { accessT, refreshT };
+  } catch (error) {
+    console.error('[createTokens] Помилка:', error.message, error.stack);
+    throw error;
   }
 };
