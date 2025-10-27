@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaGoogle, FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import LoginTelegramButton from './TelegramLoginButton';
-import { ToastContainer, toast, Bounce } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 
@@ -27,17 +27,53 @@ const LoginPage = () => {
   const notifySuccessLog = () => toast.success('Успішний вхід!');
   const notifyLetterHasBeenSentOnEmail = () => toast.success('Лист підтвердження було надіслано на ваш Email');
   const notifyPasswordConfirmationErr = () => toast.error('Паролі не збігаються');
-  const notifyCurrentEmailErr = () => toast.error('Такий email вже зайнятий');
-  const notifyCurrentLoginErr = () => toast.error('Такий логін вже зайнятий');
-  const notifyWrongPasswordErr = () => toast.error('Невірний пароль.');
-  const notifyCurrentUserDoesntExist = () => toast.error('Такого користувача не існує.');
-  const notifyServerErr = () => toast.error('Помилка сервера.', );
+  // const notifyCurrentEmailErr = () => toast.error('Такий email вже зайнятий');
+  // const notifyCurrentLoginErr = () => toast.error('Такий логін вже зайнятий');
+  // const notifyWrongPasswordErr = () => toast.error('Невірний пароль.');
+  // const notifyCurrentUserDoesntExist = () => toast.error('Такого користувача не існує.');
+  // const notifyServerErr = () => toast.error('Помилка сервера.', ); коментую, бо еслінт ругається, але воно було переписано в функції і тут непотрібно
   const notifyPasswordRecoveryErr = () => toast.error('Невірні облікові дані.');
   const notifyAllInputAreNecessaryWarning = () => toast.warning('Заповніть усі поля.')
   const notifyEmailIsNecessaryWarning = () => toast.warning('Заповніть усі поля.')
   
-  
-  
+  // перевірка токенів
+useEffect(() => {
+  const accessToken = localStorage.getItem('accessToken');
+  console.log('Checking auth, accessToken:', accessToken);
+
+  if (accessToken) {
+    axios
+      .post('http://localhost:4000/profile', {}, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        withCredentials: true,
+      })
+      .then(res => {
+        console.log('Profile check success:', res.status);
+        if (res.status === 200) navigate('/profile');
+      })
+      .catch(error => {
+        console.log('Profile check error:', error);
+        axios
+          .post('http://localhost:4000/refresh-token', {}, {
+            withCredentials: true,
+          })
+          .then(res => {
+            console.log('Refresh success, new accessToken:', res.data.accessToken);
+            if (res.data.accessToken) {
+              localStorage.setItem('accessToken', res.data.accessToken);
+              navigate('/profile');
+            }
+          })
+          .catch(error => {
+            console.log('Refresh error:', error.response?.data);
+            localStorage.removeItem('accessToken');
+            navigate('/login');
+            toast.error('Сесія закінчилася. Увійдіть знову.');
+          });
+      });
+  }
+}, [navigate]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError(''); // Скидаємо помилку при зміні
@@ -65,7 +101,9 @@ const LoginPage = () => {
           username: formData.username,
           email: formData.email,
           password: formData.password,
-        });
+        },  {withCredentials: true}
+      );
+  console.log('Заголовки відповіді:', response.headers);
         console.log('Відповідь від сервера:', response.data);
         notifySuccessReg();
         setFormData({ username: '', email: '', password: '', confirmPassword: '' }); // Скидання форми
@@ -92,7 +130,7 @@ const LoginPage = () => {
         }, {
             withCredentials: true 
         });
-        
+        console.log('cookies', document.cookie)
         console.log('Відповідь від сервера:', response.data);
         notifySuccessLog();
         localStorage.setItem('accessToken', response.data.accessToken); 
