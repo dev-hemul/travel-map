@@ -250,17 +250,53 @@ const LoginPage = () => {
           {isRegister ? 'Зареєструватися' : 'Увійти'}
         </button>
 
-        <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 mb-2 sm:mb-3 md:mb-4 lg:mb-5 xl:mb-6">
+        <div className="flex justify-center gap-3 mb-6">
           <button
             type="button"
             onClick={handleGoogleLogin}
-            className="flex items-center justify-center bg-white border border-[#D1D5DB] p-2 sm:p-3 md:p-4 lg:p-5 xl:p-6 rounded-full shadow hover:bg-gray-50 transition w-full sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16"
+            className="
+              flex items-center justify-center
+              bg-white border border-gray-300 rounded-full shadow
+              hover:bg-gray-50 hover:border-gray-400 transition
+              w-10 h-10   /* 640px і менше – маленький кружок */
+              sm:w-10 sm:h-10
+              md:w-12 md:h-12
+              lg:w-12 lg:h-12
+              xl:w-14 xl:h-14
+            "
             aria-label="Увійти через Google"
           >
-            <FaGoogle className="text-red-500 w-5 h-5 sm:w-6 h-6 md:w-7 h-7 lg:w-8 h-8 xl:w-9 h-9" />
+            <FaGoogle className="
+              text-red-500
+              w-5 h-5
+              sm:w-5 h-5
+              md:w-6 h-6
+              lg:w-6 h-6
+              xl:w-7 h-7
+            " />
           </button>
-          <LoginTelegramButton />
-        </div>
+
+          <div
+            className="
+              relative rounded-full overflow-hidden
+              bg-[#229ED9] border border-[#1a8bc7] shadow
+              hover:bg-[#1a8bc7] hover:border-[#1677b3] transition
+              text-white leading-none
+              w-10 h-10
+              sm:w-10 sm:h-10
+              md:w-12 md:h-12
+              lg:w-12 lg:h-12
+              xl:w-14 xl:h-14
+            "
+          >
+            <div className="absolute inset-0 grid place-items-center">
+              <div className="-translate-x-[1.5px]">
+                <LoginTelegramButton />
+              </div>
+            </div>
+          </div>
+
+    </div>
 
         <div className="text-center">
           <button
@@ -286,16 +322,20 @@ const LoginPage = () => {
       </form>
 
       {showReset && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-50 p-2 sm:p-3 md:p-4 lg:p-5 xl:p-6">
-          <div className="bg-white p-4 sm:p-5 md:p-6 lg:p-7 xl:p-8 rounded-xl shadow-lg w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-50 p-2 sm:p-3 md:p-4 lg:p-5 xl:p-6 overflow-hidden">
+          <div className="relative bg-white p-4 sm:p-5 md:p-6 lg:p-7 xl:p-8 rounded-xl shadow-lg w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
+            
             <button
-              className="absolute top-2 right-3 text-gray-400 hover:text-gray-600 text-2xl"
+              className="absolute top-2 right-3 text-gray-400 hover:text-gray-600 text-2xl z-10"
               onClick={() => setShowReset(false)}
               aria-label="Закрити модальне вікно"
             >
               &times;
             </button>
-            <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-bold mb-2 sm:mb-3 md:mb-4 lg:mb-5 xl:mb-6 text-[#744ce9] text-center">Відновлення пароля</h3>
+
+            <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-bold mb-2 sm:mb-3 md:mb-4 lg:mb-5 xl:mb-6 text-[#744ce9] text-center">
+              Відновлення пароля
+            </h3>
             <form onSubmit={handleResetPassword}>
               <input
                 type="email"
@@ -315,8 +355,8 @@ const LoginPage = () => {
           </div>
         </div>
       )}
-    </div>
-  );
+          </div>
+        );
 };
 
 export default LoginPage;

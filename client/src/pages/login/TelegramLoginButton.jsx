@@ -13,15 +13,28 @@ const TelegramLoginButton = () => {
   };
 
   return (
-    <button
-      onClick={handleLogin}
-      className="bg-[#229ED9] p-3 rounded-full text-white hover:bg-[#178bb7] transition flex items-center justify-center"
-      aria-label="Увійти через Telegram"
-      type="button"
-      style={{ fontSize: '1.5rem' }}
-    >
-      <FaTelegramPlane />
-    </button>
+<button
+    onClick={handleLogin}
+    className="
+      bg-[#229ED9] 
+      text-white 
+      hover:bg-[#178bb7] 
+      transition-all 
+      duration-200 
+      flex 
+      items-center 
+      justify-center
+      rounded-lg       
+      sm:rounded-full  
+      w-full 
+      h-full
+    "
+    aria-label="Увійти через Telegram"
+    type="button"
+    style={{ fontSize: '1.5rem' }}
+  >
+    <FaTelegramPlane />
+  </button>
   );
 };
 
