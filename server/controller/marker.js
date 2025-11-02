@@ -86,3 +86,30 @@ export const deleteMarker = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const removeMarkerMedia = async (req, res) => {
+  try {
+    const { id } = req.params; // marker id
+    const { url } = req.body; // URL медиа, которое нужно удалить
+    if (!url) {
+      return res.status(400).json({ error: 'Не вказано url для видалення' });
+    }
+
+    const marker = await Marker.findById(id);
+    if (!marker) {
+      return res.status(404).json({ error: 'Маркер не знайдений' });
+    }
+
+    const before = marker.fileUrls.length;
+    marker.fileUrls = marker.fileUrls.filter(u => u !== url);
+
+    if (marker.fileUrls.length === before) {
+      return res.status(404).json({ error: 'Медіа не знайдено в маркері' });
+    }
+
+    await marker.save();
+    return res.status(200).json({ message: 'Медіа видалено', marker });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

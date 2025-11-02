@@ -28,6 +28,7 @@ const TelegramLoginButton = () => {
       sm:rounded-full  
       w-full 
       h-full
+      cursor-pointer
     "
     aria-label="Увійти через Telegram"
     type="button"

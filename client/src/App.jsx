@@ -21,21 +21,9 @@ function App() {
   const protectedRoutes = ['/profile', '/announcements', '/routes', '/support', '/settings', '/auth'];
 
   const checkTokens = async () => {
-    console.log('=== CheckAuth started ===');
     const accessToken = localStorage.getItem('accessToken');
-    console.log('AccessToken present:', !!accessToken);
-
-    if (!accessToken && protectedRoutes.includes(location.pathname)) {
-      console.log('No access token - redirect to login');
-      setIsAuthenticated(false);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setLoading(false);
-      navigate('/login', { replace: true });
-      return;
-    }
 
     if (!accessToken) {
-      console.log('No access token, allowing public routes');
       setIsAuthenticated(false);
       setLoading(false);
       return;
@@ -44,41 +32,32 @@ function App() {
     try {
       const decoded = jwtDecode(accessToken);
       const now = Date.now() / 1000;
+
       if (decoded.exp < now + 300) {
-        console.log('Access token expires soon, refreshing...');
         const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
         localStorage.setItem('accessToken', response.data.accessToken);
-        console.log('Refresh successful');
       }
+      setIsAuthenticated(true);
     } catch (error) {
-      console.log('Decode or refresh error:', error.response?.status, error.response?.data);
       localStorage.removeItem('accessToken');
       setIsAuthenticated(false);
+    } finally {
       setLoading(false);
-      if (protectedRoutes.includes(location.pathname)) {
-        navigate('/login', { replace: true });
-      }
-      return;
     }
-
-    setIsAuthenticated(true);
-    setLoading(false);
   };
 
+  // Перевірка при завантаженні + кожні 5 хв
   useEffect(() => {
     checkTokens();
+    const interval = setInterval(checkTokens, 300000);
+    return () => clearInterval(interval);
+  }, []);
 
-    let interval;
-    const accessToken = localStorage.getItem('accessToken');
-    if (accessToken) {
-      // 5 хв
-      interval = setInterval(checkTokens, 300000);
+  useEffect(() => {
+    if (!loading && !isAuthenticated && protectedRoutes.includes(location.pathname)) {
+      navigate('/login', { replace: true });
     }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [navigate, location.pathname]);
+  }, [loading, isAuthenticated, location.pathname, navigate]);
 
   if (loading) {
     return (
@@ -96,55 +75,14 @@ function App() {
       <Routes>
         <Route path="/" element={<><MapView /><SupportModalWrapper /><AnnouncementModal /></>} />
         <Route path="/login" element={<LoginPage />} />
+        
         <Route element={<PrivateRouter isAuthenticated={isAuthenticated} />}>
-          <Route
-            path="/profile"
-            element={
-              <SidebarLayout>
-                <ProfilePage />
-              </SidebarLayout>
-            }
-          />
-          <Route
-            path="/announcements"
-            element={
-              <SidebarLayout>
-                <div>Оголошення</div>
-              </SidebarLayout>
-            }
-          />
-          <Route
-            path="/routes"
-            element={
-              <SidebarLayout>
-                <div>Маршрути</div>
-              </SidebarLayout>
-            }
-          />
-          <Route
-            path="/support"
-            element={
-              <SidebarLayout>
-                <div>Підтримка</div>
-              </SidebarLayout>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <SidebarLayout>
-                <div>Налаштування</div>
-              </SidebarLayout>
-            }
-          />
-          <Route
-            path="/auth"
-            element={
-              <SidebarLayout>
-                <div>налаштування авторизації</div>
-              </SidebarLayout>
-            }
-          />
+          <Route path="/profile" element={<SidebarLayout><ProfilePage /></SidebarLayout>} />
+          <Route path="/announcements" element={<SidebarLayout><div>Оголошення</div></SidebarLayout>} />
+          <Route path="/routes" element={<SidebarLayout><div>Маршрути</div></SidebarLayout>} />
+          <Route path="/support" element={<SidebarLayout><div>Підтримка</div></SidebarLayout>} />
+          <Route path="/settings" element={<SidebarLayout><div>Налаштування</div></SidebarLayout>} />
+          <Route path="/auth" element={<SidebarLayout><div>Налаштування авторизації</div></SidebarLayout>} />
         </Route>
       </Routes>
     </div>

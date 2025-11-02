@@ -2,7 +2,13 @@
 import express from 'express';
 import { upload } from '../config/cloudinary-markers.js';
 
-import { createMarker, getMarkers, updateMarker, deleteMarker } from '../controller/marker.js';
+import {
+  createMarker,
+  getMarkers,
+  updateMarker,
+  deleteMarker,
+  removeMarkerMedia,
+} from '../controller/marker.js';
 
 const router = express.Router();
 
@@ -23,5 +29,6 @@ router.post('/marker', createMarker);
 router.get('/markers', getMarkers);
 router.put('/marker/:id', updateMarker);
 router.delete('/marker/:id', deleteMarker);
+router.delete('/marker/:id/media', removeMarkerMedia);
 
 export default router;
