@@ -142,7 +142,7 @@ const LoginPage = () => {
         onSubmit={handleSubmit}
         className="bg-white p-4 sm:p-5 md:p-6 lg:p-7 xl:p-8 rounded-xl shadow-md w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl transition-all duration-300"
       >
-        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-bold mb-4 sm:mb-5 md:mb-6 lg:mb-7 xl:mb-8 text-center text-[#744ce9] drop-shadow">
+        <h2 className="text-xl sm:text-2xl md:text-2xl lg:text-2xl xl:text-2xl font-bold mb-4 sm:mb-5 md:mb-6 lg:mb-7 xl:mb-8 text-center text-[#744ce9] drop-shadow">
           {isRegister ? 'Реєстрація' : 'Вхід'}
         </h2>
 
@@ -266,12 +266,12 @@ const LoginPage = () => {
           <div className="relative bg-white p-4 sm:p-5 md:p-6 lg:p-7 xl:p-8 rounded-xl shadow-lg w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
             <button
               onClick={() => setShowReset(false)}
-              className="absolute top-2 right-3 text-gray-400 hover:text-gray-600 text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl cursor-pointer"
+              className="absolute top-2 right-3 text-gray-400 hover:text-gray-600 text-xl sm:text-2xl md:text-2xl lg:text-2xl xl:text-5xl cursor-pointer"
               aria-label="Закрити"
             >
               ×
             </button>
-            <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold mb-2 sm:mb-3 md:mb-4 lg:mb-5 xl:mb-6 text-[#744ce9] text-center">
+            <h3 className="text-lg sm:text-xl md:text-2xl lg:text-2xl xl:text-2xl font-bold mb-2 sm:mb-3 md:mb-4 lg:mb-5 xl:mb-6 text-[#744ce9] text-center">
               Відновлення пароля
             </h3>
             <form onSubmit={handleResetPassword}>
