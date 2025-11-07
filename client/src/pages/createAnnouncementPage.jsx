@@ -108,7 +108,7 @@ export default function CreateAnnouncementPage() {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full p-4 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className="w-full p-4 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
               placeholder="Введіть назву вашої пропозиції..."
               required
             />
@@ -126,7 +126,7 @@ export default function CreateAnnouncementPage() {
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-4 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none h-32"
+              className="w-full p-4 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none h-32"
               placeholder="Опишіть детально вашу пропозицію..."
               required
             />
@@ -147,7 +147,7 @@ export default function CreateAnnouncementPage() {
                 type="text"
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
-                className="w-full p-4 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="w-full p-4 outline-none rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 placeholder="Київська область, м. Київ"
               />
             </motion.div>
