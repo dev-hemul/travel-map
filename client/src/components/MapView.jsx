@@ -11,6 +11,7 @@ import LayersSwitcher from './map/LayersSwitcher';
 import RouteFunctionality from './map/RouteFunctionality.jsx';
 import SidePanel from './map/SidePanel.jsx';
 import WeatherWidget from './map/WeatherWidget';
+import RouletteWidget from './map/RouletteWidget.jsx';
 
 const MapView = () => {
   const [uploadProgress, setUploadProgress] = useState({}); // Об'єкт для збереження прогресу завантаження кожного файлу
@@ -1047,6 +1048,7 @@ const MapView = () => {
         <LayersSwitcher mapType={mapType} setMapType={setMapType} />
         <WeatherWidget />
         <RouteFunctionality />
+        <RouletteWidget />
       </div>
     </div>
   );
