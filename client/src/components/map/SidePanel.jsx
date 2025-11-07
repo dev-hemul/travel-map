@@ -2,12 +2,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { MdDelete, MdClose, MdShare, MdContentCopy, MdCheck } from 'react-icons/md';
 
-const SidePanel = ({ isOpen, onClose, markerData, onEdit, onDelete }) => {
+const SidePanel = ({ isOpen, onClose, markerData, onEdit, onDelete, onDeleteMedia }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  if (!markerData) return null;
+  if (!isOpen || !markerData) return null;
 
   // Мапинг категорий для отображения читаемых названий
   const categoryNames = {
@@ -208,7 +208,6 @@ const SidePanel = ({ isOpen, onClose, markerData, onEdit, onDelete }) => {
                   <p className="text-sm text-gray-700">Довгота: {markerData.lng?.toFixed(6)}</p>
                 </div>
               </div>
-
               {/* Описание */}
               {markerData.description && (
                 <div>
@@ -218,7 +217,6 @@ const SidePanel = ({ isOpen, onClose, markerData, onEdit, onDelete }) => {
                   </div>
                 </div>
               )}
-
               {/* Теги */}
               {markerData.tags && markerData.tags.length > 0 && (
                 <div>
@@ -235,7 +233,6 @@ const SidePanel = ({ isOpen, onClose, markerData, onEdit, onDelete }) => {
                   </div>
                 </div>
               )}
-
               {/* Медиафайлы (изображения и видео) */}
               {markerData.fileUrls && markerData.fileUrls.length > 0 && (
                 <div>
@@ -244,13 +241,12 @@ const SidePanel = ({ isOpen, onClose, markerData, onEdit, onDelete }) => {
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
                     {markerData.fileUrls.map((url, index) => {
-                      // Определяем тип файла по расширению URL
                       const isVideo = /\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(url);
 
                       return (
                         <div
                           key={index}
-                          className="bg-gray-100 rounded-lg overflow-hidden"
+                          className="bg-gray-100 rounded-lg overflow-hidden relative group"
                           style={{ minHeight: '120px', maxHeight: '200px' }}
                         >
                           {isVideo ? (
@@ -264,9 +260,7 @@ const SidePanel = ({ isOpen, onClose, markerData, onEdit, onDelete }) => {
                                   window.open(url, '_blank');
                                 }
                               }}
-                            >
-                              Ваш браузер не поддерживает воспроизведение видео.
-                            </video>
+                            />
                           ) : (
                             <img
                               src={url}
@@ -279,6 +273,20 @@ const SidePanel = ({ isOpen, onClose, markerData, onEdit, onDelete }) => {
                               }}
                             />
                           )}
+
+                          {/* Кнопка удаления медиа */}
+                          <button
+                            type="button"
+                            title="Видалити медіа"
+                            className="absolute top-1.5 right-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full w-7 h-7 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition"
+                            onClick={e => {
+                              e.stopPropagation();
+                              if (onDeleteMedia) onDeleteMedia(markerData._id, url);
+                            }}
+                            disabled={showDeleteConfirm || showShareModal}
+                          >
+                            <MdDelete className="w-4 h-4" />
+                          </button>
                         </div>
                       );
                     })}
@@ -309,7 +317,6 @@ const SidePanel = ({ isOpen, onClose, markerData, onEdit, onDelete }) => {
                   </div>
                 </div>
               )}
-
               {/* Дата создания */}
               {markerData.createdAt && (
                 <div>
@@ -323,7 +330,6 @@ const SidePanel = ({ isOpen, onClose, markerData, onEdit, onDelete }) => {
                   </div>
                 </div>
               )}
-
               {/* Действия */}
               <div className="pt-4 border-t border-gray-200">
                 <div className="flex gap-3">
