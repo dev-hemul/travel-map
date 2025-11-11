@@ -73,6 +73,7 @@ jobs:
         if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == false }}
         run: |
           NUMBER=${{ github.event.pull_request.number }}
+          AUTHOR="${{ github.event.pull_request.user.login }}"
           DESCRIPTION="${{ github.event.pull_request.body }}"
           DESC_TEXT=""
           if [ -n "$DESCRIPTION" ]; then
@@ -80,7 +81,7 @@ jobs:
           fi
 
           MESSAGE=$(cat <<EOF
-          🔴 Pull Request *#${NUMBER}* був закритий без merge
+          🔴 Pull Request *#${NUMBER}* від *${AUTHOR}* був закритий без merge
           
           $DESC_TEXT
           🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
