@@ -68,4 +68,3 @@ jobs:
         run: |
           cd client
           yarn install --frozen-lockfile
-          yarn build
