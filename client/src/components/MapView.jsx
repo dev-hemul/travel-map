@@ -1049,8 +1049,6 @@ const MapView = () => {
         <WeatherWidget />
         <RouteFunctionality />
         <RouletteWidget />
-        <span>test</span>
-        <span>test100</span>
       </div>
     </div>
   );
