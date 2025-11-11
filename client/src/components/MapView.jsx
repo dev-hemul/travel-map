@@ -1050,6 +1050,8 @@ const MapView = () => {
         <RouteFunctionality />
         <RouletteWidget />
         <span></span>
+        <span></span>
+        <span>test</span>
       </div>
     </div>
   );
