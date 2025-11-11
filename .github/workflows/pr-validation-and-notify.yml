@@ -1,27 +1,86 @@
-name: Notify team on PR events
+name: PR Validation and Notify
 
 on:
-  workflow_run:
-    workflows: ["PR Validation"]  # имя workflow, который билдит PR
-    types:
-      - completed
+  pull_request:
+    branches:
+      - main
 
 jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    env:
+      ADMIN_ID: ${{ secrets.ADMIN_ID }}
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      DB_URL: ${{ secrets.DB_URL }}
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      PORT: ${{ secrets.PORT }}
+      PRIVATE_KEY_B64: ${{ secrets.PRIVATE_KEY_B64 }}
+      PUBLIC_KEY_B64: ${{ secrets.PUBLIC_KEY_B64 }}
+      REFRESH_SECRET: ${{ secrets.REFRESH_SECRET }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install root dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Create .env for server
+        run: |
+          echo "ADMIN_ID=${{ secrets.ADMIN_ID }}" >> server/.env
+          echo "BOT_TOKEN=${{ secrets.BOT_TOKEN }}" >> server/.env
+          echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> server/.env
+          echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> server/.env
+          echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" >> server/.env
+          echo "DB_URL=${{ secrets.DB_URL }}" >> server/.env
+          echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> server/.env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> server/.env
+          echo "PORT=${{ secrets.PORT }}" >> server/.env
+          echo "REFRESH_SECRET=${{ secrets.REFRESH_SECRET }}" >> server/.env
+
+      - name: Create PEM key files
+        run: |
+          echo "${{ secrets.PRIVATE_KEY_B64 }}" | base64 -d > server/privateKey.pem
+          echo "${{ secrets.PUBLIC_KEY_B64 }}" | base64 -d > server/publicKey.pem
+
+      - name: Install and Build Backend
+        run: |
+          cd server
+          yarn install --frozen-lockfile
+          yarn build
+
+      - name: Install and Build Frontend
+        run: |
+          cd client
+          yarn install --frozen-lockfile
+          yarn build
+
   notify:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # уведомление только если билд успешный
+    needs: build-and-test
+    if: success()  # только если билд прошёл успешно
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set environment variables
+      - name: Set PR variables
         run: |
-          echo "PR_NUMBER=$(jq -r '.workflow_run.pull_requests[0].number' < $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
-          echo "PR_ACTION=$(jq -r '.workflow_run.pull_requests[0].action' < $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
-          echo "PR_MERGED=$(jq -r '.workflow_run.pull_requests[0].merged' < $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
-          echo "PR_TITLE=$(jq -r '.workflow_run.pull_requests[0].title' < $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
-          echo "PR_BODY=$(jq -r '.workflow_run.pull_requests[0].body' < $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
-          echo "PR_USER=$(jq -r '.workflow_run.pull_requests[0].user.login' < $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
-          echo "PR_HEAD=$(jq -r '.workflow_run.pull_requests[0].head.ref' < $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
-          echo "PR_BASE=$(jq -r '.workflow_run.pull_requests[0].base.ref' < $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
+          echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+          echo "PR_ACTION=${{ github.event.action }}" >> $GITHUB_ENV
+          echo "PR_MERGED=${{ github.event.pull_request.merged }}" >> $GITHUB_ENV
+          echo "PR_TITLE=${{ github.event.pull_request.title }}" >> $GITHUB_ENV
+          echo "PR_BODY=${{ github.event.pull_request.body }}" >> $GITHUB_ENV
+          echo "PR_USER=${{ github.event.pull_request.user.login }}" >> $GITHUB_ENV
+          echo "PR_HEAD=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+          echo "PR_BASE=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
 
       # -----------------------------
       # PR открыт или переоткрыт
