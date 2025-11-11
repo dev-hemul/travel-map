@@ -81,8 +81,9 @@ jobs:
           fi
 
           MESSAGE=$(cat <<EOF
-          🔴 Pull Request *#${NUMBER}* від *${AUTHOR}* був закритий без merge
+          🔴 Pull Request *#${NUMBER}* був закритий без merge
           
+          Автор закритого PR: *${AUTHOR}*
           $DESC_TEXT
           🔗 [Дивитись PR](${{ github.event.pull_request.html_url }})
           EOF
