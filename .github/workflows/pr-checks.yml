@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: 20
 
-      # Установка зависимостей в корне
+      # Установка зависимостей root (если есть)
       - name: Install root dependencies
         run: yarn install --frozen-lockfile
 
@@ -50,33 +50,22 @@ jobs:
           echo "PORT=${{ secrets.PORT }}" >> server/.env
           echo "REFRESH_SECRET=${{ secrets.REFRESH_SECRET }}" >> server/.env
 
-      # Создание ключей на лету
+      # Создание PEM файлов
       - name: Create PEM key files
         run: |
           echo "${{ secrets.PRIVATE_KEY_B64 }}" | base64 -d > server/privateKey.pem
           echo "${{ secrets.PUBLIC_KEY_B64 }}" | base64 -d > server/publicKey.pem
 
-      # Линтинг бэка (если есть)
-      - name: Lint backend
+      # Установка зависимостей и сборка backend
+      - name: Install and Build Backend
         run: |
           cd server
-          yarn lint || echo "No lint script for backend"
+          yarn install --frozen-lockfile
+          yarn build
 
-      # Сборка фронта
-      - name: Build frontend
+      # Установка зависимостей и сборка frontend
+      - name: Install and Build Frontend
         run: |
           cd client
           yarn install --frozen-lockfile
           yarn build
-
-      # Сборка бэка
-      - name: Build backend
-        run: |
-          cd server
-          yarn install --frozen-lockfile
-          yarn build
-
-      # Тесты (если есть)
-      - name: Run tests
-        run: |
-          yarn test || echo "No tests configured yet"
