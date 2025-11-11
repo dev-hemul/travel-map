@@ -61,7 +61,6 @@ jobs:
         run: |
           cd server
           yarn install --frozen-lockfile
-          yarn build
 
       # Установка зависимостей и сборка frontend
       - name: Install and Build Frontend
