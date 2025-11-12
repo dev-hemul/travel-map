@@ -231,7 +231,7 @@ const ProfilePage = () => {
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   return (
-    <div className={`min-h-full mx-auto px-4 py-8 rounded-lg mb-10 container ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+    <div className={`min-h-full mx-auto px-4 py-8 rounded-lg mb-10 container sm: ml-[10%] ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
       <div className="flex flex-col sm:flex-row items-center sm:justify-between bg-[#F4EFFF] rounded-xl px-4 py-2 mb-6 gap-4 border border-gray-300 shadow-lg">
         <motion.button
           onClick={() => navigate("/")}
