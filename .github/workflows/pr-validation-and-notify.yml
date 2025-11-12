@@ -1,4 +1,4 @@
-name: Build and Notify
+name: PR Build and Notify
 
 on:
   workflow_run:
@@ -68,121 +68,111 @@ jobs:
 
   notify:
     needs: build-and-test
-    runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Set PR variables from workflow_run
+      - name: Set PR variables
         run: |
           sudo apt-get update
           sudo apt-get install -y jq
 
-          PR_JSON=$(jq '.[0]' <(jq '.workflow_run.pull_requests' "$GITHUB_EVENT_PATH"))
-      
-          PR_NUMBER=$(echo "$PR_JSON" | jq -r '.number')
-          PR_ACTION=$(echo "$PR_JSON" | jq -r '.action // "opened"')
-          PR_MERGED=$(echo "$PR_JSON" | jq -r '.merged')
-          PR_TITLE=$(echo "$PR_JSON" | jq -r '.title')
-          PR_BODY=$(echo "$PR_JSON" | jq -r '.body')
-          PR_USER=$(echo "$PR_JSON" | jq -r '.user.login')
-          PR_HEAD=$(echo "$PR_JSON" | jq -r '.head.ref')
-          PR_BASE=$(echo "$PR_JSON" | jq -r '.base.ref')
+          PR_NUMBER=$(jq -r '.workflow_run.pull_requests[0].number' "$GITHUB_EVENT_PATH")
+          PR_TITLE=$(jq -r '.workflow_run.pull_requests[0].title' "$GITHUB_EVENT_PATH")
+          PR_BODY=$(jq -r '.workflow_run.pull_requests[0].body' "$GITHUB_EVENT_PATH")
+          PR_USER=$(jq -r '.workflow_run.pull_requests[0].user.login' "$GITHUB_EVENT_PATH")
+          PR_HEAD=$(jq -r '.workflow_run.pull_requests[0].head.ref' "$GITHUB_EVENT_PATH")
+          PR_BASE=$(jq -r '.workflow_run.pull_requests[0].base.ref' "$GITHUB_EVENT_PATH")
+          PR_MERGED=$(jq -r '.workflow_run.pull_requests[0].merged' "$GITHUB_EVENT_PATH")
       
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
-          echo "PR_ACTION=$PR_ACTION" >> $GITHUB_ENV
-          echo "PR_MERGED=$PR_MERGED" >> $GITHUB_ENV
           echo "PR_TITLE=$PR_TITLE" >> $GITHUB_ENV
           echo "PR_BODY=$PR_BODY" >> $GITHUB_ENV
           echo "PR_USER=$PR_USER" >> $GITHUB_ENV
           echo "PR_HEAD=$PR_HEAD" >> $GITHUB_ENV
           echo "PR_BASE=$PR_BASE" >> $GITHUB_ENV
+          echo "PR_MERGED=$PR_MERGED" >> $GITHUB_ENV
 
-      # -----------------------------
-      # PR відкритий
-      # -----------------------------
-      - name: 🔵 Notify when PR opened or reopened
-        if: ${{ env.PR_ACTION == 'opened' || env.PR_ACTION == 'reopened' }}
+      - name: 🔵 Notify PR opened/reopened
+        if: ${{ github.event.workflow_run.event == 'pull_request' }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: |
-          DESC_TEXT=""
-          if [ -n "$PR_BODY" ]; then
-            DESC_TEXT="*Опис:* $PR_BODY"
+          if [ "$PR_MERGED" != "true" ]; then
+            DESC_TEXT=""
+            if [ -n "$PR_BODY" ]; then
+              DESC_TEXT="*Опис:* $PR_BODY"
+            fi
+
+            MESSAGE=$(cat <<EOF
+            🔵 Новий Pull Request від *$PR_USER*
+
+            *Назва:* $PR_TITLE
+            *Гілка:* $PR_HEAD → $PR_BASE
+            $DESC_TEXT
+            🔗 [Дивитись PR](https://github.com/${{ github.repository }}/pull/$PR_NUMBER)
+            EOF
+            )
+
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+              --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
+              --data-urlencode "parse_mode=Markdown" \
+              --data-urlencode "text=$MESSAGE"
           fi
 
-          MESSAGE=$(cat <<EOF
-          🔵 Новий Pull Request від *$PR_USER*
-          
-          *Назва:* $PR_TITLE
-          *Гілка:* $PR_HEAD → $PR_BASE
-          $DESC_TEXT
-          🔗 [Дивитись PR](https://github.com/${{ github.repository }}/pull/$PR_NUMBER)
-
-          -----------------------------------------------------------
-          💡 А ти перевірив свій код і текст задачі?
-          EOF
-          )
-
-          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-            --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
-            --data-urlencode "parse_mode=Markdown" \
-            --data-urlencode "text=$MESSAGE"
-
-      # -----------------------------
-      # PR замержен
-      # -----------------------------
-      - name: 🟢 Notify when PR merged
-        if: ${{ env.PR_ACTION == 'closed' && env.PR_MERGED == 'true' }}
+      - name: 🟢 Notify PR merged
+        if: ${{ github.event.workflow_run.event == 'pull_request' }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: |
-          DESC_TEXT=""
-          if [ -n "$PR_BODY" ]; then
-            DESC_TEXT="*Опис:* $PR_BODY\n"
-          fi
+          if [ "$PR_MERGED" == "true" ]; then
+            DESC_TEXT=""
+            if [ -n "$PR_BODY" ]; then
+              DESC_TEXT="*Опис:* $PR_BODY\n"
+            fi
 
-          MESSAGE=$(cat <<EOF
+            MESSAGE=$(cat <<EOF
           🟢 Pull Request *#$PR_NUMBER* був злитий в гілку *$PR_BASE*
-          
+
           Автор: $PR_USER
           $DESC_TEXT
           🔗 [Дивитись PR](https://github.com/${{ github.repository }}/pull/$PR_NUMBER)
           
           👉 Не забудьте зробити \`git pull\`!
           EOF
-          )
+            )
 
-          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-            --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
-            --data-urlencode "parse_mode=Markdown" \
-            --data-urlencode "text=$MESSAGE"
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+              --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
+              --data-urlencode "parse_mode=Markdown" \
+              --data-urlencode "text=$MESSAGE"
+          fi
 
-      # -----------------------------
-      # PR закритий без merge
-      # -----------------------------
-      - name: 🔴 Notify when PR closed without merge
-        if: ${{ env.PR_ACTION == 'closed' && env.PR_MERGED == 'false' }}
+      - name: 🔴 Notify PR closed without merge
+        if: ${{ github.event.workflow_run.event == 'pull_request' }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: |
-          DESC_TEXT=""
-          if [ -n "$PR_BODY" ]; then
-            DESC_TEXT="*Опис:* $PR_BODY"
-          fi
+          if [ "$PR_MERGED" != "true" ]; then
+            DESC_TEXT=""
+            if [ -n "$PR_BODY" ]; then
+              DESC_TEXT="*Опис:* $PR_BODY"
+            fi
 
-          MESSAGE=$(cat <<EOF
+            MESSAGE=$(cat <<EOF
           🔴 Pull Request *#$PR_NUMBER* був закритий без merge
           
           Автор закритого PR: *$PR_USER*
           $DESC_TEXT
           🔗 [Дивитись PR](https://github.com/${{ github.repository }}/pull/$PR_NUMBER)
           EOF
-          )
+            )
 
-          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-            --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
-            --data-urlencode "parse_mode=Markdown" \
-            --data-urlencode "text=$MESSAGE"
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+              --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
+              --data-urlencode "parse_mode=Markdown" \
+              --data-urlencode "text=$MESSAGE"
+          fi
