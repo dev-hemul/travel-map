@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
-import AnnouncementModal from './components/announcements/AnnouncementModal';
+/*import AnnouncementModal from './components/announcements/AnnouncementModal';*/
 import MapView from './components/MapView';
 import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
-import PrivateRouter from './components/PrivateRouter'; 
+import PrivateRouter from './components/PrivateRouter';
 
 axios.defaults.withCredentials = true;
 
@@ -18,7 +18,14 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const protectedRoutes = ['/profile', '/announcements', '/routes', '/support', '/settings', '/auth'];
+  const protectedRoutes = [
+    '/profile',
+    '/announcements',
+    '/routes',
+    '/support',
+    '/settings',
+    '/auth',
+  ];
 
   const checkTokens = async () => {
     console.log('=== CheckAuth started ===');
@@ -46,7 +53,11 @@ function App() {
       const now = Date.now() / 1000;
       if (decoded.exp < now + 300) {
         console.log('Access token expires soon, refreshing...');
-        const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
+        const response = await axios.post(
+          'http://localhost:4000/refresh-token',
+          {},
+          { withCredentials: true }
+        );
         localStorage.setItem('accessToken', response.data.accessToken);
         console.log('Refresh successful');
       }
@@ -94,7 +105,16 @@ function App() {
   return (
     <div className="min-h-screen dark:bg-gray-900 bg-gray-50 relative">
       <Routes>
-        <Route path="/" element={<><MapView /><SupportModalWrapper /><AnnouncementModal /></>} />
+        <Route
+          path="/"
+          element={
+            <>
+              <MapView />
+              <SupportModalWrapper />
+              <AnnouncementModal />
+            </>
+          }
+        />
         <Route path="/login" element={<LoginPage />} />
         <Route element={<PrivateRouter isAuthenticated={isAuthenticated} />}>
           <Route
