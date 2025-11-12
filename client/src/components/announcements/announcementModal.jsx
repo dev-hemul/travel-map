@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaBullhorn, FaTimes, FaPlus } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
+
 export default function AnnouncementModal() {
   const navigate = useNavigate();
   const [showSidebar, setShowSidebar] = useState(false);

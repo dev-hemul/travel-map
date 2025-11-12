@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
-/*import AnnouncementModal from './components/announcements/AnnouncementModal';*/
 import MapView from './components/MapView';
 import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
 import PrivateRouter from './components/PrivateRouter';
+import AnnouncementModal from './components/announcements/announcementModal'
+import CreateAnnouncementPage from './pages/createAnnouncementPage';
 
 axios.defaults.withCredentials = true;
 
@@ -111,10 +112,11 @@ function App() {
             <>
               <MapView />
               <SupportModalWrapper />
-              <AnnouncementModal />
+              <AnnouncementModal/>
             </>
           }
         />
+        <Route path="/create-announcement" element={<CreateAnnouncementPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route element={<PrivateRouter isAuthenticated={isAuthenticated} />}>
           <Route
