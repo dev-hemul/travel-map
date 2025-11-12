@@ -66,7 +66,7 @@ jobs:
 
   notify:
     needs: build-and-test
-    if: success()  # только если билд прошёл успешно
+    if: success()  # тільки якщо білд пройшов успішно
     runs-on: ubuntu-latest
 
     steps:
@@ -82,7 +82,7 @@ jobs:
           echo "PR_BASE=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
 
       # -----------------------------
-      # PR открыт или переоткрыт
+      # PR відкритий
       # -----------------------------
       - name: 🔵 Notify when PR opened or reopened
         if: ${{ env.PR_ACTION == 'opened' || env.PR_ACTION == 'reopened' }}
@@ -144,7 +144,7 @@ jobs:
             --data-urlencode "text=$MESSAGE"
 
       # -----------------------------
-      # PR закрыт без merge
+      # PR закритий без merge
       # -----------------------------
       - name: 🔴 Notify when PR closed without merge
         if: ${{ env.PR_ACTION == 'closed' && env.PR_MERGED == 'false' }}

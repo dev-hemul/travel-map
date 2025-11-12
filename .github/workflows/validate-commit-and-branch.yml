@@ -1,0 +1,86 @@
+name: 🔍 Validate PR Format (branch, commits, description)
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited]
+
+jobs:
+  validate:
+    name: Validate branch, commits, and PR description
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Потрібно, щоб бачити історію змін
+
+      # ------------------------------
+      # 1️⃣ Перевірка назви гілки
+      # ------------------------------
+      - name: 🪵 Check branch name format
+        run: |
+          BRANCH="${{ github.head_ref }}"
+          echo "🔍 Checking branch name: $BRANCH"
+
+          # Формат: TM-999/short-description
+          if [[ ! "$BRANCH" =~ ^TM-[0-9]+\/[a-z0-9._-]+$ ]]; then
+            echo "❌ Некоректне ім'я гілки!"
+            echo "✅ Формат повинен бути: TM-<номер задачі>/<короткий-опис>"
+            echo "Приклад: TM-123/fix-auth-error"
+            exit 1
+          fi
+
+          echo "✅ Branch name is valid!"
+
+      # ------------------------------
+      # 2️⃣ Перевірка комміт-повідомлень
+      # ------------------------------
+      - name: 🧾 Check commit messages
+        run: |
+          BASE_SHA=${{ github.event.pull_request.base.sha }}
+          HEAD_SHA=${{ github.event.pull_request.head.sha }}
+          COMMITS=$(git log --pretty=format:%s $BASE_SHA..$HEAD_SHA)
+
+          echo "🔍 Перевіряємо комміти між $BASE_SHA и $HEAD_SHA"
+          echo "-------------------------------------------"
+          echo "$COMMITS"
+          echo "-------------------------------------------"
+
+          INVALID=0
+          while IFS= read -r COMMIT; do
+            if [[ ! "$COMMIT" =~ ^TM-[0-9]+:\  ]]; then
+              echo "❌ Некоректний коміт: \"$COMMIT\""
+              echo "✅ Формат повинен бути: TM-<номер_задачі>: опис"
+              echo "Приклад: TM-123: виправлена авторизація"
+              INVALID=1
+            else
+              echo "✅ $COMMIT"
+            fi
+          done <<< "$COMMITS"
+
+          if [ "$INVALID" -eq 1 ]; then
+            echo "🚫 Знайдено некоректні комміти"
+            exit 1
+          fi
+
+          echo "✅ Усі коміти коректні!"
+
+      # ------------------------------
+      # 3️⃣ Перевірка опису PR
+      # ------------------------------
+      - name: 📝 Check PR description format
+        run: |
+          BODY="${{ github.event.pull_request.body }}"
+          echo "🔍 Перевіряємо опис PR:"
+          echo "$BODY"
+
+          # Формат: TM-999: опис задачі
+          if [[ ! "$BODY" =~ ^TM-[0-9]+:\  ]]; then
+            echo "❌ Некоректний опис PR!"
+            echo "✅ Формат повинен бути: TM-<номер_задачі>: опис"
+            echo "Приклад: TM-123: додано оновлення профілю користувача"
+            exit 1
+          fi
+
+          echo "✅ Опис PR коректно!"
