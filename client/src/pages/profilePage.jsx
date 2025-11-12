@@ -1,5 +1,4 @@
 import axios from "axios";
-import React from "react";
 import { motion } from "framer-motion";
 import React, { useState, useRef, useEffect } from "react";
 import {
