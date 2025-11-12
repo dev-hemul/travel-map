@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { components } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
+import test from 'test.jsx';
 
 import 'leaflet/dist/leaflet.css';
 import AuthMenu from './map/AuthMenu.jsx';
@@ -1049,7 +1050,6 @@ const MapView = () => {
         <WeatherWidget />
         <RouteFunctionality />
         <RouletteWidget />
-        <span>test</span>
       </div>
     </div>
   );
