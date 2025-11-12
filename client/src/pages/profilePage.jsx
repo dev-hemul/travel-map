@@ -1,4 +1,5 @@
 import axios from "axios";
+import React from "react";
 import { motion } from "framer-motion";
 import React, { useState, useRef, useEffect } from "react";
 import {
@@ -230,7 +231,7 @@ const ProfilePage = () => {
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   return (
-    <div className={`min-h-full mx-auto px-4 py-8 rounded-lg mb-10 container ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+    <div className={`min-h-full mx-auto px-4 py-8 rounded-lg mb-10 container sm: ml-[8%] ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
       <div className="flex flex-col sm:flex-row items-center sm:justify-between bg-[#F4EFFF] rounded-xl px-4 py-2 mb-6 gap-4 border border-gray-300 shadow-lg">
         <motion.button
           onClick={() => navigate("/")}
@@ -287,21 +288,11 @@ const ProfilePage = () => {
 
       {isMobileMenuOpen && windowWidth < 1200 && (
         <div className="flex flex-col gap-2 mb-4">
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={toggleDarkMode} className="flex items-center gap-2 text-[#744ce9] text-base p-2 border rounded">
-            Тема <FiMoon />
-          </motion.button>
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-2 text-[#744ce9] text-base p-2 border rounded">
-            Повідомлення <FiMessageCircle />
-          </motion.button>
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-2 text-[#744ce9] text-base p-2 border rounded">
-            Друзі <FiUsers />
-          </motion.button>
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-2 text-[#744ce9] text-base p-2 border rounded">
-            Профіль <div className="w-6 h-6 rounded-full bg-[#744ce9] text-white flex items-center justify-center text-xs font-semibold">ІП</div>
-          </motion.button>
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleLogout} className="flex items-center gap-2 text-[#dc2626] text-base p-2 border rounded">
-            Вихід <FiLogOut />
-          </motion.button>
+          <motion.button whileHover={{ scale: 1.025 }} whileTap={{ scale: 0.95 }} onClick={toggleDarkMode} className="flex items-center gap-2 text-[#744ce9] text-base p-2 border rounded">Тема <FiMoon /></motion.button>
+          <motion.button whileHover={{ scale: 1.025 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-2 text-[#744ce9] text-base p-2 border rounded">Повідомлення <FiMessageCircle /></motion.button>
+          <motion.button whileHover={{ scale: 1.025 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-2 text-[#744ce9] text-base p-2 border rounded">Друзі <FiUsers /></motion.button>
+          <motion.button whileHover={{ scale: 1.025 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-2 text-[#744ce9] text-base p-2 border rounded">Профіль <div className="w-6 h-6 rounded-full bg-[#744ce9] text-white flex items-center justify-center text-xs font-semibold">ІП</div></motion.button>
+          <motion.button whileHover={{ scale: 1.025 }} whileTap={{ scale: 0.95 }} onClick={handleLogout} className="flex items-center gap-2 text-[#dc2626] text-base p-2 border rounded">Вихід <FiLogOut /></motion.button>
         </div>
       )}
 
