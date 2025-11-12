@@ -11,6 +11,7 @@ import LayersSwitcher from './map/LayersSwitcher';
 import RouteFunctionality from './map/RouteFunctionality.jsx';
 import SidePanel from './map/SidePanel.jsx';
 import WeatherWidget from './map/WeatherWidget';
+import RouletteWidget from './map/RouletteWidget.jsx';
 
 const MapView = () => {
   const [uploadProgress, setUploadProgress] = useState({}); // Об'єкт для збереження прогресу завантаження кожного файлу
@@ -559,6 +560,26 @@ const MapView = () => {
     }),
   };
 
+  const handleDeleteMediaFromMarker = async (markerId, url) => {
+    try {
+      const resp = await axios.delete(`http://localhost:4000/marker/${markerId}/media`, {
+        data: { url },
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true,
+      });
+
+      const updated = resp.data?.marker;
+      if (updated?._id) {
+        setMarkers(prev => prev.map(m => (m._id === updated._id ? { ...m, ...updated } : m)));
+        setSelectedMarkerForPanel(prev =>
+          prev && prev._id === updated._id ? { ...prev, ...updated } : prev
+        );
+      }
+    } catch (e) {
+      console.error('Ошибка при удалении медиа:', e);
+    }
+  };
+
   return (
     <div>
       <div ref={mapRef} className="w-auto h-screen">
@@ -1019,6 +1040,7 @@ const MapView = () => {
         markerData={selectedMarkerForPanel}
         onEdit={handleEditMarker}
         onDelete={handleDeleteMarker}
+        onDeleteMedia={handleDeleteMediaFromMarker}
       />
 
       <div className="absolute top-4 right-4 flex gap-3 z-10" style={{ zIndex: 997 }}>
@@ -1026,6 +1048,7 @@ const MapView = () => {
         <LayersSwitcher mapType={mapType} setMapType={setMapType} />
         <WeatherWidget />
         <RouteFunctionality />
+        <RouletteWidget />
       </div>
     </div>
   );
