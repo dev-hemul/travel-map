@@ -1,0 +1,171 @@
+name: PR Build and Notify
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited, closed]
+
+jobs:
+  validate:
+    name: Validate branch, commits, and PR description
+    runs-on: ubuntu-latest
+
+    env:
+      ADMIN_ID: ${{ secrets.ADMIN_ID }}
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      DB_URL: ${{ secrets.DB_URL }}
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      PORT: ${{ secrets.PORT }}
+      PRIVATE_KEY_B64: ${{ secrets.PRIVATE_KEY_B64 }}
+      PUBLIC_KEY_B64: ${{ secrets.PUBLIC_KEY_B64 }}
+      REFRESH_SECRET: ${{ secrets.REFRESH_SECRET }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install root dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Create .env for server
+        run: |
+          cat <<EOF > server/.env
+          ADMIN_ID=${{ secrets.ADMIN_ID }}
+          BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+          CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
+          CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          DB_URL=${{ secrets.DB_URL }}
+          GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          PORT=${{ secrets.PORT }}
+          REFRESH_SECRET=${{ secrets.REFRESH_SECRET }}
+          EOF
+
+      - name: Create PEM key files
+        run: |
+          echo "${{ secrets.PRIVATE_KEY_B64 }}" | base64 -d > server/privateKey.pem
+          echo "${{ secrets.PUBLIC_KEY_B64 }}" | base64 -d > server/publicKey.pem
+
+      - name: Install and Build Backend
+        run: |
+          cd server
+          yarn install --frozen-lockfile
+
+      - name: Install and Build Frontend
+        run: |
+          cd client
+          yarn install --frozen-lockfile
+          yarn build
+
+  notify:
+    needs: validate
+    if: success()
+    runs-on: ubuntu-latest
+
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+
+    steps:
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Set PR variables
+        run: |
+          PR_NUMBER=$(jq -r '.pull_request.number' "$GITHUB_EVENT_PATH")
+          PR_TITLE=$(jq -r '.pull_request.title' "$GITHUB_EVENT_PATH")
+          PR_BODY=$(jq -r '.pull_request.body' "$GITHUB_EVENT_PATH")
+          PR_USER=$(jq -r '.pull_request.user.login' "$GITHUB_EVENT_PATH")
+          PR_HEAD=$(jq -r '.pull_request.head.ref' "$GITHUB_EVENT_PATH")
+          PR_BASE=$(jq -r '.pull_request.base.ref' "$GITHUB_EVENT_PATH")
+          PR_MERGED=$(jq -r '.pull_request.merged' "$GITHUB_EVENT_PATH")
+          PR_ACTION=$(jq -r '.action' "$GITHUB_EVENT_PATH")
+
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+          echo "PR_TITLE=$PR_TITLE" >> $GITHUB_ENV
+          echo "PR_BODY=$PR_BODY" >> $GITHUB_ENV
+          echo "PR_USER=$PR_USER" >> $GITHUB_ENV
+          echo "PR_HEAD=$PR_HEAD" >> $GITHUB_ENV
+          echo "PR_BASE=$PR_BASE" >> $GITHUB_ENV
+          echo "PR_MERGED=$PR_MERGED" >> $GITHUB_ENV
+          echo "PR_ACTION=$PR_ACTION" >> $GITHUB_ENV
+
+      - name: 🔵 Notify PR opened/reopened
+        if: ${{ env.PR_ACTION == 'opened' || env.PR_ACTION == 'reopened' || env.PR_ACTION == 'synchronize' || env.PR_ACTION == 'edited' }}
+        run: |
+          DESC_TEXT=""
+          if [ -n "$PR_BODY" ]; then
+            DESC_TEXT="*Опис:* $PR_BODY"
+          fi
+
+          MESSAGE=$(cat <<EOF
+          🔵 Новий Pull Request від *$PR_USER*
+
+          *Назва:* $PR_TITLE
+          *Гілка:* $PR_HEAD → $PR_BASE
+          $DESC_TEXT
+          🔗 [Дивитись PR](https://github.com/${{ github.repository }}/pull/$PR_NUMBER)
+          EOF
+          )
+
+          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+            --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
+            --data-urlencode "parse_mode=Markdown" \
+            --data-urlencode "text=$MESSAGE"
+
+      - name: 🟢 Notify PR merged
+        if: ${{ env.PR_MERGED == 'true' }}
+        run: |
+          DESC_TEXT=""
+          if [ -n "$PR_BODY" ]; then
+            DESC_TEXT="*Опис:* $PR_BODY\n"
+          fi
+
+          MESSAGE=$(cat <<EOF
+          🟢 Pull Request *#$PR_NUMBER* був злитий в гілку *$PR_BASE*
+
+          Автор: $PR_USER
+          $DESC_TEXT
+          🔗 [Дивитись PR](https://github.com/${{ github.repository }}/pull/$PR_NUMBER)
+          
+          👉 Не забудьте зробити \`git pull\`!
+          EOF
+          )
+
+          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+            --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
+            --data-urlencode "parse_mode=Markdown" \
+            --data-urlencode "text=$MESSAGE"
+
+      - name: 🔴 Notify PR closed without merge
+        if: ${{ env.PR_ACTION == 'closed' && env.PR_MERGED != 'true' }}
+        run: |
+          DESC_TEXT=""
+          if [ -n "$PR_BODY" ]; then
+            DESC_TEXT="*Опис:* $PR_BODY"
+          fi
+
+          MESSAGE=$(cat <<EOF
+          🔴 Pull Request *#$PR_NUMBER* був закритий без merge
+          
+          Автор закритого PR: *$PR_USER*
+          $DESC_TEXT
+          🔗 [Дивитись PR](https://github.com/${{ github.repository }}/pull/$PR_NUMBER)
+          EOF
+          )
+
+          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+            --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
+            --data-urlencode "parse_mode=Markdown" \
+            --data-urlencode "text=$MESSAGE"
