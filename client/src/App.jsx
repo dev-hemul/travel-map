@@ -111,7 +111,7 @@ function App() {
             <>
               <MapView />
               <SupportModalWrapper />
-              <AnnouncementModal />
+              {/*<AnnouncementModal />*/}
             </>
           }
         />
