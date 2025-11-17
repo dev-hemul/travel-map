@@ -42,6 +42,9 @@ const MapView = () => {
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [selectedMarkerForPanel, setSelectedMarkerForPanel] = useState(null);
 
+  // режим лінійки: true — модалка з маркерами не буде відкрита
+  const [isMeasureEnabled, setIsMeasureEnabled] = useState(false);
+
   useEffect(() => {
     const fetchMarkers = async () => {
       try {
@@ -216,12 +219,13 @@ const MapView = () => {
     });
 
     // Додаємо обробник кліку
+    map.off('click', handleMapClick);
     map.on('click', handleMapClick);
 
     return () => {
       map.off('click', handleMapClick);
     };
-  }, [mapType, markers]);
+  }, [mapType, markers, isMeasureEnabled, modalOpen]);
 
   useEffect(() => {
     // Проверяем URL параметры при загрузке маркеров
@@ -257,6 +261,7 @@ const MapView = () => {
   // Обробник кліка по карті
   const handleMapClick = e => {
     if (modalOpen) return;
+    if (isMeasureEnabled) return;
     const { lat, lng } = e.latlng;
     const newMarker = {
       lat,
@@ -1048,7 +1053,10 @@ const MapView = () => {
         <LayersSwitcher mapType={mapType} setMapType={setMapType} />
         <WeatherWidget />
         <RouteFunctionality />
-        <RouletteWidget />
+        <RouletteWidget
+          isMeasureEnabled={isMeasureEnabled}
+          onToggleMeasure={() => setIsMeasureEnabled(prev => !prev)}
+        />
       </div>
     </div>
   );
