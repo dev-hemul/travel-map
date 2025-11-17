@@ -1058,6 +1058,8 @@ const MapView = () => {
           onToggleMeasure={() => setIsMeasureEnabled(prev => !prev)}
         />
       </div>
+      <span>test</span>
+      <span>test2</span>
     </div>
   );
 };
