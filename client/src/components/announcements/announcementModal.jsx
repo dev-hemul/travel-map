@@ -129,7 +129,7 @@ export default function AnnouncementModal() {
                 {/* Кнопка додавання */}
                 <motion.button
                   onClick={() => navigate('/create-announcement')}
-                  className="w-full py-3.5 rounded-xl font-semibold text-white shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800"
+                  className="w-full cursor-pointer py-3.5 rounded-xl font-semibold text-white shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
