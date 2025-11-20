@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
-
+import AnnouncementModal from './components/announcements/announcementModal';
+import CreateAnnouncementPage from './pages/createAnnouncementPage';
 import MapView from './components/MapView';
 import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
@@ -79,9 +80,11 @@ function App() {
             <>
               <MapView />
               <SupportModalWrapper />
+              {/*<AnnouncementModal />*/}
             </>
           }
         />
+        <Route path="/create-announcement" element={<CreateAnnouncementPage />} />
         <Route path="/login" element={<LoginPage />} />
 
         <Route element={<PrivateRouter isAuthenticated={isAuthenticated} />}>
