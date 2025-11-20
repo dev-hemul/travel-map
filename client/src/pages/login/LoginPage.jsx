@@ -289,14 +289,14 @@ const LoginPage = () => {
             <FaGoogle className="text-red-500 w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-6 lg:h-6 xl:w-7 xl:h-7" />
           </button>
 
-          <button
+          <div
             type="button"
             onClick={handleTelegramLogin}
             className="relative rounded-full overflow-hidden bg-[#229ED9] shadow-md hover:shadow-xl hover:bg-[#1e8bc5] transition-all duration-200 w-10 h-10 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-12 lg:h-12 xl:w-14 xl:h-14 flex items-center justify-center cursor-pointer"
             aria-label="Увійти через Telegram"
           >
             <LoginTelegramButton />
-          </button>
+          </div>
         </div>
 
         <button
