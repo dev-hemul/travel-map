@@ -275,7 +275,7 @@ const LoginPage = () => {
 
         <button
           type="submit"
-          className="w-full bg-[#744ce9] text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-white py-2 sm:py-2 md:py-3 lg:py-3 xl:py-4 rounded-lg font-semibold hover:bg-[#5d39b3] transition shadow cursor-pointer"
+          className="w-full bg-[#744ce9] text-sm sm:text-base md:text-lg lg:text-l xl:text-xl text-white py-2 sm:py-2 md:py-3 lg:py-3 xl:py-4 rounded-lg font-semibold hover:bg-[#5d39b3] transition shadow cursor-pointer"
         >
           {isRegister ? 'Зареєструватися' : 'Увійти'}
         </button>
@@ -328,7 +328,7 @@ const LoginPage = () => {
             >
               ×
             </button>
-            <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-[#744ce9] text-center">
+            <h3 className="text-lg sm:text-l md:text-xl lg:text-xl xl:text-2xl font-bold text-[#744ce9] text-center">
               Відновлення пароля
             </h3>
             <form onSubmit={handleResetPassword} className="flex flex-col gap-4">
@@ -337,11 +337,11 @@ const LoginPage = () => {
                 placeholder="Email"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
-                className="w-full px-3 py-2 sm:py-2 md:py-3 lg:py-3 xl:py-4 text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl border border-indigo-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] placeholder:text-[13px] placeholder:text-gray-500 sm:placeholder:text-[13px] md:placeholder:text-[14px] lg:placeholder:text-[15px] xl:placeholder:text-[16px]"
+                className="w-full px-3 py-2 sm:py-2 md:py-3 lg:py-3 xl:py-4 text-sm sm:text-base md:text-lg lg:text-l xl:text-xl border border-indigo-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] placeholder:text-[13px] placeholder:text-gray-500 sm:placeholder:text-[13px] md:placeholder:text-[14px] lg:placeholder:text-[15px] xl:placeholder:text-[16px]"
               />
               <button
                 type="submit"
-                className="w-full bg-[#744ce9] text-white py-2 sm:py-2 md:py-3 lg:py-3 xl:py-4 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-semibold hover:bg-[#5d39b3] transition shadow cursor-pointer"
+                className="w-full bg-[#744ce9] text-white py-2 sm:py-2 md:py-3 lg:py-3 xl:py-4 rounded-lg text-sm sm:text-base md:text-lg lg:text-l xl:text-xl font-semibold hover:bg-[#5d39b3] transition shadow cursor-pointer"
               >
                 Надіслати
               </button>
