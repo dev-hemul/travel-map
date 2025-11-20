@@ -230,7 +230,7 @@ const ProfilePage = () => {
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   return (
-    <div className={`min-h-full mx-auto px-4 py-8 rounded-lg mb-10 container ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+    <div className={`min-h-full mx-auto px-4 py-8 rounded-lg mb-10 container sm: ml-5 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
       <div className="flex flex-col sm:flex-row items-center sm:justify-between bg-[#F4EFFF] rounded-xl px-4 py-2 mb-6 gap-4 border border-gray-300 shadow-lg">
         <motion.button
           onClick={() => navigate("/")}
@@ -346,25 +346,7 @@ const ProfilePage = () => {
           <div className="space-y-6 bg-white rounded-xl p-6 border border-gray-200 shadow-lg">
             <div className="flex justify-between items-center">
               <h2 className="text-xl md:text-2xl font-semibold text-[#744ce9]">Особисті дані</h2>
-              <motion.button
-                type="button"
-                onClick={toggleEditMode}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isEditing ? "bg-gray-300 hover:bg-gray-400" : "bg-[#744ce9] hover:bg-[#5d39b3] text-white"} focus:outline-none focus:ring-2 focus:ring-[#744ce9] focus:ring-offset-2 cursor-pointer`}
-              >
-                {isEditing ? (
-                  <>
-                    <FiX size={16} />
-                    <span>Скасувати</span>
-                  </>
-                ) : (
-                  <>
-                    <FiEdit2 size={16} />
-                    <span>Редагувати</span>
-                  </>
-                )}
-              </motion.button>
+
             </div>
 
             <div className={`grid gap-4 ${isLargeScreen ? 'grid-cols-2' : 'grid-cols-1'}`}>
@@ -384,6 +366,7 @@ const ProfilePage = () => {
                     className={`w-full p-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] focus:border-transparent ${!isEditing ? "bg-white cursor-not-allowed text-gray-600" : "bg-gray-100 text-[#744ce9]"}`}
                   />
                 </div>
+                
               ))}
             </div>
 
@@ -403,6 +386,25 @@ const ProfilePage = () => {
                 </motion.button>
               </div>
             )}
+            <motion.button
+                type="button"
+                onClick={toggleEditMode}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isEditing ? "bg-gray-300 hover:bg-gray-400" : "bg-[#744ce9] hover:bg-[#5d39b3] text-white"} focus:outline-none focus:ring-2 focus:ring-[#744ce9] focus:ring-offset-2 cursor-pointer`}
+              >
+                {isEditing ? (
+                  <>
+                    <FiX size={16} />
+                    <span>Скасувати</span>
+                  </>
+                ) : (
+                  <>
+                    <FiEdit2 size={16} />
+                    <span>Редагувати</span>
+                  </>
+                )}
+              </motion.button>
           </div>
         </motion.div>
       </form>
