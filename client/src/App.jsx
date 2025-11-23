@@ -3,26 +3,31 @@ import { jwtDecode } from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
+
 import AnnouncementModal from './components/announcements/announcementModal';
 import MapView from './components/MapView';
+import PrivateRouter from './components/PrivateRouter';
 import PrivateRouter from './components/PrivateRouter';
 import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
 import CreateAnnouncementPage from './pages/createAnnouncementPage';
+import CreateAnnouncementPage from './pages/createAnnouncementPage';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
+
 
 axios.defaults.withCredentials = true;
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  const [isReady, setIsReady] = useState(false); 
 
   const checkAuth = async () => {
     const token = localStorage.getItem('accessToken');
 
     if (!token) {
       setIsAuthenticated(false);
+      setIsReady(true);
       setIsReady(true);
       return;
     }
@@ -32,17 +37,16 @@ function App() {
       const now = Date.now() / 1000;
 
       if (decoded.exp < now + 300) {
-        await axios
-          .post('http://localhost:4000/refresh-token', {}, { withCredentials: true })
+        await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true })
           .then(res => localStorage.setItem('accessToken', res.data.accessToken));
       }
 
       setIsAuthenticated(true);
-    } catch {
+    } catch (err) {
       localStorage.removeItem('accessToken');
       setIsAuthenticated(false);
     } finally {
-      setIsReady(true);
+      setIsReady(true); 
     }
   };
 
@@ -53,8 +57,7 @@ function App() {
     const interval = setInterval(() => {
       const token = localStorage.getItem('accessToken');
       if (token) {
-        axios
-          .post('http://localhost:4000/refresh-token', {}, { withCredentials: true })
+        axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true })
           .then(res => localStorage.setItem('accessToken', res.data.accessToken))
           .catch(() => localStorage.removeItem('accessToken'));
       }

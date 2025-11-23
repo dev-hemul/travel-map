@@ -1,19 +1,22 @@
 import express from 'express';
 
+
 import { verifyAccessToken, verifyRefreshToken } from '../middlewares/auth.js';
 import User from '../model/user.js'; // Імпорт User для GET /profile
+import { register, login, logout, updateProfile, getRefreshToken } from './../controller/authCntrl.js';
 import {
-  register,
-  login,
-  logout,
-  updateProfile,
-  getRefreshToken,
-} from './../controller/authCntrl.js';
+  validateLoginBody,
+  validateRegisterBody,
+} from './../middlewares/validation.js';
 
 const router = express.Router();
 
-router.post('/register', register);
-router.post('/login', (req, res, next) => {
+router.post('/register', validateRegisterBody, register);
+router.post('/login', validateLoginBody, (req, res, next) => {
+  // console.log('[Крок 1.5] POST /login. Body:', req.body);
+  // console.log('[Крок 1.5] Headers:', req.headers);
+  // console.log('[Крок 1.5] Raw Cookie Header:', req.headers.cookie);
+  // console.log('[Крок 1.5] Cookies:', req.cookies);
   login(req, res, next);
 });
 router.post('/refresh-token', verifyRefreshToken, getRefreshToken);
