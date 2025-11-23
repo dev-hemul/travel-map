@@ -39,19 +39,16 @@ const ProfilePage = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [isEditing, setIsEditing] = useState(false);
-  const [authStatus, setAuthStatus] = useState('loading'); // 'loading', 'authenticated', 'unauthenticated'
 
-  // Обробка зміни розміру вікна
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
       if (window.innerWidth > 768) setIsMobileMenuOpen(false);
     };
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    return () => window.addEventListener("resize", handleResize);
   }, []);
 
-  // Ініціалізація мок-даних профілю
   useEffect(() => {
     const mockProfileData = {
       firstName: "Іван",
@@ -64,75 +61,6 @@ const ProfilePage = () => {
     setFormData(mockProfileData);
     setInitialFormData(mockProfileData);
   }, []);
-
-  // Перевірка авторизації
-  useEffect(() => {
-    const checkAuth = async () => {
-      console.log('=== CheckAuth started ===');
-      const accessToken = localStorage.getItem('accessToken');
-      const refreshToken = document.cookie.split('; ').find(row => row.startsWith('refreshToken='))?.split('=')[1];
-
-      console.log('AccessToken present:', accessToken);
-      console.log('RefreshToken present:', refreshToken);
-
-      if (!accessToken && !refreshToken) {
-        console.log('No tokens - redirect to login');
-        setAuthStatus('unauthenticated');
-        navigate('/login');
-        return;
-      }
-
-      if (!accessToken && refreshToken) {
-        console.log('No accesstoken - trying to refresh');
-        try {
-          const response = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
-          console.log('Refresh success:', response.status);
-          localStorage.setItem('accessToken', response.data.accessToken);
-        } catch (error) {
-          console.log('Refresh error:', error.response?.status, error.response?.data);
-          localStorage.removeItem('accessToken');
-          document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-          setAuthStatus('unauthenticated');
-          navigate('/login');
-          return;
-        }
-      }
-
-      console.log('Checking access token with GET /profile');
-      try {
-        const response = await axios.get('http://localhost:4000/profile', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
-        });
-        console.log('Profile check success:', response.status);
-        setAuthStatus('authenticated');
-      } catch (error) {
-        console.log('Profile check error:', error.response?.status, error.response?.data);
-        localStorage.removeItem('accessToken');
-        document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        setAuthStatus('unauthenticated');
-        navigate('/login');
-      }
-    };
-
-    checkAuth();
-  }, [navigate]);
-
-  // Лоадер під час перевірки авторизації
-  if (authStatus === 'loading') {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900 z-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-[#744ce9] mx-auto"></div>
-          <p className="mt-4 text-lg text-[#744ce9] font-medium">Перевірка авторизації...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Якщо не авторизований, нічого не рендеримо
-  if (authStatus === 'unauthenticated') {
-    return null;
-  }
 
   const isLargeScreen = windowWidth >= 1200;
   const isMediumScreen = windowWidth >= 768 && windowWidth < 1200;

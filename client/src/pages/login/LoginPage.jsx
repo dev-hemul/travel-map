@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaGoogle, FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-import LoginTelegramButton from './TelegramLoginButton';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import { FaGoogle, FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+
+import LoginTelegramButton from './TelegramLoginButton';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const LoginPage = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -14,79 +16,70 @@ const LoginPage = () => {
     password: '',
     confirmPassword: '',
   });
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [showReset, setShowReset] = useState(false); // Додано для модального вікна
-  const [resetEmail, setResetEmail] = useState(''); // Додано для email скидання
+  const [showReset, setShowReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [isChecking, setIsChecking] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   const navigate = useNavigate();
 
-  const notifySuccessReg = () => toast.success('Реєстрація успішна! Ви можете увійти.');
+  const notifySuccessReg = () => toast.success('Реєстрація успішна!');
   const notifySuccessLog = () => toast.success('Успішний вхід!');
-  const notifyLetterHasBeenSentOnEmail = () => toast.success('Лист підтвердження було надіслано на ваш Email');
+  const notifyLetterHasBeenSentOnEmail = () => toast.success('Лист надіслано');
   const notifyPasswordConfirmationErr = () => toast.error('Паролі не збігаються');
-  // const notifyCurrentEmailErr = () => toast.error('Такий email вже зайнятий');
-  // const notifyCurrentLoginErr = () => toast.error('Такий логін вже зайнятий');
-  // const notifyWrongPasswordErr = () => toast.error('Невірний пароль.');
-  // const notifyCurrentUserDoesntExist = () => toast.error('Такого користувача не існує.');
-  // const notifyServerErr = () => toast.error('Помилка сервера.', ); коментую, бо еслінт ругається, але воно було переписано в функції і тут непотрібно
-  const notifyPasswordRecoveryErr = () => toast.error('Невірні облікові дані.');
-  const notifyAllInputAreNecessaryWarning = () => toast.warning('Заповніть усі поля.')
-  const notifyEmailIsNecessaryWarning = () => toast.warning('Заповніть усі поля.')
-  
-  // перевірка токенів
-useEffect(() => {
-  const accessToken = localStorage.getItem('accessToken');
-  console.log('Checking auth, accessToken:', accessToken);
+  const notifyAllInputAreNecessaryWarning = () => toast.warning('Заповніть усі поля');
+  const notifyEmailIsNecessaryWarning = () => toast.warning('Заповніть email та пароль');
 
-  if (accessToken) {
-    axios
-      .post('http://localhost:4000/profile', {}, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        withCredentials: true,
-      })
-      .then(res => {
-        console.log('Profile check success:', res.status);
-        if (res.status === 200) navigate('/profile');
-      })
-      .catch(error => {
-        console.log('Profile check error:', error);
-        axios
-          .post('http://localhost:4000/refresh-token', {}, {
-            withCredentials: true,
-          })
-          .then(res => {
-            console.log('Refresh success, new accessToken:', res.data.accessToken);
-            if (res.data.accessToken) {
-              localStorage.setItem('accessToken', res.data.accessToken);
-              navigate('/profile');
-            }
-          })
-          .catch(error => {
-            console.log('Refresh error:', error.response?.data);
-            localStorage.removeItem('accessToken');
-            navigate('/login');
-            toast.error('Сесія закінчилася. Увійдіть знову.');
-          });
+  useEffect(() => {
+    const checkAuth = async () => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        setIsChecking(false);
+        return;
+      }
+
+      try {
+        await axios.post('http://localhost:4000/profile', {}, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          withCredentials: true,
+        });
+        navigate('/profile', { replace: true });
+      } catch {
+        try {
+          const res = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
+          if (res.data.accessToken) {
+            localStorage.setItem('accessToken', res.data.accessToken);
+            navigate('/profile', { replace: true });
+          } else {
+            throw new Error();
+          }
+        } catch {
+          localStorage.removeItem('accessToken');
+          setIsChecking(false);
+        }
+      }
+    };
+
+    const timer = setTimeout(() => {
+      checkAuth().catch(() => {
+        setHasError(true);
+        setIsChecking(false);
       });
-  }
-}, [navigate]);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(''); // Скидаємо помилку при зміні
-    setSuccess(''); // Скидаємо успіх при зміні
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Форма відправлена, isRegister:', isRegister); 
-    console.log('Дані форми:', formData);
 
     if (isRegister) {
-      // Логіка реєстрації
       if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
         notifyAllInputAreNecessaryWarning();
         return;
@@ -95,232 +88,264 @@ useEffect(() => {
         notifyPasswordConfirmationErr();
         return;
       }
+
       try {
-        console.log('Відправка на /register...');
-        const response = await axios.post('http://localhost:4000/register', {
+        const res = await axios.post('http://localhost:4000/register', {
           username: formData.username,
           email: formData.email,
           password: formData.password,
-        },  {withCredentials: true}
-      );
-  console.log('Заголовки відповіді:', response.headers);
-        console.log('Відповідь від сервера:', response.data);
+        }, { withCredentials: true });
+
+        localStorage.setItem('accessToken', res.data.accessToken);
         notifySuccessReg();
-        setFormData({ username: '', email: '', password: '', confirmPassword: '' }); // Скидання форми
-        localStorage.setItem('accessToken', response.data.accessToken); // Збереження токенів
-        setTimeout(() => {
-          navigate('/profile');
-        }, 2000);
-      } catch (error) {
-        console.log('Помилка реєстрації:', error.response?.data);
-        const message = error.response?.data?.message || 'Помилка сервера';
-        toast.error(message); // Просте виведення повідомлення
+        setTimeout(() => navigate('/profile'), 1500);
+      } catch (err) {
+        toast.error(err.response?.data?.message || 'Помилка');
       }
     } else {
-      // Логіка входу
       if (!formData.email || !formData.password) {
         notifyEmailIsNecessaryWarning();
         return;
       }
+
       try {
-        console.log('Відправка на /login...');
-        const response = await axios.post('http://localhost:4000/login', {
-            email: formData.email,
-            password: formData.password,
-        }, {
-            withCredentials: true 
-        });
-        console.log('cookies', document.cookie)
-        console.log('Відповідь від сервера:', response.data);
+        const res = await axios.post('http://localhost:4000/login', {
+          email: formData.email,
+          password: formData.password,
+        }, { withCredentials: true });
+
+        localStorage.setItem('accessToken', res.data.accessToken);
         notifySuccessLog();
-        localStorage.setItem('accessToken', response.data.accessToken); 
-        
-        console.log('Document cookies after login:', document.cookie);
-        
-        setTimeout(() => {
-            navigate('/profile');
-        }, 2000);
-    } catch (error) {
-        console.log('Помилка входу:', error.response?.data);
-        const message = error.response?.data?.message || 'Помилка сервера';
-        toast.error(message);
-    }
+        setTimeout(() => navigate('/profile'), 1500);
+      } catch (err) {
+        toast.error(err.response?.data?.message || 'Невірні дані');
+      }
     }
   };
 
-  const handleGoogleLogin = () => {
-    // TODO: логіка Google Login
-  };
-
-  const handleResetPassword = async (e) => {
+  const handleResetPassword = (e) => {
     e.preventDefault();
-    if (!resetEmail) {
-      notifyEmailIsNecessaryWarning();
-      return;
-    }
-    try {
-      // TODO: Замінити на реальний endpoint для скидання пароля
-      console.log('Відправка email для скидання пароля:', resetEmail);
-      // Приклад: await axios.post('http://localhost:4000/api/reset-password', { email: resetEmail });
-      notifyLetterHasBeenSentOnEmail();
-      setShowReset(false);
-      setResetEmail('');
-    } catch (error) {
-      console.error('Помилка скидання пароля:', error.message);
-      notifyPasswordRecoveryErr();
-    }
+    if (!resetEmail) return notifyEmailIsNecessaryWarning();
+    notifyLetterHasBeenSentOnEmail();
+    setShowReset(false);
+    setResetEmail('');
   };
+
+  const handleTelegramLogin = () => {
+    const botId = '7744665366';
+    const botUsername = 'TravelMapSupport_bot';
+    const redirectUri = 'https://yourdomain.com/profile';
+    const origin = window.location.origin;
+    const telegramAuthUrl = `https://oauth.telegram.org/auth?bot_id=${botId}&bot=${botUsername}&origin=${encodeURIComponent(origin)}&request_access=write&redirect_uri=${encodeURIComponent(redirectUri)}`;
+    window.location.href = telegramAuthUrl;
+  };
+
+  if (isChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F4EFFF] to-[#744ce9]/10 p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16 xl:h-20 xl:w-20 border-4 border-[#744ce9] border-t-transparent"></div>
+          <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-[#744ce9] font-medium">Перевірка...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F4EFFF] to-[#744ce9]/10 p-4">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">Помилка завантаження</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-[#744ce9] text-white rounded-lg hover:bg-[#5d39b3] transition"
+          >
+            Перезавантажити
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#F4EFFF] to-[#744ce9]/10">
-      <ToastContainer />
-      <h1 className="sr-only">Авторизація</h1>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#F4EFFF] to-[#744ce9]/10 p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12">
+      <ToastContainer position="top-center" autoClose={2000} />
+
       <form
-        className="bg-white p-10 rounded-xl shadow-md w-full max-w-md transition-all duration-300"
         onSubmit={handleSubmit}
+        className="
+          bg-white p-5 sm:p-6 md:p-7 lg:p-8 xl:p-10
+          rounded-xl shadow-lg
+          w-full max-w-[320px] sm:max-w-[380px] md:max-w-[440px] lg:max-w-[500px] xl:max-w-[560px]
+          flex flex-col gap-4 sm:gap-5 md:gap-6 lg:gap-7 xl:gap-8
+          transition-all duration-300
+        "
       >
-        <h2 className="text-2xl font-bold mb-8 text-center text-[#744ce9] drop-shadow">
+        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-bold text-center text-[#744ce9] drop-shadow">
           {isRegister ? 'Реєстрація' : 'Вхід'}
         </h2>
 
         {isRegister && (
-          <div className="relative mb-5">
-            <FaUser className="absolute left-3 top-4 text-[#744ce9]" />
+          <div className="relative">
+            <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-[#744ce9] text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl" />
             <input
               type="text"
               name="username"
               value={formData.username}
               onChange={handleChange}
               placeholder="Логін"
-              className="w-full pl-10 pr-3 py-3 border border-indigo-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] transition-all"
-            />
+              className="w-full
+              h-10 sm:h-10 md:h-12 lg:h-12 xl:h-14  
+              pl-10 pr-3
+              text-sm sm:text-base md:text-s xl:text-s
+              leading-none
+              border border-indigo-200 rounded-md
+              focus:outline-none focus:ring-2 focus:ring-[#744ce9]"
+              />
           </div>
         )}
 
-        <div className="relative mb-5">
-          <FaUser className="absolute left-3 top-4 text-[#744ce9]" />
+        <div className="relative">
+          <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-[#744ce9] text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl" />
           <input
             type="email"
             name="email"
             value={formData.email}
             onChange={handleChange}
             placeholder="Email"
-            className="w-full pl-10 pr-3 py-3 border border-indigo-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] transition-all"
+            className="w-full
+            h-10 sm:h-10 md:h-12 lg:h-12 xl:h-14  
+            pl-10 pr-3
+            text-sm sm:text-base md:text-s xl:text-s
+            leading-none
+            border border-indigo-200 rounded-md
+            focus:outline-none focus:ring-2 focus:ring-[#744ce9]"
           />
         </div>
 
-        <div className="relative mb-5">
-          <FaLock className="absolute left-3 top-4 text-[#744ce9]" />
+        <div className="relative">
+          <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#744ce9] text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl" />
           <input
             type={showPassword ? 'text' : 'password'}
             name="password"
             value={formData.password}
             onChange={handleChange}
             placeholder="Пароль"
-            className="w-full pl-10 pr-3 py-3 border border-indigo-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] transition-all"
+            className="w-full
+            h-10 sm:h-10 md:h-12 lg:h-12 xl:h-14  
+            pl-10 pr-3
+            text-sm sm:text-base md:text-s xl:text-s
+            leading-none
+            border border-indigo-200 rounded-md
+            focus:outline-none focus:ring-2 focus:ring-[#744ce9]"
           />
           <button
             type="button"
-            className="absolute right-3 top-4 text-[#744ce9] focus:outline-none"
-            onClick={() => setShowPassword((v) => !v)}
-            tabIndex={-1}
+            onClick={() => setShowPassword(v => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#744ce9] text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl cursor-pointer"
           >
-            {showPassword ? <FaEye /> : <FaEyeSlash />}
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
           </button>
         </div>
 
         {isRegister && (
-          <div className="relative mb-5">
-            <FaLock className="absolute left-3 top-4 text-[#744ce9]" />
+          <div className="relative">
+            <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#744ce9] text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl" />
             <input
               type={showConfirmPassword ? 'text' : 'password'}
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
               placeholder="Підтвердіть пароль"
-              className="w-full pl-10 pr-3 py-3 border border-indigo-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] transition-all"
+              className="w-full
+              h-10 sm:h-10 md:h-12 lg:h-12 xl:h-14  
+              pl-10 pr-3
+              text-sm sm:text-base md:text-s xl:text-s
+              leading-none
+              border border-indigo-200 rounded-md
+              focus:outline-none focus:ring-2 focus:ring-[#744ce9]"
             />
             <button
               type="button"
-              className="absolute right-3 top-4 text-[#744ce9] focus:outline-none"
-              onClick={() => setShowConfirmPassword((v) => !v)}
-              tabIndex={-1}
+              onClick={() => setShowConfirmPassword(v => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#744ce9] text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl cursor-pointer"
             >
-              {showConfirmPassword ? <FaEye /> : <FaEyeSlash />}
+              {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
           </div>
         )}
 
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-        {success && <p className="text-green-500 text-center mb-4">{success}</p>}
         <button
           type="submit"
-          className="w-full bg-[#744ce9] text-base text-white py-3 rounded-lg font-semibold hover:bg-[#5d39b3] transition mb-4 shadow"
+          className="w-full bg-[#744ce9] text-sm sm:text-base md:text-lg lg:text-l xl:text-xl text-white py-2 sm:py-2 md:py-3 lg:py-3 xl:py-4 rounded-lg font-semibold hover:bg-[#5d39b3] transition shadow cursor-pointer"
         >
           {isRegister ? 'Зареєструватися' : 'Увійти'}
         </button>
 
-        <div className="flex gap-4 justify-center mb-4">
+        <div className="flex justify-center gap-3">
           <button
             type="button"
-            onClick={handleGoogleLogin}
-            className="flex items-center justify-center bg-white border border-[#D1D5DB] p-3 rounded-full shadow text-xl hover:bg-[#f3f3f3] transition"
+            className="flex items-center justify-center bg-white border border-gray-300 rounded-full shadow-md hover:shadow-xl transition-all duration-200 w-10 h-10 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-12 lg:h-12 xl:w-14 xl:h-14 cursor-pointer"
             aria-label="Увійти через Google"
           >
-            <FaGoogle className="text-red-500" />
+            <FaGoogle className="text-red-500 w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-6 lg:h-6 xl:w-7 xl:h-7" />
           </button>
-          <LoginTelegramButton />
+
+          <div
+            type="button"
+            onClick={handleTelegramLogin}
+            className="relative rounded-full overflow-hidden bg-[#229ED9] shadow-md hover:shadow-xl hover:bg-[#1e8bc5] transition-all duration-200 w-10 h-10 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-12 lg:h-12 xl:w-14 xl:h-14 flex items-center justify-center cursor-pointer"
+            aria-label="Увійти через Telegram"
+          >
+            <LoginTelegramButton />
+          </div>
         </div>
 
-        <div className="text-center">
-          <button
-            type="button"
-            className="text-[#744ce9] hover:underline font-medium"
-            onClick={() => setIsRegister(!isRegister)}
-          >
-            {isRegister ? 'Вже є акаунт? Увійти' : 'Немає акаунта? Зареєструватися'}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setIsRegister(!isRegister)}
+          className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-[#744ce9] hover:underline font-medium text-center"
+        >
+          {isRegister ? 'Вже є акаунт? Увійти' : 'Немає акаунта? Зареєструватися'}
+        </button>
 
         {!isRegister && (
-          <div className="flex justify-center mb-4">
-            <button
-              type="button"
-              className="text-sm font-semibold text-[#5d39b3] hover:underline transition-colors drop-shadow-sm"
-              onClick={() => setShowReset(true)}
-            >
-              Забули пароль?
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowReset(true)}
+            className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl font-semibold text-[#5d39b3] hover:underline transition-colors drop-shadow-sm"
+          >
+            Забули пароль?
+          </button>
         )}
       </form>
 
-      {/* Модальне вікно для відновлення пароля */}
       {showReset && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-50">
-          <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm relative">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-50 p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12">
+          <div className="bg-white p-5 sm:p-6 md:p-7 lg:p-8 xl:p-10 rounded-xl shadow-lg w-full max-w-[320px] sm:max-w-[380px] md:max-w-[440px] lg:max-w-[500px] xl:max-w-[560px] flex flex-col gap-4 sm:gap-5 md:gap-6 lg:gap-7 xl:gap-8 relative">
             <button
-              className="absolute top-2 right-3 text-gray-400 hover:text-gray-600 text-2xl cursor-pointer"
               onClick={() => setShowReset(false)}
-              aria-label="Закрити модальне вікно"
+              className="absolute top-2 right-3 text-gray-400 hover:text-gray-600 text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl cursor-pointer"
+              aria-label="Закрити"
             >
-              &times;
+              ×
             </button>
-            <h3 className="text-xl font-bold mb-4 text-[#744ce9] text-center">Відновлення пароля</h3>
-            <form onSubmit={handleResetPassword}>
+            <h3 className="text-lg sm:text-l md:text-xl lg:text-xl xl:text-2xl font-bold text-[#744ce9] text-center">
+              Відновлення пароля
+            </h3>
+            <form onSubmit={handleResetPassword} className="flex flex-col gap-4">
               <input
                 type="email"
-                required
-                placeholder="Уведіть ваш email"
+                placeholder="Email"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
-                className="w-full mb-4 px-4 py-3 border border-indigo-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] transition-all"
+                className="w-full px-3 py-2 sm:py-2 md:py-3 lg:py-3 xl:py-4 text-sm sm:text-base md:text-lg lg:text-l xl:text-xl border border-indigo-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] placeholder:text-[13px] placeholder:text-gray-500 sm:placeholder:text-[13px] md:placeholder:text-[14px] lg:placeholder:text-[15px] xl:placeholder:text-[16px]"
               />
               <button
                 type="submit"
-                className="w-full bg-[#744ce9] text-white py-3 rounded-lg font-semibold hover:bg-[#5d39b3] transition shadow"
+                className="w-full bg-[#744ce9] text-white py-2 sm:py-2 md:py-3 lg:py-3 xl:py-4 rounded-lg text-sm sm:text-base md:text-lg lg:text-l xl:text-xl font-semibold hover:bg-[#5d39b3] transition shadow cursor-pointer"
               >
-                Відправити
+                Надіслати
               </button>
             </form>
           </div>

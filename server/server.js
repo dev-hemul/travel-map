@@ -1,18 +1,20 @@
-import { fileURLToPath } from 'url';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import createHttpError from 'http-errors';
 import morgan from 'morgan';
-import cookieParser from 'cookie-parser';
+
 
 // Роути
 import announcementsRouter from './routes/annoucementsAdding.js';
+import authRouter from './routes/auth.js';
 import getReportsRouter from './routes/main.js';
 import marker from './routes/markerRouter.js';
 import profileEdditRouter from './routes/profileChanges.js';
 import supportRouter from './routes/support.js';
-import authRouter from './routes/auth.js';
 import weatherRouter from './routes/weather.js';
 
 const app = express();
@@ -20,15 +22,15 @@ const app = express();
 app.use(morgan('dev'));
 
 app.use((req, res, next) => {
-  console.log(`[Крок 0] Запит: ${req.method} ${req.url}`);
-  console.log('[Крок 0] Origin:', req.headers.origin);
-  console.log('[Крок 0] Raw Cookie Header:', req.headers.cookie);
+  // console.log(`[Крок 0] Запит: ${req.method} ${req.url}`);
+  // console.log('[Крок 0] Origin:', req.headers.origin);
+  // console.log('[Крок 0] Raw Cookie Header:', req.headers.cookie);
   next();
 });
 
 app.use(cookieParser());
 app.use((req, res, next) => {
-  console.log(`[Крок 0.5] Після cookie-parser. Cookies:`, req.cookies);
+  // console.log(`[Крок 0.5] Після cookie-parser. Cookies:`, req.cookies);
   next();
 });
 
@@ -48,8 +50,8 @@ app.use((req, res, next) => {
 });
 
 app.use((req, res, next) => {
-  console.log('[Крок 1] Після CORS. Cookies:', req.cookies);
-  console.log('[Крок 1] Response Headers:', res.getHeaders());
+  // console.log('[Крок 1] Після CORS. Cookies:', req.cookies);
+  // console.log('[Крок 1] Response Headers:', res.getHeaders());
   next();
 });
 app.use(express.json());
