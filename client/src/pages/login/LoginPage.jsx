@@ -8,6 +8,7 @@ import LoginTelegramButton from './TelegramLoginButton';
 import 'react-toastify/dist/ReactToastify.css';
 
 
+
 const LoginPage = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [formData, setFormData] = useState({
@@ -21,57 +22,21 @@ const LoginPage = () => {
   const [showReset, setShowReset] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [isChecking, setIsChecking] = useState(true);
-  const [hasError, setHasError] = useState(false);
+  const [hasError, setHasError] = useState(false); // eslint-disable-line 
+  // потім розберусь з дізейбл
 
   const navigate = useNavigate();
 
-  const notifySuccessReg = () => toast.success('Реєстрація успішна!');
-  const notifySuccessLog = () => toast.success('Успішний вхід!');
-  const notifyLetterHasBeenSentOnEmail = () => toast.success('Лист надіслано');
-  const notifyPasswordConfirmationErr = () => toast.error('Паролі не збігаються');
-  const notifyAllInputAreNecessaryWarning = () => toast.warning('Заповніть усі поля');
-  const notifyEmailIsNecessaryWarning = () => toast.warning('Заповніть email та пароль');
-
   useEffect(() => {
-    const checkAuth = async () => {
-      const accessToken = localStorage.getItem('accessToken');
-      if (!accessToken) {
-        setIsChecking(false);
-        return;
-      }
+    const token = localStorage.getItem('accessToken');
 
-      try {
-        await axios.post('http://localhost:4000/profile', {}, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          withCredentials: true,
-        });
-        navigate('/profile', { replace: true });
-      } catch {
-        try {
-          const res = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
-          if (res.data.accessToken) {
-            localStorage.setItem('accessToken', res.data.accessToken);
-            navigate('/profile', { replace: true });
-          } else {
-            throw new Error();
-          }
-        } catch {
-          localStorage.removeItem('accessToken');
-          setIsChecking(false);
-        }
-      }
-    };
-
-    const timer = setTimeout(() => {
-      checkAuth().catch(() => {
-        setHasError(true);
-        setIsChecking(false);
-      });
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [navigate]);
-
+    if (token) {
+      navigate('/profile', { replace: true });
+    } else {
+      setIsChecking(false);
+    }
+  }, []);  // eslint-disable-line 
+  
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -79,58 +44,60 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (isRegister) {
-      if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
-        notifyAllInputAreNecessaryWarning();
-        return;
-      }
-      if (formData.password !== formData.confirmPassword) {
-        notifyPasswordConfirmationErr();
-        return;
-      }
+    // if (isRegister) {
+    //   if (!formData.username.trim() || !formData.email.trim() || !formData.password || !formData.confirmPassword) {
+    //     toast.warning('Заповніть усі поля');
+    //     return;
+    //   }
+    //   if (formData.password !== formData.confirmPassword) {
+    //     toast.error('Паролі не збігаються');
+    //     return;
+    //   }
+    // } else {
+    //   if (!formData.email.trim() || !formData.password) {
+    //     toast.warning('Заповніть email та пароль');
+    //     return;
+    //   }
+    // }
 
-      try {
-        const res = await axios.post('http://localhost:4000/register', {
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-        }, { withCredentials: true });
+    try {
+      const url = isRegister 
+        ? 'http://localhost:4000/register' 
+        : 'http://localhost:4000/login';
+            
+      const payload = isRegister
+        ? {
+            username: formData.username.trim(),
+            email: formData.email.trim(),
+            password: formData.password,
+            confirmPassword: formData.confirmPassword,
+          }
+        : {
+            email: formData.email.trim(),
+            password: formData.password,
+          };
 
-        localStorage.setItem('accessToken', res.data.accessToken);
-        notifySuccessReg();
-        setTimeout(() => navigate('/profile'), 1500);
-      } catch (err) {
-        toast.error(err.response?.data?.message || 'Помилка');
-      }
-    } else {
-      if (!formData.email || !formData.password) {
-        notifyEmailIsNecessaryWarning();
-        return;
-      }
+      const res = await axios.post(url, payload, { withCredentials: true });
+      localStorage.setItem('accessToken', res.data.accessToken);
+      toast.success(isRegister ? 'Реєстрація успішна!' : 'Успішний вхід!');
+      setTimeout(() => navigate('/profile'), 1500);
 
-      try {
-        const res = await axios.post('http://localhost:4000/login', {
-          email: formData.email,
-          password: formData.password,
-        }, { withCredentials: true });
-
-        localStorage.setItem('accessToken', res.data.accessToken);
-        notifySuccessLog();
-        setTimeout(() => navigate('/profile'), 1500);
-      } catch (err) {
-        toast.error(err.response?.data?.message || 'Невірні дані');
-      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || 'Щось пішло не так';
+      toast.error(errorMessage);
     }
   };
-
   const handleResetPassword = (e) => {
     e.preventDefault();
-    if (!resetEmail) return notifyEmailIsNecessaryWarning();
-    notifyLetterHasBeenSentOnEmail();
+
+    if (!resetEmail.trim()) {
+      toast.warning('Введіть email');
+      return;
+    }
+    toast.success('Лист для відновлення надіслано на вашу пошту');
     setShowReset(false);
     setResetEmail('');
   };
-
   const handleTelegramLogin = () => {
     const botId = '7744665366';
     const botUsername = 'TravelMapSupport_bot';
