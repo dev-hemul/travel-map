@@ -1,98 +1,69 @@
-import React, { useEffect, useState } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
+import React, { useEffect, useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
+
+
 import AnnouncementModal from './components/announcements/announcementModal';
-import CreateAnnouncementPage from './pages/createAnnouncementPage';
 import MapView from './components/MapView';
+import PrivateRouter from './components/PrivateRouter';
 import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
+import CreateAnnouncementPage from './pages/createAnnouncementPage';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
-import PrivateRouter from './components/PrivateRouter';
+
 
 axios.defaults.withCredentials = true;
 
 function App() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isReady, setIsReady] = useState(false); 
 
-  const protectedRoutes = [
-    '/profile',
-    '/announcements',
-    '/routes',
-    '/support',
-    '/settings',
-    '/auth',
-  ];
+  const checkAuth = async () => {
+    const token = localStorage.getItem('accessToken');
 
-  const checkTokens = async () => {
-    console.log('=== CheckAuth started ===');
-    const accessToken = localStorage.getItem('accessToken');
-    console.log('AccessToken present:', !!accessToken);
-
-    if (!accessToken && protectedRoutes.includes(location.pathname)) {
-      console.log('No access token - redirect to login');
+    if (!token) {
       setIsAuthenticated(false);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setLoading(false);
-      navigate('/login', { replace: true });
-      return;
-    }
-
-    if (!accessToken) {
-      console.log('No access token, allowing public routes');
-      setIsAuthenticated(false);
-      setLoading(false);
+      setIsReady(true);
       return;
     }
 
     try {
-      const decoded = jwtDecode(accessToken);
+      const decoded = jwtDecode(token);
       const now = Date.now() / 1000;
+
       if (decoded.exp < now + 300) {
-        console.log('Access token expires soon, refreshing...');
-        const response = await axios.post(
-          'http://localhost:4000/refresh-token',
-          {},
-          { withCredentials: true }
-        );
-        localStorage.setItem('accessToken', response.data.accessToken);
-        console.log('Refresh successful');
+        await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true })
+          .then(res => localStorage.setItem('accessToken', res.data.accessToken));
       }
-    } catch (error) {
-      console.log('Decode or refresh error:', error.response?.status, error.response?.data);
+
+      setIsAuthenticated(true);
+    } catch (err) {
       localStorage.removeItem('accessToken');
       setIsAuthenticated(false);
-      setLoading(false);
-      if (protectedRoutes.includes(location.pathname)) {
-        navigate('/login', { replace: true });
-      }
-      return;
+    } finally {
+      setIsReady(true); 
     }
-
-    setIsAuthenticated(true);
-    setLoading(false);
   };
 
+  // Перевірка при завантаженні + кожні 5 хв
   useEffect(() => {
-    checkTokens();
+    checkAuth();
 
-    let interval;
-    const accessToken = localStorage.getItem('accessToken');
-    if (accessToken) {
-      // 5 хв
-      interval = setInterval(checkTokens, 300000);
-    }
+    const interval = setInterval(() => {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true })
+          .then(res => localStorage.setItem('accessToken', res.data.accessToken))
+          .catch(() => localStorage.removeItem('accessToken'));
+      }
+    }, 300000);
 
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [navigate, location.pathname]);
+    return () => clearInterval(interval);
+  }, []);
 
-  if (loading) {
+  if (!isReady) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900 z-50">
         <div className="text-center">
@@ -102,7 +73,6 @@ function App() {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen dark:bg-gray-900 bg-gray-50 relative">
       <Routes>
@@ -112,12 +82,13 @@ function App() {
             <>
               <MapView />
               <SupportModalWrapper />
-              {/*<AnnouncementModal />*/}
+              <AnnouncementModal />
             </>
           }
         />
         <Route path="/create-announcement" element={<CreateAnnouncementPage />} />
         <Route path="/login" element={<LoginPage />} />
+
         <Route element={<PrivateRouter isAuthenticated={isAuthenticated} />}>
           <Route
             path="/profile"
@@ -163,7 +134,7 @@ function App() {
             path="/auth"
             element={
               <SidebarLayout>
-                <div>налаштування авторизації</div>
+                <div>Налаштування авторизації</div>
               </SidebarLayout>
             }
           />
