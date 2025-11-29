@@ -1056,6 +1056,7 @@ const MapView = () => {
         <RouletteWidget
           isMeasureEnabled={isMeasureEnabled}
           onToggleMeasure={() => setIsMeasureEnabled(prev => !prev)}
+        
         />
       </div>
     </div>
