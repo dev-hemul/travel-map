@@ -1,9 +1,11 @@
 import { readFileSync } from 'fs';
+
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { nanoid } from 'nanoid';
-import User from '../model/user.js';
+
 import Tokens from '../model/token.js';
+import User from '../model/user.js';
 
 const privateKey = readFileSync('keys/privateKey.pem', 'utf8');
 const publicKey = readFileSync('keys/publicKey.pem', 'utf8');
@@ -48,16 +50,16 @@ res.cookie('refreshToken', refreshT, {
 };
 export const login = async (req, res) => {
   try {
-    console.log('--------------login logs--------------')
+    // console.log('--------------login logs--------------')
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    console.log('email:', email)
+    // console.log('email:', email)
     if (!user) return res.status(404).json({ message: 'Такого користувача не існує' });
     if (!await bcrypt.compare(password, user.password)) return res.status(401).json({ message: 'Неправильний пароль' });
 
     await Tokens.deleteMany({ userId: user._id });
     const { accessT, refreshT } = await createTokens(user._id);
-    console.log('tokens', accessT, refreshT)
+    // console.log('tokens', accessT, refreshT)
 
     res.cookie('refreshToken', refreshT, {
       httpOnly: false,
@@ -65,11 +67,11 @@ export const login = async (req, res) => {
       sameSite: 'lax',
       maxAge: refreshLifedur,
     });
-    console.log('cookies', res.cookie)
+    // console.log('cookies', res.cookie)
 
     res.json({ accessToken: accessT });
-    console.log(res.json)
-    console.log('Login successful:', { userId: user._id, refreshToken: refreshT });
+    // console.log(res.json)
+    // console.log('Login successful:', { userId: user._id, refreshToken: refreshT });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Помилка сервера' });
@@ -87,14 +89,14 @@ export const getRefreshToken = async (req, res) => {
     // Перевірка refreshToken у БД
     const tokenDoc = await Tokens.findOne({ refreshToken });
     if (!tokenDoc || tokenDoc.expiresAt < Date.now()) {
-      console.log('Refresh token expired or not found:', refreshToken);
+      // console.log('Refresh token expired or not found:', refreshToken);
       return res.status(401).json({ message: 'Refresh token expired or invalid' });
     }
 
     // Створюємо новий accessToken
     const { accessT } = createAccessT({ id: tokenDoc.userId });
     res.json({ accessToken: accessT });
-    console.log('Refresh successful, new access token issued for user:', tokenDoc.userId);
+    // console.log('Refresh successful, new access token issued for user:', tokenDoc.userId);
   } catch (error) {
     console.error('Refresh error:', error);
     res.status(401).json({ message: 'Invalid refresh token' });
@@ -146,13 +148,13 @@ export const logout = async (req, res) => {
 
 // Helper functions
 export const createAccessT = (payload) => {
-  console.log('[createAccessT] Створюємо accessToken для payload:', payload);
+  // console.log('[createAccessT] Створюємо accessToken для payload:', payload);
   try {
     const accessT = jwt.sign(payload, privateKey, {
       algorithm: alg,
       expiresIn: lifedur / 1000
     });
-    console.log('[createAccessT] Access Token:', accessT);
+    // console.log('[createAccessT] Access Token:', accessT);
     return { accessT };
   } catch (error) {
     console.error('[createAccessT] Помилка:', error.message, error.stack);
@@ -172,8 +174,8 @@ export const createTokens = async (userId) => {
       expiresIn: lifedur / 1000
     });
     const refreshT = nanoid();
-    console.log('[createTokens] Access Token:', accessT);
-    console.log('[createTokens] Refresh Token:', refreshT);
+    // console.log('[createTokens] Access Token:', accessT);
+    // console.log('[createTokens] Refresh Token:', refreshT);
 
     await Tokens.create({ userId, refreshToken: refreshT });
     return { accessT, refreshT };
