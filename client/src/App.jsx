@@ -9,6 +9,7 @@ import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
+import AnnouncementDetailsPage from './pages/announcementDetailsPage';
 import PrivateRouter from './components/PrivateRouter';
 
 axios.defaults.withCredentials = true;
@@ -112,10 +113,11 @@ function App() {
             <>
               <MapView />
               <SupportModalWrapper />
-              {/*<AnnouncementModal />*/}
+              <AnnouncementModal />
             </>
           }
         />
+        <Route path="/offer/:id" element={<AnnouncementDetailsPage />} />
         <Route path="/create-announcement" element={<CreateAnnouncementPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route element={<PrivateRouter isAuthenticated={isAuthenticated} />}>
