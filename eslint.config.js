@@ -51,6 +51,8 @@ export default [
 
     // Встановлюємо ESLint правила
     rules: {
+      'no-console': 'warn',
+
       ...js.configs.recommended.rules, // Базові рекомендовані правила ESLint
       ...reactHooks.configs.recommended.rules, // Рекомендовані правила для хуків React
       ...react.configs.recommended.rules, // Рекомендовані правила для React
