@@ -13,7 +13,6 @@ import CreateAnnouncementPage from './pages/createAnnouncementPage';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
 
-
 axios.defaults.withCredentials = true;
 
 function App() {
@@ -86,6 +85,7 @@ function App() {
             </>
           }
         />
+        <Route path="/offer/:id" element={<AnnouncementDetailsPage />} />
         <Route path="/create-announcement" element={<CreateAnnouncementPage />} />
         <Route path="/login" element={<LoginPage />} />
 
