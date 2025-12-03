@@ -8,10 +8,10 @@ import CreatableSelect from 'react-select/creatable';
 import 'leaflet/dist/leaflet.css';
 import AuthMenu from './map/AuthMenu.jsx';
 import LayersSwitcher from './map/LayersSwitcher';
+import RouletteWidget from './map/RouletteWidget.jsx';
 import RouteFunctionality from './map/RouteFunctionality.jsx';
 import SidePanel from './map/SidePanel.jsx';
 import WeatherWidget from './map/WeatherWidget';
-import RouletteWidget from './map/RouletteWidget.jsx';
 
 const MapView = () => {
   const [uploadProgress, setUploadProgress] = useState({}); // Об'єкт для збереження прогресу завантаження кожного файлу
@@ -36,7 +36,7 @@ const MapView = () => {
   const [mapType, setMapType] = useState('standard');
   const mapInstance = useRef(null);
   const [markers, setMarkers] = useState([]);
-  const [tagInput, setTagInput] = useState('');
+  /*  const [tagInput, setTagInput] = useState('');*/
 
   // состояния для боковой панели
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -77,16 +77,12 @@ const MapView = () => {
   };
 
   const handleCreate = inputValue => {
-    console.log('Creating new option:', inputValue);
     const newOption = { label: inputValue, value: inputValue.toLowerCase() };
     setOptions(prev => {
-      console.log('Previous options:', prev);
       const newOptions = [...prev, newOption];
-      console.log('New options:', newOptions);
       return newOptions;
     });
     setSelectedOption(newOption);
-    console.log('New option created:', newOption);
   };
 
   const OptionWithDelete = props => {
@@ -129,8 +125,7 @@ const MapView = () => {
   // Функция для удаления маркера
   const handleDeleteMarker = async markerId => {
     try {
-      const response = await axios.delete(`http://localhost:4000/marker/${markerId}`);
-      console.log('Маркер успешно удален:', response.data);
+      await axios.delete(`http://localhost:4000/marker/${markerId}`);
 
       // Удаляем маркер из локального состояния
       setMarkers(prevMarkers => prevMarkers.filter(marker => marker._id !== markerId));
@@ -208,6 +203,22 @@ const MapView = () => {
       ).addTo(map);
     }
 
+    // Обробник кліка по карті
+    const handleMapClick = e => {
+      if (modalOpen) return;
+      if (isMeasureEnabled) return;
+      const { lat, lng } = e.latlng;
+      const newMarker = {
+        lat,
+        lng,
+        popup: `Маркер ${markers.length + 1}`,
+      };
+
+      setMarkers(prev => [...prev, newMarker]);
+      setSelectedMarker(newMarker); // Встановлюємо поточний маркер
+      setModalOpen(true); // Відкриваємо модальне вікно
+    };
+
     // Додаємо маркери на карту
     markers.forEach(marker => {
       L.marker([marker.lat, marker.lng])
@@ -257,22 +268,6 @@ const MapView = () => {
       }
     }
   }, [markers, searchParams]);
-
-  // Обробник кліка по карті
-  const handleMapClick = e => {
-    if (modalOpen) return;
-    if (isMeasureEnabled) return;
-    const { lat, lng } = e.latlng;
-    const newMarker = {
-      lat,
-      lng,
-      popup: `Маркер ${markers.length + 1}`,
-    };
-
-    setMarkers(prev => [...prev, newMarker]);
-    setSelectedMarker(newMarker); // Встановлюємо поточний маркер
-    setModalOpen(true); // Відкриваємо модальне вікно
-  };
 
   // Функція для закриття бокової панелі
   const handleSidePanelClose = () => {
@@ -476,7 +471,6 @@ const MapView = () => {
           'Content-Type': 'application/json',
         },
       });
-      console.log('Данные успешно отправлены:', response.data);
 
       setMarkers(prevMarkers =>
         prevMarkers.map(marker =>
@@ -508,7 +502,7 @@ const MapView = () => {
 
       // Очищаем дополнительные состояния
       setSelectedOption(null);
-      setTagInput('');
+      /*setTagInput('');*/
       setImagePreviews([]);
       setUploadProgress({});
 

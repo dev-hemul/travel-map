@@ -4,7 +4,7 @@ import js from '@eslint/js';
 // Вимкнення конфліктних стилістичних правил ESLint
 import prettier from 'eslint-config-prettier';
 
-// Імпортуємо плагін для перевірки імпортів (виявлення помилок і порядок)
+// Імпортуємо плагін для перевірки імпортів
 import eslintPluginImport from 'eslint-plugin-import';
 
 // Імпортуємо плагін для перевірки React-компонентів
@@ -16,18 +16,16 @@ import reactHooks from 'eslint-plugin-react-hooks';
 // Імпортуємо плагін для підтримки HMR (react-refresh)
 import reactRefresh from 'eslint-plugin-react-refresh';
 
-// Імпортуємо глобальні змінні браузера (window, document тощо)
+// Імпортуємо глобальні змінні браузера і Node
 import globals from 'globals';
 
 export default [
-  // Вказуємо, які папки ігнорувати (замість .eslintignore)
+  // Ігнорування build/модулів
   { ignores: ['dist', 'node_modules'] },
 
+  // Загальні правила для всіх JS/JSX файлів
   {
-    // Застосовувати правила лише до JS та JSX файлів
     files: ['**/*.{js,jsx}'],
-
-    // Налаштування мови JavaScript
     languageOptions: {
       ecmaVersion: 2020,
       globals: {
@@ -40,67 +38,63 @@ export default [
         sourceType: 'module',
       },
     },
-
-    // Підключаємо ESLint плагіни
     plugins: {
-      'react-hooks': reactHooks, // Перевірка хуків
-      'react-refresh': reactRefresh, // Підтримка HMR
-      react: react, // React-правила
-      import: eslintPluginImport, // Правила для імпортів
+      react: react,
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+      import: eslintPluginImport,
     },
-
-    // Встановлюємо ESLint правила
     rules: {
-      'no-console': 'warn',
+      // Разрешаем только warn/error глобально
+      'no-console': ['error', { allow: ['warn', 'error'] }],
 
-      ...js.configs.recommended.rules, // Базові рекомендовані правила ESLint
-      ...reactHooks.configs.recommended.rules, // Рекомендовані правила для хуків React
-      ...react.configs.recommended.rules, // Рекомендовані правила для React
+      // Базовые рекомендации
+      ...js.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
+      ...react.configs.recommended.rules,
 
       // Не дозволяти невикористані змінні, крім тих, що починаються з великої літери або _
       'no-unused-vars': [
         'error',
         {
-          varsIgnorePattern: '^[A-Z_]|^colors$', // Ігнорувати змінні, що починаються з великої літери або _
+          varsIgnorePattern: '^[A-Z_]|^colors$',
         },
       ],
 
-      // React Refresh: попередження, якщо компонент експортується не як константа
+      // React Refresh
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
 
-      // Помилка, якщо імпорт не знайдено
+      // Import rules
       'import/no-unresolved': ['error', { ignore: ['@tailwindcss/vite'] }],
-
-      'react/react-in-jsx-scope': 'off',
-      'react/prop-types': 'off', // Вимкнення перевірки PropTypes
-
-      // Вимога порядку імпортів
       'import/order': [
         'warn',
         {
-          groups: [
-            'builtin', // Вбудовані модулі Node.js
-            'external', // Пакети з npm
-            'internal', // Абсолютні імпорти (через alias)
-            ['parent', 'sibling', 'index'], // Відносні імпорти
-          ],
-          'newlines-between': 'always', // Порожній рядок між групами імпортів
-          alphabetize: { order: 'asc', caseInsensitive: true }, // Сортувати імпорти за алфавітом
+          groups: ['builtin', 'external', 'internal', ['parent', 'sibling', 'index']],
+          'newlines-between': 'always',
+          alphabetize: { order: 'asc', caseInsensitive: true },
         },
       ],
-      ...prettier.rules, // вимикає конфліктні правила форматування
-    },
 
-    // Автоматичне визначення версії React
+      // React специфічні правила
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+
+      // Вимикаємо конфліктні правила prettier
+      ...prettier.rules,
+    },
     settings: {
-      react: {
-        version: 'detect',
-      },
+      react: { version: 'detect' },
       'import/resolver': {
-        node: {
-          extensions: ['.js', '.jsx'],
-        },
+        node: { extensions: ['.js', '.jsx'] },
       },
+    },
+  },
+
+  // Override для Node-файлів, де console.log дозволений
+  {
+    files: ['server/bin/runners/db.js', 'server/bin/runners/http.js', 'server/bot/grammY.js'],
+    rules: {
+      'no-console': 'off', // дозволяємо всі console
     },
   },
 ];

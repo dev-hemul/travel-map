@@ -100,21 +100,6 @@ const SidePanel = ({ isOpen, onClose, markerData, onEdit, onDelete, onDeleteMedi
     }
   };
 
-  // Поделиться через Web Share API (если поддерживается)
-  const shareNative = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: generateShareText(),
-          text: generateShareText(),
-          url: generateShareUrl(),
-        });
-      } catch (err) {
-        console.error('Ошибка при шеринге:', err);
-      }
-    }
-  };
-
   // Поделиться в соцсетях
   const shareToSocial = platform => {
     const shareUrl = generateShareUrl();

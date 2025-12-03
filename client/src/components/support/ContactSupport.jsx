@@ -35,7 +35,7 @@ export default function ContactSupport({ onOpenForm, telegramLink }) {
             className="absolute bottom-16 right-0 bg-white dark:bg-gray-800 rounded-md shadow-lg p-3 w-[250px]"
           >
             <h3 className="text-center font-medium mb-3 text-gray-800 dark:text-white">
-              Виберіть спосіб зв'язку:
+              Виберіть спосіб зв&apos;язку:
             </h3>
             <div className="flex flex-col gap-2">
               <button

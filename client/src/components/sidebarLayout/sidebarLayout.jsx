@@ -1,10 +1,10 @@
-import { BiSupport, BiLogIn } from "react-icons/bi";
-import { IoMdSettings } from "react-icons/io";
-import { FaRoute, FaLongArrowAltLeft, FaLongArrowAltRight, FaBullhorn } from "react-icons/fa";
-import { CgProfile } from "react-icons/cg";
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { NavLink } from "react-router-dom";
+import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { BiSupport, BiLogIn } from 'react-icons/bi';
+import { CgProfile } from 'react-icons/cg';
+import { FaRoute, FaLongArrowAltLeft, FaLongArrowAltRight, FaBullhorn } from 'react-icons/fa';
+import { IoMdSettings } from 'react-icons/io';
+import { NavLink } from 'react-router-dom';
 
 const SidebarLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -16,8 +16,8 @@ const SidebarLayout = ({ children }) => {
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
@@ -33,34 +33,32 @@ const SidebarLayout = ({ children }) => {
     }
   }, [windowWidth]);
 
-  const baseLinkStyles = "py-2 px-4 rounded-lg flex items-center transition-all duration-200 ease-in-out";
+  const baseLinkStyles =
+    'py-2 px-4 rounded-lg flex items-center transition-all duration-200 ease-in-out';
 
   const activeStyle = ({ isActive }) => {
     if (windowWidth < breakPoint768 && isSidebarOpen) {
-      return `${baseLinkStyles} ${isActive
-        ? "bg-[#744ce9] text-white"
-        : "text-[#797979] hover:bg-[#744CE9] hover:text-white"
+      return `${baseLinkStyles} ${
+        isActive ? 'bg-[#744ce9] text-white' : 'text-[#797979] hover:bg-[#744CE9] hover:text-white'
       }`;
     } else if (isSidebarOpen) {
-      return `${baseLinkStyles} ${isActive
-        ? "bg-[#744ce9] text-white"
-        : "text-[#797979] hover:bg-[#744CE9] hover:text-white"
+      return `${baseLinkStyles} ${
+        isActive ? 'bg-[#744ce9] text-white' : 'text-[#797979] hover:bg-[#744CE9] hover:text-white'
       }`;
     } else {
-      return `${baseLinkStyles} ${isActive
-        ? "text-[#744ce9]"
-        : "text-[#797979] hover:text-[#744CE9]"
+      return `${baseLinkStyles} ${
+        isActive ? 'text-[#744ce9]' : 'text-[#797979] hover:text-[#744CE9]'
       } justify-center`;
     }
   };
 
   const links = [
-    { to: "/profile", icon: <CgProfile size={27} />, label: "Профіль" },
-    { to: "/announcements", icon: <FaBullhorn size={25} />, label: "Оголошення" },
-    { to: "/routes", icon: <FaRoute size={25} />, label: "Маршрути" },
-    { to: "/support", icon: <BiSupport size={25} />, label: "Підтримка" },
-    { to: "/auth", icon: <BiLogIn size={25} />, label: "Авторизація" },
-    { to: "/settings", icon: <IoMdSettings size={25} />, label: "Налаштування" },
+    { to: '/profile', icon: <CgProfile size={27} />, label: 'Профіль' },
+    { to: '/announcements', icon: <FaBullhorn size={25} />, label: 'Оголошення' },
+    { to: '/routes', icon: <FaRoute size={25} />, label: 'Маршрути' },
+    { to: '/support', icon: <BiSupport size={25} />, label: 'Підтримка' },
+    { to: '/auth', icon: <BiLogIn size={25} />, label: 'Авторизація' },
+    { to: '/settings', icon: <IoMdSettings size={25} />, label: 'Налаштування' },
   ];
 
   return (
@@ -78,28 +76,18 @@ const SidebarLayout = ({ children }) => {
         className="fixed left-0 top-0 h-full bg-white p-6 flex flex-col shadow-lg z-50"
         animate={{
           width:
-            windowWidth < breakPoint768
-              ? isSidebarOpen
-                ? "100%"
-                : 0
-              : isSidebarOpen
-              ? 256
-              : 64,
+            windowWidth < breakPoint768 ? (isSidebarOpen ? '100%' : 0) : isSidebarOpen ? 256 : 64,
         }}
-        transition={{ type: "tween", duration: 0.3 }}
+        transition={{ type: 'tween', duration: 0.3 }}
       >
         {showToggleButton && windowWidth >= breakPoint768 && (
           <motion.button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="absolute top-4 z-50 w-8 h-8 bg-[#744ce9] text-white rounded-full flex items-center justify-center shadow-lg"
             animate={{ left: isSidebarOpen ? 256 : 17 }}
-            transition={{ type: "tween", duration: 0.3 }}
+            transition={{ type: 'tween', duration: 0.3 }}
           >
-            {isSidebarOpen ? (
-              <FaLongArrowAltLeft size={18} />
-            ) : (
-              <FaLongArrowAltRight size={18} />
-            )}
+            {isSidebarOpen ? <FaLongArrowAltLeft size={18} /> : <FaLongArrowAltRight size={18} />}
           </motion.button>
         )}
         {windowWidth < breakPoint768 && isSidebarOpen && (
@@ -111,7 +99,7 @@ const SidebarLayout = ({ children }) => {
           </button>
         )}
 
-        <motion.div 
+        <motion.div
           className="flex flex-col items-center mb-8"
           animate={{ opacity: isSidebarOpen ? 1 : 0 }}
           transition={{ duration: 0.2 }}
@@ -121,20 +109,18 @@ const SidebarLayout = ({ children }) => {
             <br />
             кабінет
           </h1>
-          
+
           <h2 className="text-[#744ce9] mt-4 text-center">Вітаємо Користувач!</h2>
         </motion.div>
 
         <nav className="flex flex-col justify-between h-full">
           <div className="space-y-4">
-            {links.map((link) => (
+            {links.map(link => (
               <NavLink
                 key={link.to}
                 to={link.to}
                 className={activeStyle}
-                onClick={() =>
-                  windowWidth < breakPoint768 && setIsSidebarOpen(false)
-                }
+                onClick={() => windowWidth < breakPoint768 && setIsSidebarOpen(false)}
               >
                 {windowWidth < breakPoint768 && isSidebarOpen ? (
                   <div className="flex flex-col items-center justify-center w-full gap-1">
@@ -165,7 +151,6 @@ const SidebarLayout = ({ children }) => {
                   </div>
                 )}
               </NavLink>
-
             ))}
           </div>
         </nav>
@@ -173,15 +158,12 @@ const SidebarLayout = ({ children }) => {
 
       <motion.div
         animate={{
-          marginLeft:
-            windowWidth < breakPoint768 ? 0 : isSidebarOpen ? 256 : 64,
+          marginLeft: windowWidth < breakPoint768 ? 0 : isSidebarOpen ? 256 : 64,
           opacity: windowWidth < breakPoint768 && isSidebarOpen ? 0.3 : 1,
         }}
-        transition={{ type: "tween", duration: 0.3 }}
+        transition={{ type: 'tween', duration: 0.3 }}
         className="flex-1 p-8"
-        onClick={() =>
-          windowWidth < breakPoint768 && isSidebarOpen && setIsSidebarOpen(false)
-        }
+        onClick={() => windowWidth < breakPoint768 && isSidebarOpen && setIsSidebarOpen(false)}
       >
         {children}
       </motion.div>

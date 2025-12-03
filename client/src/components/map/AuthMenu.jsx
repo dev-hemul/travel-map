@@ -24,13 +24,11 @@ const AuthMenu = () => {
 
   const handleLogin = () => {
     // Логика для авторизации
-    console.log('Открытие окна авторизации');
     setIsOpen(false);
   };
 
   const handleRegister = () => {
     // Логика для регистрации
-    console.log('Открытие окна регистрации');
     setIsOpen(false);
   };
 

@@ -1,11 +1,11 @@
-import express from "express";
-import axios from "axios";
+import axios from 'axios';
+import express from 'express';
 
 const router = express.Router();
 
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 
-router.get("/cities", async (req, res) => {
+router.get('/cities', async (req, res) => {
   const { query } = req.query;
   try {
     const response = await axios.get(
@@ -13,32 +13,27 @@ router.get("/cities", async (req, res) => {
       {
         params: {
           input: query,
-          types: "(cities)",
-          language: "uk",
+          types: '(cities)',
+          language: 'uk',
           key: GOOGLE_API_KEY,
         },
       }
     );
     res.json(response.data);
-    console.log(response.data)
   } catch (err) {
     res.status(500).json({ error: err.message });
-    console.log(response.data)
   }
 });
 
-router.get("/weather", async (req, res) => {
+router.get('/weather', async (req, res) => {
   const { city, date } = req.query;
   try {
     // Спочатку координати
-    const geoRes = await axios.get(
-      `https://maps.googleapis.com/maps/api/geocode/json`,
-      {
-        params: { address: city, key: GOOGLE_API_KEY },
-      }
-    );
+    const geoRes = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
+      params: { address: city, key: GOOGLE_API_KEY },
+    });
 
-    if (!geoRes.data.results.length) return res.status(404).json({ error: "Місто не знайдено" });
+    if (!geoRes.data.results.length) return res.status(404).json({ error: 'Місто не знайдено' });
 
     const { lat, lng } = geoRes.data.results[0].geometry.location;
 
@@ -47,10 +42,11 @@ router.get("/weather", async (req, res) => {
       params: {
         latitude: lat,
         longitude: lng,
-        hourly: "temperature_2m,relativehumidity_2m,wind_speed_10m,wind_direction_10m,precipitation_probability,cloudcover",
+        hourly:
+          'temperature_2m,relativehumidity_2m,wind_speed_10m,wind_direction_10m,precipitation_probability,cloudcover',
         start_date: date,
         end_date: date,
-        timezone: "auto",
+        timezone: 'auto',
       },
     });
 
