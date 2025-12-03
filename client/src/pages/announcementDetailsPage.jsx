@@ -20,7 +20,7 @@ export default function AnnouncementDetailsPage() {
   const [activeTab, setActiveTab] = useState('description');
   const [loading, setLoading] = useState(true);
 
-  // Мокові дані - в реальному додатку тут буде запит до API
+  // Мокові дані - тут буде запит до API
   const mockOffers = [
     {
       id: 1,
@@ -314,7 +314,7 @@ export default function AnnouncementDetailsPage() {
               
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Категорія:</span>
+                  <span className="text-gray-600">Категорiя:</span>
                   <span className="font-medium text-[#744ce9]">{offer.category}</span>
                 </div>
                 
