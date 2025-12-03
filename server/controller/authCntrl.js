@@ -9,7 +9,7 @@ import User from '../model/user.js';
 
 const privateKey = readFileSync('keys/privateKey.pem', 'utf8');
 const publicKey = readFileSync('keys/publicKey.pem', 'utf8');
-const alg = 'RS512';  
+const alg = 'RS512';
 const lifedur = 7 * 24 * 60 * 1000; // 7 днів
 const refreshLifedur = 21 * 24 * 60 * 1000; // 21 день
 
@@ -32,19 +32,16 @@ export const register = async (req, res) => {
     await Tokens.deleteMany({ userId: user._id });
     const { accessT, refreshT } = await createTokens(user._id);
 
-res.cookie('refreshToken', refreshT, {
-  httpOnly: true,
-  secure: true, // Для http://localhost
-  sameSite: 'lax', 
-  maxAge: refreshLifedur,
-  domain: 'localhost', 
-  path: '/', 
-});
-    const setCookieHeader = res.getHeaders()['set-cookie'];
-    console.log('!!!!!!!!!!!!!!!!!!!Set-Cookie header sent:', setCookieHeader);
+    res.cookie('refreshToken', refreshT, {
+      httpOnly: true,
+      secure: true, // Для http://localhost
+      sameSite: 'lax',
+      maxAge: refreshLifedur,
+      domain: 'localhost',
+      path: '/',
+    });
     res.status(200).json({ accessToken: accessT });
-  } catch (error) {
-    console.error('Register error:', error);
+  } catch {
     res.status(500).json({ message: 'Помилка сервера' });
   }
 };
@@ -55,7 +52,8 @@ export const login = async (req, res) => {
     const user = await User.findOne({ email });
     // console.log('email:', email)
     if (!user) return res.status(404).json({ message: 'Такого користувача не існує' });
-    if (!await bcrypt.compare(password, user.password)) return res.status(401).json({ message: 'Неправильний пароль' });
+    if (!(await bcrypt.compare(password, user.password)))
+      return res.status(401).json({ message: 'Неправильний пароль' });
 
     await Tokens.deleteMany({ userId: user._id });
     const { accessT, refreshT } = await createTokens(user._id);
@@ -81,7 +79,6 @@ export const login = async (req, res) => {
 export const getRefreshToken = async (req, res) => {
   const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
   if (!refreshToken) {
-    console.log('Refresh token not provided');
     return res.status(401).json({ message: 'Refresh token not provided' });
   }
 
@@ -100,7 +97,6 @@ export const getRefreshToken = async (req, res) => {
   } catch (error) {
     console.error('Refresh error:', error);
     res.status(401).json({ message: 'Invalid refresh token' });
-    
   }
 };
 
@@ -147,12 +143,12 @@ export const logout = async (req, res) => {
 };
 
 // Helper functions
-export const createAccessT = (payload) => {
+export const createAccessT = payload => {
   // console.log('[createAccessT] Створюємо accessToken для payload:', payload);
   try {
     const accessT = jwt.sign(payload, privateKey, {
       algorithm: alg,
-      expiresIn: lifedur / 1000
+      expiresIn: lifedur / 1000,
     });
     // console.log('[createAccessT] Access Token:', accessT);
     return { accessT };
@@ -166,12 +162,11 @@ export const createAccessT = (payload) => {
 //   return nanoid();
 // }; поки закоментую, бо на нього еслінт ругається, якщо будуть помилки, буду розбиратись
 
-export const createTokens = async (userId) => {
-  console.log('[createTokens] Створюємо токени для userId:', userId);
+export const createTokens = async userId => {
   try {
     const accessT = jwt.sign({ id: userId }, privateKey, {
       algorithm: alg,
-      expiresIn: lifedur / 1000
+      expiresIn: lifedur / 1000,
     });
     const refreshT = nanoid();
     // console.log('[createTokens] Access Token:', accessT);

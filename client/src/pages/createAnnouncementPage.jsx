@@ -1,14 +1,6 @@
-
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  FaPlus,
-  FaTrash,
-  FaMapMarkerAlt,
-  FaTag,
-  FaImage,
-  FaArrowLeft,
-} from 'react-icons/fa';
+import { useState } from 'react';
+import { FaPlus, FaTrash, FaMapMarkerAlt, FaTag, FaImage, FaArrowLeft } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import CreatableSelect from 'react-select/creatable';
 
@@ -32,30 +24,22 @@ export default function CreateAnnouncementPage() {
     { value: 'Екстрена допомога', label: 'Екстрена допомога' },
   ]);
 
-  const handleImageChange = (e) => {
+  const handleImageChange = e => {
     const files = Array.from(e.target.files);
     const newImages = files.slice(0, 6 - images.length);
-    const previews = newImages.map((file) => ({
+    const previews = newImages.map(file => ({
       file,
       url: URL.createObjectURL(file),
     }));
     setImages([...images, ...previews]);
   };
 
-  const removeImage = (index) => {
+  const removeImage = index => {
     setImages(images.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault();
-    const formData = {
-      title,
-      description,
-      region,
-      category: category?.value || '',
-      images: images.map((img) => img.file),
-    };
-    console.log('Нова пропозиція:', formData);
     alert('Пропозицію збережено! (поки що тільки в консолі)');
   };
 
@@ -74,12 +58,8 @@ export default function CreateAnnouncementPage() {
               <FaArrowLeft className="text-lg" />
             </motion.button>
             <div>
-              <h1 className="text-3xl font-bold leading-tight">
-                Створення пропозиції
-              </h1>
-              <p className="text-blue-100 mt-1 text-sm">
-                Заповніть інформацію про вашу пропозицію
-              </p>
+              <h1 className="text-3xl font-bold leading-tight">Створення пропозиції</h1>
+              <p className="text-blue-100 mt-1 text-sm">Заповніть інформацію про вашу пропозицію</p>
             </div>
           </div>
         </div>
@@ -107,7 +87,7 @@ export default function CreateAnnouncementPage() {
             <input
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={e => setTitle(e.target.value)}
               className="w-full p-4 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
               placeholder="Введіть назву вашої пропозиції..."
               required
@@ -125,7 +105,7 @@ export default function CreateAnnouncementPage() {
             </label>
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={e => setDescription(e.target.value)}
               className="w-full p-4 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none h-32"
               placeholder="Опишіть детально вашу пропозицію..."
               required
@@ -146,7 +126,7 @@ export default function CreateAnnouncementPage() {
               <input
                 type="text"
                 value={region}
-                onChange={(e) => setRegion(e.target.value)}
+                onChange={e => setRegion(e.target.value)}
                 className="w-full p-4 outline-none rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 placeholder="Київська область, м. Київ"
               />
@@ -165,16 +145,16 @@ export default function CreateAnnouncementPage() {
                 isClearable
                 options={categories}
                 value={category}
-                onChange={(newValue) => setCategory(newValue)}
-                onCreateOption={(newOption) => {
+                onChange={newValue => setCategory(newValue)}
+                onCreateOption={newOption => {
                   const newCategory = { value: newOption, label: newOption };
-                  setCategories((prev) => [newCategory, ...prev]);
+                  setCategories(prev => [newCategory, ...prev]);
                   setCategory(newCategory);
                 }}
                 placeholder="Оберіть або створіть категорію..."
                 classNamePrefix="react-select"
                 styles={{
-                  control: (base) => ({
+                  control: base => ({
                     ...base,
                     borderRadius: '0.75rem',
                     borderColor: '#d1d5db',
@@ -183,7 +163,7 @@ export default function CreateAnnouncementPage() {
                     boxShadow: 'none',
                     ':hover': { borderColor: '#60a5fa' },
                   }),
-                  menu: (base) => ({
+                  menu: base => ({
                     ...base,
                     borderRadius: '0.75rem',
                     zIndex: 20,
@@ -205,9 +185,7 @@ export default function CreateAnnouncementPage() {
 
             <label className="flex items-center justify-center gap-3 p-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 transition-all duration-200 cursor-pointer bg-gray-50 hover:bg-blue-50">
               <FaPlus className="text-blue-500 text-xl" />
-              <span className="text-gray-700 font-medium">
-                Додати фотографії
-              </span>
+              <span className="text-gray-700 font-medium">Додати фотографії</span>
               <input
                 type="file"
                 multiple

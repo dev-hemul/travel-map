@@ -1,8 +1,10 @@
-import jwt from 'jsonwebtoken';
-import Tokens from '../model/token.js';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+import jwt from 'jsonwebtoken';
+
+import Tokens from '../model/token.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

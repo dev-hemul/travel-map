@@ -1,4 +1,3 @@
-import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useRef, useEffect } from 'react';
 import { FaRuler } from 'react-icons/fa';
 

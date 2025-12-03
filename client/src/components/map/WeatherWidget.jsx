@@ -1,6 +1,6 @@
+import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
 import { FaCloudRain } from 'react-icons/fa';
 import {
   WiHumidity,
@@ -32,7 +32,7 @@ export default function WeatherWidget() {
   const buttonRef = useRef(null);
 
   // --- API: міста ---
-  const fetchCitySuggestions = async (query) => {
+  const fetchCitySuggestions = async query => {
     if (!query || query.length < 2) {
       setSuggestions([]);
       return;
@@ -81,6 +81,7 @@ export default function WeatherWidget() {
   };
 
   // --- Логіка відкриття: запуск запитів ---
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     if (!isOpen) return;
 
@@ -92,6 +93,7 @@ export default function WeatherWidget() {
   }, [isOpen]);
 
   // --- Debounce-пошук міст ---
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     if (!isOpen) return;
     if (isSelecting) return;
@@ -110,7 +112,7 @@ export default function WeatherWidget() {
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleClickOutside = (event) => {
+    const handleClickOutside = event => {
       if (
         menuRef.current &&
         !menuRef.current.contains(event.target) &&
@@ -136,14 +138,10 @@ export default function WeatherWidget() {
 
   // --- Іконки ---
   const getWeatherIcon = () => {
-    if (precipitation >= 70)
-      return <WiThunderstorm className="text-4xl text-purple-500" />;
-    if (precipitation >= 40)
-      return <WiRain className="text-4xl text-blue-500" />;
-    if (cloudcover >= 60)
-      return <WiDayCloudy className="text-4xl text-gray-400" />;
-    if (temperature >= 25)
-      return <WiDaySunny className="text-4xl text-yellow-400" />;
+    if (precipitation >= 70) return <WiThunderstorm className="text-4xl text-purple-500" />;
+    if (precipitation >= 40) return <WiRain className="text-4xl text-blue-500" />;
+    if (cloudcover >= 60) return <WiDayCloudy className="text-4xl text-gray-400" />;
+    if (temperature >= 25) return <WiDaySunny className="text-4xl text-yellow-400" />;
 
     return <WiDaySunny className="text-4xl text-yellow-300" />;
   };
@@ -152,7 +150,7 @@ export default function WeatherWidget() {
     <div className="relative inline-block">
       <button
         ref={buttonRef}
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={() => setIsOpen(prev => !prev)}
         className="w-full flex items-center justify-center p-2 bg-white text-gray-700 rounded-full shadow-md hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 border border-gray-200"
         title="Погода"
       >
@@ -174,7 +172,7 @@ export default function WeatherWidget() {
               <input
                 type="text"
                 value={city}
-                onChange={(e) => {
+                onChange={e => {
                   setIsSelecting(false);
                   setCity(e.target.value);
                 }}
@@ -190,7 +188,7 @@ export default function WeatherWidget() {
                     exit={{ opacity: 0, y: -5 }}
                     className="absolute left-0 right-0 bg-white border border-gray-200 rounded-md mt-1 shadow-lg max-height-48 overflow-y-auto z-50"
                   >
-                    {suggestions.map((s) => (
+                    {suggestions.map(s => (
                       <li
                         key={s.place_id}
                         onClick={() => {
@@ -214,14 +212,14 @@ export default function WeatherWidget() {
             <input
               type="date"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={e => setDate(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
             {/* Час */}
             <select
               value={time}
-              onChange={(e) => setTime(e.target.value)}
+              onChange={e => setTime(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {Array.from({ length: 24 }, (_, i) => {
@@ -253,9 +251,7 @@ export default function WeatherWidget() {
                       ease: 'linear',
                     }}
                   />
-                  <p className="mt-3 text-sm text-gray-500">
-                    Завантаження...
-                  </p>
+                  <p className="mt-3 text-sm text-gray-500">Завантаження...</p>
                 </motion.div>
               ) : error ? (
                 <motion.div
@@ -265,9 +261,7 @@ export default function WeatherWidget() {
                   exit={{ opacity: 0 }}
                   className="flex flex-col items-center justify-center py-4"
                 >
-                  <p className="text-sm text-red-500 font-medium text-center">
-                    {error}
-                  </p>
+                  <p className="text-sm text-red-500 font-medium text-center">{error}</p>
                 </motion.div>
               ) : weather ? (
                 <motion.div
@@ -279,9 +273,7 @@ export default function WeatherWidget() {
                 >
                   <div className="flex items-center gap-2 justify-center">
                     {getWeatherIcon()}
-                    <span className="text-xl font-semibold">
-                      {temperature}°C
-                    </span>
+                    <span className="text-xl font-semibold">{temperature}°C</span>
                   </div>
 
                   <div className="flex items-center gap-2">

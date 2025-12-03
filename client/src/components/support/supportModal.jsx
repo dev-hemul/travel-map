@@ -80,9 +80,7 @@ export default function SupportModal({ onClose }) {
               <h3 className="text-xl sm:text-3xl font-semibold text-white leading-tight">
                 Звернення до підтримки
               </h3>
-              <p className="text-blue-100 mt-1 text-lg">
-                Напишіть нам своє питання або проблему
-              </p>
+              <p className="text-blue-100 mt-1 text-lg">Напишіть нам своє питання або проблему</p>
 
               <div className="absolute top-3 right-3">
                 <motion.button
@@ -114,7 +112,7 @@ export default function SupportModal({ onClose }) {
                   Дякуємо за звернення!
                 </motion.h2>
                 <motion.p className="text-gray-600" initial={{ y: 10 }} animate={{ y: 0 }}>
-                  Ми зв'яжемося з вами якнайшвидше.
+                  Ми зв&apos;яжемося з вами якнайшвидше.
                 </motion.p>
               </motion.div>
             ) : (
@@ -129,7 +127,7 @@ export default function SupportModal({ onClose }) {
                     htmlFor="name"
                     className="inline-block text-base font-semibold uppercase text-gray-500 mb-1.5 group-focus-within:text-blue-600 transition duration-200"
                   >
-                    Ім'я
+                    Ім&apos;я
                   </label>
                   <input
                     type="text"
@@ -213,8 +211,8 @@ export default function SupportModal({ onClose }) {
                       borderRadius: '8px',
                       transition: 'background-color 0.2s ease',
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b91c1c'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#b91c1c')}
+                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#dc2626')}
                   >
                     Скасувати
                   </button>
@@ -229,8 +227,8 @@ export default function SupportModal({ onClose }) {
                       borderRadius: '8px',
                       transition: 'background-color 0.2s ease',
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2EB94D'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#32CD32'}
+                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2EB94D')}
+                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#32CD32')}
                   >
                     Надіслати
                   </button>

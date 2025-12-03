@@ -7,7 +7,6 @@ import express from 'express';
 import createHttpError from 'http-errors';
 import morgan from 'morgan';
 
-
 // Роути
 import announcementsRouter from './routes/annoucementsAdding.js';
 import authRouter from './routes/auth.js';
@@ -35,14 +34,16 @@ app.use((req, res, next) => {
 });
 
 // CORS конфігурація
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['Set-Cookie'],
-  optionsSuccessStatus: 200
-}));
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Set-Cookie'],
+    optionsSuccessStatus: 200,
+  })
+);
 
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -80,7 +81,6 @@ app.use('/', weatherRouter);
 
 // Обробка 404
 app.use((req, res, next) => {
-  console.log('[Крок 404] Не знайдено:', req.method, req.url);
   next(createHttpError(404));
 });
 

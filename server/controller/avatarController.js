@@ -1,4 +1,4 @@
-import Marker from '../model/marker.js';
+/*import Marker from '../model/marker.js';
 
 export const uploadAvatar = async (req, res) => {
   try {
@@ -12,4 +12,4 @@ export const uploadAvatar = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Помилка при завантаженні файлу' });
   }
-};
+};*/

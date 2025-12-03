@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 import { FaBullhorn, FaTimes, FaPlus } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
@@ -110,9 +110,7 @@ export default function AnnouncementModal() {
               {/* Header */}
               <div className="relative p-6 rounded-br-2xl bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
                 <h2 className="text-2xl font-bold leading-tight">Пропозиції</h2>
-                <p className="text-blue-100 mt-1 text-sm">
-                  Перегляньте та додайте нові пропозиції
-                </p>
+                <p className="text-blue-100 mt-1 text-sm">Перегляньте та додайте нові пропозиції</p>
 
                 <motion.button
                   onClick={handleClose}
@@ -139,7 +137,7 @@ export default function AnnouncementModal() {
 
                 {/* Список пропозицій зі скролом */}
                 <div className="flex-1 overflow-y-auto space-y-4 pr-2 min-h-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
-                  {announcements.map((a) => (
+                  {announcements.map(a => (
                     <motion.div
                       key={a.id}
                       className="p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
@@ -178,4 +176,4 @@ export default function AnnouncementModal() {
       </AnimatePresence>
     </>
   );
-} 
+}
