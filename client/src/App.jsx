@@ -11,6 +11,7 @@ import SupportModalWrapper from './components/support/supportModalWrapper';
 import CreateAnnouncementPage from './pages/createAnnouncementPage';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
+import AnnouncementDetailsPage from './pages/announcementDetailsPage';
 
 axios.defaults.withCredentials = true;
 
@@ -107,7 +108,7 @@ function App() {
               </SidebarLayout>
             }
           />
-          <Route
+            <Route
             path="/routes"
             element={
               <SidebarLayout>
