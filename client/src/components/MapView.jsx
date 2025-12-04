@@ -9,9 +9,9 @@ import 'leaflet/dist/leaflet.css';
 import AuthMenu from './map/AuthMenu.jsx';
 import LayersSwitcher from './map/LayersSwitcher';
 import RouletteWidget from './map/RouletteWidget.jsx';
-import RouteFunctionality from './map/RouteFunctionality.jsx';
 import SidePanel from './map/SidePanel.jsx';
 import WeatherWidget from './map/WeatherWidget';
+import { useMapMeasure } from '../hooks/useMapMeasure.jsx';
 
 const MapView = () => {
   const [uploadProgress, setUploadProgress] = useState({}); // Об'єкт для збереження прогресу завантаження кожного файлу
@@ -44,6 +44,9 @@ const MapView = () => {
 
   // режим лінійки: true — модалка з маркерами не буде відкрита
   const [isMeasureEnabled, setIsMeasureEnabled] = useState(false);
+
+  // Підключаємо хук
+  useMapMeasure(mapInstance, isMeasureEnabled);
 
   useEffect(() => {
     const fetchMarkers = async () => {
@@ -161,7 +164,7 @@ const MapView = () => {
     setModalOpen(true);
   };
 
-  // Ініціалізація карти
+  // Ініціалізація карти та шарів
   useEffect(() => {
     if (!mapInstance.current) {
       mapInstance.current = L.map(mapRef.current).setView([50.4501, 30.5236], 10);
@@ -203,22 +206,6 @@ const MapView = () => {
       ).addTo(map);
     }
 
-    // Обробник кліка по карті
-    const handleMapClick = e => {
-      if (modalOpen) return;
-      if (isMeasureEnabled) return;
-      const { lat, lng } = e.latlng;
-      const newMarker = {
-        lat,
-        lng,
-        popup: `Маркер ${markers.length + 1}`,
-      };
-
-      setMarkers(prev => [...prev, newMarker]);
-      setSelectedMarker(newMarker); // Встановлюємо поточний маркер
-      setModalOpen(true); // Відкриваємо модальне вікно
-    };
-
     // Додаємо маркери на карту
     markers.forEach(marker => {
       L.marker([marker.lat, marker.lng])
@@ -228,15 +215,35 @@ const MapView = () => {
           setSidePanelOpen(true);
         });
     });
+  }, [mapType, markers]);
 
-    // Додаємо обробник кліку
-    map.off('click', handleMapClick);
+  useEffect(() => {
+    const map = mapInstance.current;
+    if (!map) return;
+
+    const handleMapClick = e => {
+      // Якщо відкрито модальне вікно або включена лінійка - не ставимо новий маркер
+      if (modalOpen) return;
+      if (isMeasureEnabled) return;
+
+      const { lat, lng } = e.latlng;
+      const newMarker = {
+        lat,
+        lng,
+        popup: `Маркер ${markers.length + 1}`,
+      };
+
+      setMarkers(prev => [...prev, newMarker]);
+      setSelectedMarker(newMarker);
+      setModalOpen(true);
+    };
+
     map.on('click', handleMapClick);
 
     return () => {
       map.off('click', handleMapClick);
     };
-  }, [mapType, markers, isMeasureEnabled, modalOpen]);
+  }, [modalOpen, isMeasureEnabled, markers.length]); // Залежить від режимів інтерфейсу
 
   useEffect(() => {
     // Проверяем URL параметры при загрузке маркеров
@@ -1046,7 +1053,6 @@ const MapView = () => {
         <AuthMenu />
         <LayersSwitcher mapType={mapType} setMapType={setMapType} />
         <WeatherWidget />
-        <RouteFunctionality />
         <RouletteWidget
           isMeasureEnabled={isMeasureEnabled}
           onToggleMeasure={() => setIsMeasureEnabled(prev => !prev)}
