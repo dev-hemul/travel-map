@@ -1194,6 +1194,11 @@ jwt-decode@^4.0.0:
   resolved "https://registry.yarnpkg.com/jwt-decode/-/jwt-decode-4.0.0.tgz#2270352425fd413785b2faf11f6e755c5151bd4b"
   integrity sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==
 
+leaflet.polylinemeasure@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/leaflet.polylinemeasure/-/leaflet.polylinemeasure-3.0.0.tgz#7d86322cf89b6832da1c8ec1e548ebd647c3e81d"
+  integrity sha512-PTTHz7NBJiWmNFetH8hb3leQNM15qoM9Xe7VDKh1Hyat/M+USqFYeoa0A0LAecsqsjUqA63Rzux4SivoyrSFkA==
+
 leaflet@^1.9.4:
   version "1.9.4"
   resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.9.4.tgz#23fae724e282fa25745aff82ca4d394748db7d8d"
