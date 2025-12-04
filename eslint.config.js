@@ -1,21 +1,15 @@
 // Імпортуємо стандартні рекомендовані правила ESLint
 import js from '@eslint/js';
-
 // Вимкнення конфліктних стилістичних правил ESLint
 import prettier from 'eslint-config-prettier';
-
 // Імпортуємо плагін для перевірки імпортів
 import eslintPluginImport from 'eslint-plugin-import';
-
 // Імпортуємо плагін для перевірки React-компонентів
 import react from 'eslint-plugin-react';
-
 // Імпортуємо плагін для перевірки правильного використання хуків React
 import reactHooks from 'eslint-plugin-react-hooks';
-
 // Імпортуємо плагін для підтримки HMR (react-refresh)
 import reactRefresh from 'eslint-plugin-react-refresh';
-
 // Імпортуємо глобальні змінні браузера і Node
 import globals from 'globals';
 
