@@ -271,7 +271,7 @@ export default function AnnouncementModal() {
                 </p>
 
                 <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                  <span>Категорія: {selectedAnnouncement.category}</span>
+                  <span>Категорiя: {selectedAnnouncement.category}</span>
                   <span>Автор: {selectedAnnouncement.author}</span>
                 </div>
 
