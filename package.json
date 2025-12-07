@@ -25,5 +25,11 @@
     "lint-staged": "^16.2.7",
     "prettier": "^3.5.3"
   },
+<<<<<<< HEAD
   "dependencies": {}
+=======
+  "dependencies": {
+    "yarn": "^1.22.22"
+  }
+>>>>>>> 52406be (TM-138: фікс конфліктів)
 }

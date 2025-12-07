@@ -229,7 +229,7 @@ export default function CreateAnnouncementPage() {
             <motion.button
               type="button"
               onClick={() => navigate(-1)}
-              className="flex-1 py-4 rounded-xl cursor-pointer font-semibold text-gray-700 border-2 border-gray-300 hover:border-gray-400 transition-all duration-200 bg-white"
+              className="flex-1 py-4 rounded-xl font-semibold text-gray-700 border-2 border-gray-300 hover:border-gray-400 transition-all duration-200 bg-white"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -238,7 +238,7 @@ export default function CreateAnnouncementPage() {
 
             <motion.button
               type="submit"
-              className="flex-1 py-4 rounded-xl cursor-pointer font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800"
+              className="flex-1 py-4 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800"
               whileHover={{
                 scale: 1.02,
                 boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.4)',
