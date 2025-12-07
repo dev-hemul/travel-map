@@ -8,10 +8,10 @@ import MapView from './components/MapView';
 import PrivateRouter from './components/PrivateRouter';
 import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
-import CreateAnnouncementPage from './pages/createAnnouncementPage';
+import CreateAnnouncementPage from './pages/announcements/createAnnouncementPage';
 import LoginPage from './pages/login/LoginPage';
-import ProfilePage from './pages/profilePage';
-import AnnouncementDetailsPage from './pages/announcementDetailsPage';
+import ProfilePage from './pages/profile/profilePage';
+import AnnouncementDetailsPage from './pages/announcements/announcementDetailsPage';
 
 axios.defaults.withCredentials = true;
 

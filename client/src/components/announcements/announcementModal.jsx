@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { FaBullhorn, FaTimes, FaPlus } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
@@ -271,7 +271,7 @@ export default function AnnouncementModal() {
                 </p>
 
                 <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                  <span>Категорія: {selectedAnnouncement.category}</span>
+                  <span>Категорiя: {selectedAnnouncement.category}</span>
                   <span>Автор: {selectedAnnouncement.author}</span>
                 </div>
 
