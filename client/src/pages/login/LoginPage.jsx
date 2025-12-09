@@ -26,54 +26,16 @@ const LoginPage = () => {
 
   const navigate = useNavigate();
 
-
-// const notifySuccessReg = () => toast.success('Реєстрація успішна!');
-// const notifySuccessLog = () => toast.success('Успішний вхід!');
-// const notifyLetterHasBeenSentOnEmail = () => toast.success('Лист надіслано');
-// const notifyPasswordConfirmationErr = () => toast.error('Паролі не збігаються');
-// const notifyAllInputAreNecessaryWarning = () => toast.warning('Заповніть усі поля');
-// const notifyEmailIsNecessaryWarning = () => toast.warning('Заповніть email та пароль');
-
   useEffect(() => {
-    const checkAuth = async () => {
-      const accessToken = localStorage.getItem('accessToken');
-      if (!accessToken) {
-        setIsChecking(false);
-        return;
-      }
+    const token = localStorage.getItem('accessToken');
 
-      try {
-        await axios.post('http://localhost:4000/profile', {}, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          withCredentials: true,
-        });
-        navigate('/profile', { replace: true });
-      } catch {
-        try {
-          const res = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
-          if (res.data.accessToken) {
-            localStorage.setItem('accessToken', res.data.accessToken);
-            navigate('/profile', { replace: true });
-          } else {
-            throw new Error();
-          }
-        } catch {
-          localStorage.removeItem('accessToken');
-          setIsChecking(false);
-        }
-      }
-    };
-
-    const timer = setTimeout(() => {
-      checkAuth().catch(() => {
-        setHasError(true);
-        setIsChecking(false);
-      });
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [navigate]);
-
+    if (token) {
+      navigate('/profile', { replace: true });
+    } else {
+      setIsChecking(false);
+    }
+  }, []);
+  
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -81,21 +43,21 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (isRegister) {
-      if (!formData.username.trim() || !formData.email.trim() || !formData.password || !formData.confirmPassword) {
-        toast.warning('Заповніть усі поля');
-        return;
-      }
-      if (formData.password !== formData.confirmPassword) {
-        toast.error('Паролі не збігаються');
-        return;
-      }
-    } else {
-      if (!formData.email.trim() || !formData.password) {
-        toast.warning('Заповніть email та пароль');
-        return;
-      }
-    }
+    // if (isRegister) {
+    //   if (!formData.username.trim() || !formData.email.trim() || !formData.password || !formData.confirmPassword) {
+    //     toast.warning('Заповніть усі поля');
+    //     return;
+    //   }
+    //   if (formData.password !== formData.confirmPassword) {
+    //     toast.error('Паролі не збігаються');
+    //     return;
+    //   }
+    // } else {
+    //   if (!formData.email.trim() || !formData.password) {
+    //     toast.warning('Заповніть email та пароль');
+    //     return;
+    //   }
+    // }
 
     try {
       const url = isRegister 
