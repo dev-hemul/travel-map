@@ -1,13 +1,11 @@
 import { readFileSync } from 'fs';
 
-
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { nanoid } from 'nanoid';
 
 
 import Tokens from '../model/token.js';
-import User from '../model/user.js';
 import User from '../model/user.js';
 
 const privateKey = readFileSync('keys/privateKey.pem', 'utf8');

@@ -46,7 +46,7 @@ const ProfilePage = () => {
       if (window.innerWidth > 768) setIsMobileMenuOpen(false);
     };
     window.addEventListener("resize", handleResize);
-    return () => window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   useEffect(() => {

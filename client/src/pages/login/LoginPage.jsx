@@ -34,7 +34,7 @@ const LoginPage = () => {
     } else {
       setIsChecking(false);
     }
-  }, []);
+  }, []);  // eslint-disable-line 
   
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
