@@ -8,6 +8,7 @@ import MapView from './components/MapView';
 import PrivateRouter from './components/PrivateRouter';
 import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
+import AnnouncementDetailsPage from './pages/announcementDetailPage';
 import CreateAnnouncementPage from './pages/createAnnouncementPage';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
@@ -88,6 +89,9 @@ function App() {
         />
         <Route path="/create-announcement" element={<CreateAnnouncementPage />} />
         <Route path="/login" element={<LoginPage />} />
+        
+        {/* Додано маршрут для сторінки деталей оголошення */}
+        <Route path="/announcement/:id" element={<AnnouncementDetailsPage />} />
 
         <Route element={<PrivateRouter isAuthenticated={isAuthenticated} />}>
           <Route
