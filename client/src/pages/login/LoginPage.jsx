@@ -8,6 +8,7 @@ import LoginTelegramButton from './TelegramLoginButton';
 import 'react-toastify/dist/ReactToastify.css';
 
 
+
 const LoginPage = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [formData, setFormData] = useState({
@@ -21,116 +22,63 @@ const LoginPage = () => {
   const [showReset, setShowReset] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [isChecking, setIsChecking] = useState(true);
-  const [hasError, setHasError] = useState(false);
 
   const navigate = useNavigate();
 
-  const notifySuccessReg = () => toast.success('Реєстрація успішна!');
-  const notifySuccessLog = () => toast.success('Успішний вхід!');
-  const notifyLetterHasBeenSentOnEmail = () => toast.success('Лист надіслано');
-  const notifyPasswordConfirmationErr = () => toast.error('Паролі не збігаються');
-  const notifyAllInputAreNecessaryWarning = () => toast.warning('Заповніть усі поля');
-  const notifyEmailIsNecessaryWarning = () => toast.warning('Заповніть email та пароль');
-
   useEffect(() => {
-    const checkAuth = async () => {
-      const accessToken = localStorage.getItem('accessToken');
-      if (!accessToken) {
-        setIsChecking(false);
-        return;
-      }
+    const token = localStorage.getItem('accessToken');
 
-      try {
-        await axios.post('http://localhost:4000/profile', {}, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          withCredentials: true,
-        });
-        navigate('/profile', { replace: true });
-      } catch {
-        try {
-          const res = await axios.post('http://localhost:4000/refresh-token', {}, { withCredentials: true });
-          if (res.data.accessToken) {
-            localStorage.setItem('accessToken', res.data.accessToken);
-            navigate('/profile', { replace: true });
-          } else {
-            throw new Error();
-          }
-        } catch {
-          localStorage.removeItem('accessToken');
-          setIsChecking(false);
-        }
-      }
-    };
-
-    const timer = setTimeout(() => {
-      checkAuth().catch(() => {
-        setHasError(true);
-        setIsChecking(false);
-      });
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [navigate]);
-
+    if (token) {
+      navigate('/profile', { replace: true });
+    } else {
+      setIsChecking(false);
+    }
+  }, [navigate]); 
+  
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    try {
+      const url = isRegister 
+        ? 'http://localhost:4000/register' 
+        : 'http://localhost:4000/login';
+            
+      const payload = isRegister
+        ? {
+            username: formData.username.trim(),
+            email: formData.email.trim(),
+            password: formData.password,
+            confirmPassword: formData.confirmPassword,
+          }
+        : {
+            email: formData.email.trim(),
+            password: formData.password,
+          };
 
-    if (isRegister) {
-      if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
-        notifyAllInputAreNecessaryWarning();
-        return;
-      }
-      if (formData.password !== formData.confirmPassword) {
-        notifyPasswordConfirmationErr();
-        return;
-      }
+      const res = await axios.post(url, payload, { withCredentials: true });
+      localStorage.setItem('accessToken', res.data.accessToken);
+      toast.success(isRegister ? 'Реєстрація успішна!' : 'Успішний вхід!');
+      setTimeout(() => navigate('/profile'), 1500);
 
-      try {
-        const res = await axios.post('http://localhost:4000/register', {
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-        }, { withCredentials: true });
-
-        localStorage.setItem('accessToken', res.data.accessToken);
-        notifySuccessReg();
-        setTimeout(() => navigate('/profile'), 1500);
-      } catch (err) {
-        toast.error(err.response?.data?.message || 'Помилка');
-      }
-    } else {
-      if (!formData.email || !formData.password) {
-        notifyEmailIsNecessaryWarning();
-        return;
-      }
-
-      try {
-        const res = await axios.post('http://localhost:4000/login', {
-          email: formData.email,
-          password: formData.password,
-        }, { withCredentials: true });
-
-        localStorage.setItem('accessToken', res.data.accessToken);
-        notifySuccessLog();
-        setTimeout(() => navigate('/profile'), 1500);
-      } catch (err) {
-        toast.error(err.response?.data?.message || 'Невірні дані');
-      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || 'Щось пішло не так';
+      toast.error(errorMessage);
     }
   };
-
   const handleResetPassword = (e) => {
     e.preventDefault();
-    if (!resetEmail) return notifyEmailIsNecessaryWarning();
-    notifyLetterHasBeenSentOnEmail();
+
+    if (!resetEmail.trim()) {
+      toast.warning('Введіть email');
+      return;
+    }
+    toast.success('Лист для відновлення надіслано на вашу пошту');
     setShowReset(false);
     setResetEmail('');
   };
-
   const handleTelegramLogin = () => {
     const botId = '7744665366';
     const botUsername = 'TravelMapSupport_bot';
@@ -146,22 +94,6 @@ const LoginPage = () => {
         <div className="flex flex-col items-center space-y-3">
           <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16 xl:h-20 xl:w-20 border-4 border-[#744ce9] border-t-transparent"></div>
           <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-[#744ce9] font-medium">Перевірка...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (hasError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F4EFFF] to-[#744ce9]/10 p-4">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">Помилка завантаження</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-[#744ce9] text-white rounded-lg hover:bg-[#5d39b3] transition"
-          >
-            Перезавантажити
-          </button>
         </div>
       </div>
     );
