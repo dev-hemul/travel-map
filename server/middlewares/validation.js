@@ -33,6 +33,10 @@ const formatErrors = (errors) => {
         if (msg.includes('must match format "email"')) {
           return 'Некоректний формат електронної пошти';
         }
+              if (msg.includes('must NOT have fewer than')) {
+          const num = msg.match(/\d+/)?.[0] || '';
+          return `Імейл має містити щонайменше ${num} символи`;
+        }
         if (msg.includes('should have required property')) {
           return 'Електронна пошта є обовʼязковою';
         }
@@ -51,6 +55,10 @@ const formatErrors = (errors) => {
 
       // юзернейм
       if (field === 'username') {
+        if (msg.includes('must NOT have fewer than')) {
+          const num = msg.match(/\d+/)?.[0] || '';
+          return `Імʼя користувача має містити щонайменше ${num} символи`;
+        }
         if (msg.includes('must match pattern')) {
           return "Імʼя користувача може містити лише літери, цифри та _";
         }
@@ -64,6 +72,10 @@ const formatErrors = (errors) => {
         const fieldName = fieldNames[field] || 'це поле';
         return `Поле ${fieldName} є обовʼязковим`;
       }
+      if (msg.includes('must NOT have fewer than')) {
+        const num = msg.match(/\d+/)?.[0] || '';
+        return `Імʼя користувача має містити щонайменше ${num} символи`;
+            }
 
       return msg;
     })
