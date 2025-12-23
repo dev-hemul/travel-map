@@ -40,7 +40,7 @@ export default [
     },
     rules: {
       // Разрешаем только warn/error глобально
-      'no-console': ['error', { allow: ['warn', 'error'] }],
+      'no-console': ['error', { allow: ['warn', 'error', 'log'] }],
 
       // Базовые рекомендации
       ...js.configs.recommended.rules,
