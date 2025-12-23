@@ -4,14 +4,13 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { nanoid } from 'nanoid';
 
-
 import Tokens from '../model/token.js';
 import User from '../model/user.js';
 
 const privateKey = readFileSync('keys/privateKey.pem', 'utf8');
 const publicKey = readFileSync('keys/publicKey.pem', 'utf8');
 const alg = 'RS512';
-const lifedur = 7 * 24 * 60 * 1000;        // 7 днів
+const lifedur = 7 * 24 * 60 * 1000;         // 7 днів
 const refreshLifedur = 21 * 24 * 60 * 1000; // 21 день
 
 if (!privateKey || !publicKey) {
@@ -39,6 +38,7 @@ export const register = async (req, res) => {
       email,
       password: hashedPassword,
       provider: 'local',
+      roles: ['user'], // ✅ РОЛІ: дефолт
     });
     await user.save();
 
@@ -47,12 +47,13 @@ export const register = async (req, res) => {
 
     res.cookie('refreshToken', refreshT, {
       httpOnly: true,
-      secure: true, // Для http://localhost
+      secure: true, // як у твоєму оригіналі
       sameSite: 'lax',
       maxAge: refreshLifedur,
       domain: 'localhost',
       path: '/',
     });
+
     res.status(200).json({ accessToken: accessT });
   } catch {
     res.status(500).json({ message: 'Помилка сервера' });
@@ -69,6 +70,12 @@ export const login = async (req, res) => {
         success: false,
         message: 'Невірний email або пароль',
       });
+    }
+
+    // ✅ РОЛІ: якщо в старих юзерів немає roles — ставимо дефолт
+    if (!Array.isArray(user.roles) || user.roles.length === 0) {
+      user.roles = ['user'];
+      await user.save();
     }
 
     await Tokens.deleteMany({ userId: user._id });
@@ -88,6 +95,7 @@ export const login = async (req, res) => {
     res.status(500).json({ message: 'Помилка сервера' });
   }
 };
+
 export const getRefreshToken = async (req, res) => {
   const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
@@ -101,7 +109,11 @@ export const getRefreshToken = async (req, res) => {
       return res.status(401).json({ message: 'Refresh token expired or invalid' });
     }
 
-    const { accessT } = createAccessT({ id: tokenDoc.userId });
+    // ✅ РОЛІ: підтягуємо ролі юзера, щоб новий access token теж їх мав
+    const user = await User.findById(tokenDoc.userId).select('roles');
+    const roles = Array.isArray(user?.roles) && user.roles.length ? user.roles : ['user'];
+
+    const { accessT } = createAccessT({ id: tokenDoc.userId, roles });
     res.json({ accessToken: accessT });
   } catch (error) {
     console.error('Refresh error:', error);
@@ -136,7 +148,9 @@ export const logout = async (req, res) => {
     if (!token) return res.status(401).json({ message: 'Токен не надано' });
 
     const decoded = jwt.verify(token, publicKey, { algorithms: [alg] });
-    Tokens.deleteMany({ userId: decoded.id });
+
+    // (не про ролі, але правильніше) — в оригіналі не було await
+    await Tokens.deleteMany({ userId: decoded.id });
 
     res.clearCookie('refreshToken', {
       httpOnly: true,
@@ -161,7 +175,11 @@ const createAccessT = (payload) => {
 };
 
 export const createTokens = async (userId) => {
-  const accessT = jwt.sign({ id: userId }, privateKey, {
+  // ✅ РОЛІ: підтягуємо ролі з БД і кладемо їх в access token
+  const user = await User.findById(userId).select('roles');
+  const roles = Array.isArray(user?.roles) && user.roles.length ? user.roles : ['user'];
+
+  const accessT = jwt.sign({ id: userId, roles }, privateKey, {
     algorithm: alg,
     expiresIn: lifedur / 1000,
   });
