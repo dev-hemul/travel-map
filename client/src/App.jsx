@@ -16,14 +16,12 @@ import ProfilePage from './pages/profilePage';
 axios.defaults.withCredentials = true;
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
   const checkAuth = async () => {
     const token = localStorage.getItem('accessToken');
 
     if (!token) {
-      setIsAuthenticated(false);
       setIsReady(true);
       return;
     }
@@ -33,21 +31,20 @@ function App() {
       const now = Date.now() / 1000;
 
       if (decoded.exp < now + 300) {
-        await axios
-          .post('http://localhost:4000/refresh-token', {}, { withCredentials: true })
-          .then(res => localStorage.setItem('accessToken', res.data.accessToken));
+        const res = await axios.post(
+          'http://localhost:4000/refresh-token',
+          {},
+          { withCredentials: true }
+        );
+        localStorage.setItem('accessToken', res.data.accessToken);
       }
-
-      setIsAuthenticated(true);
     } catch {
       localStorage.removeItem('accessToken');
-      setIsAuthenticated(false);
     } finally {
       setIsReady(true);
     }
   };
 
-  // Перевірка при завантаженні + кожні 5 хв
   useEffect(() => {
     checkAuth();
 
@@ -74,6 +71,7 @@ function App() {
       </div>
     );
   }
+
   return (
     <div className="min-h-screen dark:bg-gray-900 bg-gray-50 relative">
       <Routes>
@@ -87,13 +85,14 @@ function App() {
             </>
           }
         />
+
         <Route path="/create-announcement" element={<CreateAnnouncementPage />} />
         <Route path="/login" element={<LoginPage />} />
         
         {/* Додано маршрут для сторінки деталей оголошення */}
         <Route path="/announcement/:id" element={<AnnouncementDetailsPage />} />
 
-        <Route element={<PrivateRouter isAuthenticated={isAuthenticated} />}>
+        <Route element={<PrivateRouter />}>
           <Route
             path="/profile"
             element={
@@ -102,6 +101,7 @@ function App() {
               </SidebarLayout>
             }
           />
+
           <Route
             path="/announcements"
             element={
