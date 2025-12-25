@@ -28,8 +28,6 @@ export default function AnnouncementDetailPage() {
   const [offer, setOffer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showFullDescription, setShowFullDescription] = useState(false);
-  const authorScrollRef = useRef(null);
-  const contentScrollRef = useRef(null);
 
   // Мокові дані
   const mockOffers = [
@@ -247,245 +245,227 @@ export default function AnnouncementDetailPage() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6">
         <div className="flex gap-6 h-[calc(100vh-140px)]">
-          {/* Left Column - Author Info with Scroll */}
-          <div className="w-96 flex-shrink-0 hidden lg:block">
-            <div 
-              ref={authorScrollRef}
-              className="h-full overflow-y-auto pr-4"
-              style={{
-                scrollbarWidth: 'thin',
-                scrollbarColor: '#c7d2fe #f3f4f6'
-              }}
-            >
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
-                {/* Author Header */}
-                <div className="p-6 border-b border-gray-200">
-                  <div className="flex flex-col items-center text-center mb-6">
-                    <div className="relative mb-4">
-                      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
-                        {offer.author.avatar ? (
-                          <img
-                            src={offer.author.avatar}
-                            alt={offer.author.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <FiUser className="text-[#744ce9] text-4xl" />
-                        )}
-                      </div>
-                      <div className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-md">
-                        <div className="w-10 h-10 bg-gradient-to-r from-[#744ce9] to-[#8a6de8] rounded-full flex items-center justify-center">
-                          <FiStar className="text-white w-5 h-5" />
-                        </div>
-                      </div>
+          <div className="w-96 flex-shrink-0 hidden lg:block">        
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+              {/* Author Header */}
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex flex-col items-center text-center mb-6">
+                  <div className="relative mb-4">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
+                      {offer.author.avatar ? (
+                        <img
+                          src={offer.author.avatar}
+                          alt={offer.author.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <FiUser className="text-[#744ce9] text-4xl" />
+                      )}
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900">{offer.author.name}</h3>
-                    <p className="text-gray-600 mt-1">{offer.author.experience}</p>
-                    <div className="flex items-center justify-center mt-3">
-                      <div className="flex items-center bg-yellow-50 px-3 py-1 rounded-full">
-                        <FiStar className="text-yellow-400 fill-current mr-1" />
-                        <span className="font-bold text-gray-900">{offer.author.rating}</span>
-                        <span className="text-gray-500 text-sm ml-2">({offer.author.reviews} відгуків)</span>
+                    <div className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-md">
+                      <div className="w-10 h-10 bg-gradient-to-r from-[#744ce9] to-[#8a6de8] rounded-full flex items-center justify-center">
+                        <FiStar className="text-white w-5 h-5" />
                       </div>
                     </div>
                   </div>
-
-                  {/* Bio */}
-                  <p className="text-gray-700 text-center">{offer.author.bio}</p>
-                </div>
-
-                {/* Stats Grid */}
-                <div className="p-6 border-b border-gray-200">
-                  <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
-                    <FiTrendingUp className="mr-2 text-[#744ce9]" />
-                    Статистика
-                  </h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-gray-50 rounded-xl p-4">
-                      <div className="text-2xl font-bold text-gray-900">{offer.author.stats.offers}</div>
-                      <div className="text-gray-600 text-sm mt-1">Пропозицій</div>
-                    </div>
-                    <div className="bg-gray-50 rounded-xl p-4">
-                      <div className="text-2xl font-bold text-gray-900">{offer.author.stats.completed}</div>
-                      <div className="text-gray-600 text-sm mt-1">Виконано</div>
-                    </div>
-                    <div className="bg-gray-50 rounded-xl p-4">
-                      <div className="text-2xl font-bold text-green-600">{offer.author.stats.successRate}</div>
-                      <div className="text-gray-600 text-sm mt-1">Успішність</div>
-                    </div>
-                    <div className="bg-gray-50 rounded-xl p-4">
-                      <div className="text-2xl font-bold text-blue-600">{offer.author.stats.responseRate}</div>
-                      <div className="text-gray-600 text-sm mt-1">Відповідь</div>
+                  <h3 className="text-2xl font-bold text-gray-900">{offer.author.name}</h3>
+                  <p className="text-gray-600 mt-1">{offer.author.experience}</p>
+                  <div className="flex items-center justify-center mt-3">
+                    <div className="flex items-center bg-yellow-50 px-3 py-1 rounded-full">
+                      <FiStar className="text-yellow-400 fill-current mr-1" />
+                      <span className="font-bold text-gray-900">{offer.author.rating}</span>
+                      <span className="text-gray-500 text-sm ml-2">({offer.author.reviews} відгуків)</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Details */}
-                <div className="p-6 border-b border-gray-200">
-                  <h4 className="font-semibold text-gray-900 mb-4">Деталі</h4>
-                  <div className="space-y-3">
+                {/* Bio */}
+                <p className="text-gray-700 text-center">{offer.author.bio}</p>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="p-6 border-b border-gray-200">
+                <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
+                  <FiTrendingUp className="mr-2 text-[#744ce9]" />
+                  Статистика
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="text-2xl font-bold text-gray-900">{offer.author.stats.offers}</div>
+                    <div className="text-gray-600 text-sm mt-1">Пропозицій</div>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="text-2xl font-bold text-gray-900">{offer.author.stats.completed}</div>
+                    <div className="text-gray-600 text-sm mt-1">Виконано</div>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="text-2xl font-bold text-green-600">{offer.author.stats.successRate}</div>
+                    <div className="text-gray-600 text-sm mt-1">Успішність</div>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="text-2xl font-bold text-blue-600">{offer.author.stats.responseRate}</div>
+                    <div className="text-gray-600 text-sm mt-1">Відповідь</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Details */}
+              <div className="p-6 border-b border-gray-200">
+                <h4 className="font-semibold text-gray-900 mb-4">Деталі</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center text-gray-700">
+                    <FiMapPin className="mr-3 text-gray-400 flex-shrink-0" size={18} />
+                    <span className="text-sm">{offer.author.location}</span>
+                  </div>
+                  <div className="flex items-center text-gray-700">
+                    <FiCalendar className="mr-3 text-gray-400 flex-shrink-0" size={18} />
+                    <span className="text-sm">На сайті з {offer.author.memberSince}</span>
+                  </div>
+                  {offer.author.education && (
+                    <div className="flex items-start text-gray-700">
+                      <FiCheckCircle className="mr-3 text-gray-400 flex-shrink-0 mt-0.5" size={18} />
+                      <span className="text-sm">{offer.author.education}</span>
+                    </div>
+                  )}
+                  {offer.author.website && (
                     <div className="flex items-center text-gray-700">
-                      <FiMapPin className="mr-3 text-gray-400 flex-shrink-0" size={18} />
-                      <span className="text-sm">{offer.author.location}</span>
+                      <FiGlobe className="mr-3 text-gray-400 flex-shrink-0" size={18} />
+                      <a 
+                        href={`https://${offer.author.website}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm text-[#744ce9] hover:underline"
+                      >
+                        {offer.author.website}
+                      </a>
                     </div>
-                    <div className="flex items-center text-gray-700">
-                      <FiCalendar className="mr-3 text-gray-400 flex-shrink-0" size={18} />
-                      <span className="text-sm">На сайті з {offer.author.memberSince}</span>
-                    </div>
-                    {offer.author.education && (
-                      <div className="flex items-start text-gray-700">
-                        <FiCheckCircle className="mr-3 text-gray-400 flex-shrink-0 mt-0.5" size={18} />
-                        <span className="text-sm">{offer.author.education}</span>
-                      </div>
-                    )}
-                    {offer.author.website && (
-                      <div className="flex items-center text-gray-700">
-                        <FiGlobe className="mr-3 text-gray-400 flex-shrink-0" size={18} />
-                        <a 
-                          href={`https://${offer.author.website}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-sm text-[#744ce9] hover:underline"
-                        >
-                          {offer.author.website}
-                        </a>
-                      </div>
-                    )}
+                  )}
+                </div>
+              </div>
+
+              {/* Skills */}
+              {offer.author.skills && offer.author.skills.length > 0 && (
+                <div className="p-6 border-b border-gray-200">
+                  <h4 className="font-semibold text-gray-900 mb-3">Навички</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {offer.author.skills.map((skill, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium"
+                      >
+                        {skill}
+                      </span>
+                    ))}
                   </div>
                 </div>
+              )}
 
-                {/* Skills */}
-                {offer.author.skills && offer.author.skills.length > 0 && (
-                  <div className="p-6 border-b border-gray-200">
-                    <h4 className="font-semibold text-gray-900 mb-3">Навички</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {offer.author.skills.map((skill, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
+              {/* Languages */}
+              {offer.author.languages && offer.author.languages.length > 0 && (
+                <div className="p-6 border-b border-gray-200">
+                  <h4 className="font-semibold text-gray-900 mb-3">Мови</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {offer.author.languages.map((lang, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium"
+                      >
+                        {lang}
+                      </span>
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* Languages */}
-                {offer.author.languages && offer.author.languages.length > 0 && (
-                  <div className="p-6 border-b border-gray-200">
-                    <h4 className="font-semibold text-gray-900 mb-3">Мови</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {offer.author.languages.map((lang, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium"
-                        >
-                          {lang}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Achievements */}
-                {offer.author.achievements && offer.author.achievements.length > 0 && (
-                  <div className="p-6 border-b border-gray-200">
-                    <h4 className="font-semibold text-gray-900 mb-3">Досягнення</h4>
-                    <div className="space-y-2">
-                      {offer.author.achievements.map((achievement, index) => (
-                        <div key={index} className="flex items-center text-gray-700">
-                          <FiCheckCircle className="text-green-500 mr-2 flex-shrink-0" />
-                          <span className="text-sm">{achievement}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Contact Info */}
-                <div className="p-6">
-                  <h4 className="font-semibold text-gray-900 mb-4">Контакти</h4>
-                  <div className="space-y-3 mb-6">
-                    {offer.author.contacts.phone && (
-                      <div className="flex items-center text-gray-700">
-                        <FiPhone className="mr-3 text-gray-400" size={18} />
-                        <span className="text-sm">{offer.author.contacts.phone}</span>
+              {/* Achievements */}
+              {offer.author.achievements && offer.author.achievements.length > 0 && (
+                <div className="p-6 border-b border-gray-200">
+                  <h4 className="font-semibold text-gray-900 mb-3">Досягнення</h4>
+                  <div className="space-y-2">
+                    {offer.author.achievements.map((achievement, index) => (
+                      <div key={index} className="flex items-center text-gray-700">
+                        <FiCheckCircle className="text-green-500 mr-2 flex-shrink-0" />
+                        <span className="text-sm">{achievement}</span>
                       </div>
-                    )}
-                    {offer.author.contacts.email && (
-                      <div className="flex items-center text-gray-700">
-                        <FiMail className="mr-3 text-gray-400" size={18} />
-                        <span className="text-sm truncate">{offer.author.contacts.email}</span>
-                      </div>
-                    )}
-                    {offer.author.contacts.telegram && (
-                      <div className="flex items-center text-gray-700">
-                        <FiMessageCircle className="mr-3 text-gray-400" size={18} />
-                        <span className="text-sm">{offer.author.contacts.telegram}</span>
-                      </div>
-                    )}
-                    {offer.author.contacts.linkedin && (
-                      <div className="flex items-center text-gray-700">
-                        <FiGlobe className="mr-3 text-gray-400" size={18} />
-                        <a 
-                          href={`https://${offer.author.contacts.linkedin}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-[#744ce9] hover:underline"
-                        >
-                          LinkedIn
-                        </a>
-                      </div>
-                    )}
+                    ))}
                   </div>
+                </div>
+              )}
 
-                  {/* Action Buttons */}
-                  <div className="space-y-3">
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full bg-gradient-to-r from-[#744ce9] to-[#8a6de8] text-white py-3.5 rounded-xl font-medium hover:shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
-                    >
-                      <FiMessageCircle size={18} />
-                      Написати повідомлення
-                    </motion.button>
-                    
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full bg-white border-2 border-[#744ce9] text-[#744ce9] py-3.5 rounded-xl font-medium hover:bg-[#F4EFFF] transition-colors cursor-pointer flex items-center justify-center gap-2"
-                    >
-                      <FiPhone size={18} />
-                      Зателефонувати
-                    </motion.button>
+              {/* Contact Info */}
+              <div className="p-6">
+                <h4 className="font-semibold text-gray-900 mb-4">Контакти</h4>
+                <div className="space-y-3 mb-6">
+                  {offer.author.contacts.phone && (
+                    <div className="flex items-center text-gray-700">
+                      <FiPhone className="mr-3 text-gray-400" size={18} />
+                      <span className="text-sm">{offer.author.contacts.phone}</span>
+                    </div>
+                  )}
+                  {offer.author.contacts.email && (
+                    <div className="flex items-center text-gray-700">
+                      <FiMail className="mr-3 text-gray-400" size={18} />
+                      <span className="text-sm truncate">{offer.author.contacts.email}</span>
+                    </div>
+                  )}
+                  {offer.author.contacts.telegram && (
+                    <div className="flex items-center text-gray-700">
+                      <FiMessageCircle className="mr-3 text-gray-400" size={18} />
+                      <span className="text-sm">{offer.author.contacts.telegram}</span>
+                    </div>
+                  )}
+                  {offer.author.contacts.linkedin && (
+                    <div className="flex items-center text-gray-700">
+                      <FiGlobe className="mr-3 text-gray-400" size={18} />
+                      <a 
+                        href={`https://${offer.author.contacts.linkedin}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-[#744ce9] hover:underline"
+                      >
+                        LinkedIn
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full bg-gradient-to-r from-[#744ce9] to-[#8a6de8] text-white py-3.5 rounded-xl font-medium hover:shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <FiMessageCircle size={18} />
+                    Написати повідомлення
+                  </motion.button>
+                  
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full bg-white border-2 border-[#744ce9] text-[#744ce9] py-3.5 rounded-xl font-medium hover:bg-[#F4EFFF] transition-colors cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <FiPhone size={18} />
+                    Зателефонувати
+                  </motion.button>
+                </div>
+
+                {/* Response Info */}
+                <div className="mt-6 p-4 bg-blue-50 rounded-xl">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm text-gray-700">Швидкість відповіді</span>
+                    <span className="font-bold text-green-600">{offer.author.stats.responseRate}</span>
                   </div>
-
-                  {/* Response Info */}
-                  <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-gray-700">Швидкість відповіді</span>
-                      <span className="font-bold text-green-600">{offer.author.stats.responseRate}</span>
-                    </div>
-                    <div className="flex items-center text-xs text-gray-500">
-                      <FiClock className="mr-1" size={12} />
-                      <span>Середній час: {offer.author.stats.responseTime}</span>
-                    </div>
+                  <div className="flex items-center text-xs text-gray-500">
+                    <FiClock className="mr-1" size={12} />
+                    <span>Середній час: {offer.author.stats.responseTime}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column - Main Content with Scroll */}
-          <div 
-            ref={contentScrollRef}
-            className="flex-1 overflow-y-auto"
-            style={{
-              scrollbarWidth: 'thin',
-              scrollbarColor: '#c7d2fe #f3f4f6'
-            }}
-          >
+       
             <div className="max-w-4xl mx-auto pb-8">
               {/* Category Badge */}
               <div className="mb-6">
@@ -697,7 +677,6 @@ export default function AnnouncementDetailPage() {
                 </div>
               </div>
             </div>
-          </div>
         </div>
       </div>
     </div>
