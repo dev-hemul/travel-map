@@ -27,10 +27,6 @@ if (!privateKey || !publicKey) {
 }
 
 const setRefreshCookie = (res, refreshT) => {
-  // ВАЖЛИВО:
-  // - httpOnly: true завжди
-  // - secure: true тільки в production по HTTPS
-  // - domain на localhost НЕ ставимо
   res.cookie('refreshToken', refreshT, {
     httpOnly: true,
     secure: isProd,       // локально має бути false, інакше cookie не встановиться по http
@@ -52,8 +48,6 @@ const clearRefreshCookie = (res) => {
 export const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
-
-    // AJV уже перевірив формат/мін. довжину. Тут тільки унікальність.
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
       const message =
@@ -71,7 +65,7 @@ export const register = async (req, res) => {
       email,
       password: hashedPassword,
       provider: 'local',
-      roles: ['user'], // ✅ додали ролі за замовчуванням
+      roles: ['user'], 
     });
 
     await user.save();
@@ -91,7 +85,7 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
+    
     const user = await User.findOne({ email });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({
