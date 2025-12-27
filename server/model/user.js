@@ -6,6 +6,11 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   avatar: { type: String, default: null },
   provider: { type: String, default: 'local' }, 
+  roles: {
+  type: [String],
+  enum: ['user', 'admin'],
+  default: ['user'],
+},
   refreshToken: String,
 }, {
   timestamps: true
