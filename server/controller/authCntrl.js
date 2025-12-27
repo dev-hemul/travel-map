@@ -10,8 +10,8 @@ import User from '../model/user.js';
 const privateKey = readFileSync('keys/privateKey.pem', 'utf8');
 const publicKey = readFileSync('keys/publicKey.pem', 'utf8');
 const alg = 'RS512';
-const lifedur = 7 * 24 * 60 * 1000;         // 7 днів
-const refreshLifedur = 21 * 24 * 60 * 1000; // 21 день
+const lifedur = 10 * 1000;         // 7 днів
+const refreshLifedur = 30 * 1000; // 21 день
 
 if (!privateKey || !publicKey) {
   throw new Error('Ключі не ініціалізовані в файлах keys/');
@@ -38,7 +38,7 @@ export const register = async (req, res) => {
       email,
       password: hashedPassword,
       provider: 'local',
-      roles: ['user'], // ✅ РОЛІ: дефолт
+      roles: ['user'], 
     });
     await user.save();
 
@@ -47,7 +47,7 @@ export const register = async (req, res) => {
 
     res.cookie('refreshToken', refreshT, {
       httpOnly: true,
-      secure: true, // як у твоєму оригіналі
+      secure: false, 
       sameSite: 'lax',
       maxAge: refreshLifedur,
       domain: 'localhost',
@@ -71,8 +71,6 @@ export const login = async (req, res) => {
         message: 'Невірний email або пароль',
       });
     }
-
-    // ✅ РОЛІ: якщо в старих юзерів немає roles — ставимо дефолт
     if (!Array.isArray(user.roles) || user.roles.length === 0) {
       user.roles = ['user'];
       await user.save();
@@ -108,8 +106,6 @@ export const getRefreshToken = async (req, res) => {
     if (!tokenDoc || tokenDoc.expiresAt < Date.now()) {
       return res.status(401).json({ message: 'Refresh token expired or invalid' });
     }
-
-    // ✅ РОЛІ: підтягуємо ролі юзера, щоб новий access token теж їх мав
     const user = await User.findById(tokenDoc.userId).select('roles');
     const roles = Array.isArray(user?.roles) && user.roles.length ? user.roles : ['user'];
 
@@ -145,12 +141,12 @@ export const updateProfile = async (req, res) => {
 export const logout = async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ message: 'Токен не надано' });
 
-    const decoded = jwt.verify(token, publicKey, { algorithms: [alg] });
-
-    // (не про ролі, але правильніше) — в оригіналі не було await
-    await Tokens.deleteMany({ userId: decoded.id });
+  if (token) {
+    const payload = jwt.decode(token);
+    const userId = payload?.id;
+    if (userId) await Tokens.deleteMany({ userId });
+  }
 
     res.clearCookie('refreshToken', {
       httpOnly: true,
@@ -159,12 +155,13 @@ export const logout = async (req, res) => {
       path: '/',
     });
 
-    res.json({ message: 'Успішний вихід' });
+    return res.json({ message: 'Успішний вихід' });
   } catch (error) {
     console.error('Logout error:', error);
-    res.status(500).json({ message: 'Помилка виходу' });
+    return res.status(500).json({ message: 'Помилка виходу' });
   }
 };
+
 
 const createAccessT = (payload) => {
   const accessT = jwt.sign(payload, privateKey, {
@@ -175,7 +172,6 @@ const createAccessT = (payload) => {
 };
 
 export const createTokens = async (userId) => {
-  // ✅ РОЛІ: підтягуємо ролі з БД і кладемо їх в access token
   const user = await User.findById(userId).select('roles');
   const roles = Array.isArray(user?.roles) && user.roles.length ? user.roles : ['user'];
 

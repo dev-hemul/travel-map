@@ -61,7 +61,6 @@ function App() {
           .catch(() => localStorage.removeItem('accessToken'));
       }
     }, 300000);
-
     return () => clearInterval(interval);
   }, []);
 

@@ -132,23 +132,21 @@ const ProfilePage = () => {
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
-  const handleLogout = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      await axios.post(
-        'http://localhost:4000/logout',
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      localStorage.removeItem('accessToken');
-      document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      navigate('/');
-    } catch (error) {
-      console.error('Помилка логауту:', error);
-    }
-  };
+ const handleLogout = async () => {
+  localStorage.removeItem('accessToken');
+
+  try {
+    await axios.post(
+      'http://localhost:4000/logout',
+      {},
+      { withCredentials: true } 
+    );
+  } catch (error) {
+    console.error('Помилка логауту:', error);
+  } finally {
+    navigate('/');
+  }
+};
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
