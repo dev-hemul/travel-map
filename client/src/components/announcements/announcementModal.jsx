@@ -8,7 +8,6 @@ export default function AnnouncementModal() {
   const [showSidebar, setShowSidebar] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [showQuickPreview, setShowQuickPreview] = useState(null);
-  const [previewTimer, setPreviewTimer] = useState(null);
   const [pressDuration, setPressDuration] = useState(0);
   
   // Refs для таймерів

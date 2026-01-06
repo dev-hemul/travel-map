@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
@@ -100,7 +100,7 @@ export default function AnnouncementDetailPage() {
           offers: 12,
           completed: 47,
           responseRate: '98%',
-          responseTime: '2 години',
+          responseTime: '2 гoдини',
           successRate: '95%',
           avgRating: 4.8
         },
