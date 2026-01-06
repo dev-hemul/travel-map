@@ -1,0 +1,282 @@
+openapi: 3.0.0
+info:
+  title: Travel Map API
+  description: Документація API для проекту інтерактивної мапи подорожей (Travel Map).
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:4000
+    description: Локальний сервер розробки
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        username: { type: string }
+        email: { type: string }
+        roles: { type: array, items: { type: string } }
+        avatar: { type: string }
+        provider: { type: string }
+
+    Marker:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        description: { type: string }
+        lat: { type: number }
+        lng: { type: number }
+        mediaUrl: { type: string }
+        publicId: { type: string }
+
+paths:
+  # --- АВТЕНТИФІКАЦІЯ ---
+  /register:
+    post:
+      tags: [Автентифікація]
+      summary: Реєстрація нового користувача
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, email, password]
+              properties:
+                username: { type: string }
+                email: { type: string }
+                password: { type: string }
+      responses:
+        200: { description: Успішна реєстрація }
+        400: { description: Помилка валідації або користувач уже існує }
+
+  /login:
+    post:
+      tags: [Автентифікація]
+      summary: Вхід у систему
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        200: { description: Повертає accessToken та встановлює refreshToken у кукі }
+        401: { description: Невірний email або пароль }
+
+  /refresh-token:
+    post:
+      tags: [Автентифікація]
+      summary: Оновлення токена доступу
+      responses:
+        200: { description: Повертає новий accessToken }
+        401: { description: Refresh токен недійсний або протермінований }
+
+  /logout:
+    post:
+      tags: [Автентифікація]
+      summary: Вихід із системи
+      security: [{ bearerAuth: [] }]
+      responses:
+        200: { description: Успішний вихід, очищення кукі }
+
+  # --- ПРОФІЛЬ ТА КОРИСТУВАЧІ ---
+  /profile:
+    get:
+      tags: [Профіль]
+      summary: Отримання профілю поточного користувача
+      security: [{ bearerAuth: [] }]
+      responses:
+        200: { description: Дані користувача без пароля }
+    post:
+      tags: [Профіль]
+      summary: Оновлення основних даних профілю
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                username: { type: string }
+                email: { type: string }
+      responses:
+        200: { description: Профіль успішно оновлено }
+
+  /profile/profileChanges:
+    post:
+      tags: [Профіль]
+      summary: Додаткове збереження змін профілю
+      security: [{ bearerAuth: [] }]
+      responses:
+        200: { description: Дані успішно оновлено }
+
+  /users/me:
+    get:
+      tags: [Профіль]
+      summary: Детальна інформація про користувача та його розширений профіль
+      security: [{ bearerAuth: [] }]
+      responses:
+        200: { description: Об'єкт користувача та профіль (ФІО, телефон, локація) }
+
+  # --- МАРКЕРИ ---
+  /markers:
+    get:
+      tags: [Маркери]
+      summary: Отримання всіх маркерів на мапі
+      responses:
+        200: { description: Список усіх маркерів }
+
+  /marker:
+    post:
+      tags: [Маркери]
+      summary: Створення нового маркера
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Marker' }
+      responses:
+        201: { description: Маркер успішно створено }
+
+  /marker/{id}:
+    put:
+      tags: [Маркери]
+      summary: Редагування маркера
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200: { description: Маркер оновлено }
+    delete:
+      tags: [Маркери]
+      summary: Видалення маркера
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200: { description: Маркер видалено }
+
+  /marker/{id}/media:
+    delete:
+      tags: [Маркери]
+      summary: Видалення медіафайлів маркера
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200: { description: Медіа видалено }
+
+  /upload:
+    post:
+      tags: [Маркери]
+      summary: Завантаження зображення для маркера (Cloudinary)
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        200: { description: Повертає URL та publicId файлу }
+
+  # --- ПОГОДА ТА МІСТА ---
+  /cities:
+    get:
+      tags: [Погода]
+      summary: Пошук міст (автодоповнення Google)
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema: { type: string }
+          description: Назва міста для пошуку
+      responses:
+        200: { description: Список знайдених міст }
+
+  /weather:
+    get:
+      tags: [Погода]
+      summary: Отримання прогнозу погоди
+      parameters:
+        - name: city
+          in: query
+          required: true
+          schema: { type: string }
+        - name: date
+          in: query
+          required: true
+          schema: { type: string, format: date }
+          description: Дата у форматі YYYY-MM-DD
+      responses:
+        200: { description: Погодинний прогноз погоди }
+
+  # --- ПІДТРИМКА ТА ОГОЛОШЕННЯ ---
+  /support:
+    post:
+      tags: [Підтримка]
+      summary: Надсилання звернення до підтримки
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, subject, message]
+              properties:
+                name: { type: string }
+                email: { type: string }
+                subject: { type: string }
+                message: { type: string }
+      responses:
+        200: { description: Звернення прийнято }
+    get:
+      tags: [Підтримка]
+      summary: Перегляд списку звернень (Admin)
+      responses:
+        200: { description: Список усіх звернень }
+
+  /annoucementsAdding:
+    post:
+      tags: [Оголошення]
+      summary: Додавання нового оголошення
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                description: { type: string }
+      responses:
+        200: { description: Оголошення успішно збережено }
+
+  # --- АДМІНІСТРУВАННЯ ---
+  /admin/ping:
+    get:
+      tags: [Адмін]
+      summary: Перевірка прав адміністратора
+      security: [{ bearerAuth: [] }]
+      responses:
+        200: { description: Доступ дозволено }
+        403: { description: Доступ заборонено (відсутня роль admin) }

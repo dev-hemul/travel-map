@@ -29,7 +29,10 @@
     "multer-storage-cloudinary": "^4.0.0",
     "nanoid": "^5.1.5",
     "nodemailer": "^7.0.2",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
     "colors": "^1.4.0",

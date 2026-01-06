@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -6,7 +7,8 @@ import cors from 'cors';
 import express from 'express';
 import createHttpError from 'http-errors';
 import morgan from 'morgan';
-
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yaml';
 
 // Роути
 import announcementsRouter from './routes/annoucementsAdding.js';
@@ -19,6 +21,14 @@ import weatherRouter from './routes/weather.js';
 
 const app = express();
 
+// Завантажуємо YAML
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const swaggerPath = path.join(__dirname, 'docs', 'swagger.yaml');
+const file = fs.readFileSync(swaggerPath, 'utf8');
+const swaggerDocument = YAML.parse(file);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(morgan('dev'));
 
 app.use((req, res, next) => {
@@ -60,9 +70,6 @@ app.use('/refresh-token', (req, res, next) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   next();
 });
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, '../client')));
 
 // Роути
