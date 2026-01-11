@@ -10,7 +10,6 @@ import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yaml';
 
-
 // Роути
 import adminRoutes from './routes/admin.js';
 import announcementsRouter from './routes/annoucementsAdding.js';
@@ -21,7 +20,6 @@ import profileEdditRouter from './routes/profileChanges.js';
 import supportRouter from './routes/support.js';
 import usersRoutes from './routes/users.js';
 import weatherRouter from './routes/weather.js';
-
 
 const app = express();
 
