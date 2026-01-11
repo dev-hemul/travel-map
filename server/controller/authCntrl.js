@@ -11,8 +11,8 @@ import User from '../model/user.js';
 const privateKey = readFileSync('keys/privateKey.pem', 'utf8');
 const publicKey = readFileSync('keys/publicKey.pem', 'utf8');
 const alg = 'RS512';
-const lifedur = 7 * 24 * 60 * 1000;        // 7 днів
-const refreshLifedur = 21 * 24 * 60 * 1000; // 21 день
+const lifedur = 10 * 1000;         // 7 днів
+const refreshLifedur = 30 * 1000; // 21 день
 
 if (!privateKey || !publicKey) {
   throw new Error('Ключі не ініціалізовані в файлах keys/');
@@ -39,6 +39,7 @@ export const register = async (req, res) => {
       email,
       password: hashedPassword,
       provider: 'local',
+      roles: ['user'], 
     });
     await user.save();
 
@@ -47,12 +48,13 @@ export const register = async (req, res) => {
 
     res.cookie('refreshToken', refreshT, {
       httpOnly: true,
-      secure: true, // Для http://localhost
+      secure: false, 
       sameSite: 'lax',
       maxAge: refreshLifedur,
       domain: 'localhost',
       path: '/',
     });
+
     res.status(200).json({ accessToken: accessT });
   } catch {
     res.status(500).json({ message: 'Помилка сервера' });
@@ -64,11 +66,16 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
+     
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({
         success: false,
         message: 'Невірний email або пароль',
       });
+    }
+    if (!Array.isArray(user.roles) || user.roles.length === 0) {
+      user.roles = ['user'];
+      await user.save();
     }
 
     await Tokens.deleteMany({ userId: user._id });
@@ -100,8 +107,10 @@ export const getRefreshToken = async (req, res) => {
     if (!tokenDoc || tokenDoc.expiresAt < Date.now()) {
       return res.status(401).json({ message: 'Refresh token expired or invalid' });
     }
+    const user = await User.findById(tokenDoc.userId).select('roles');
+    const roles = Array.isArray(user?.roles) && user.roles.length ? user.roles : ['user'];
 
-    const { accessT } = createAccessT({ id: tokenDoc.userId });
+    const { accessT } = createAccessT({ id: tokenDoc.userId, roles });
     res.json({ accessToken: accessT });
   } catch (error) {
     console.error('Refresh error:', error);
@@ -133,24 +142,27 @@ export const updateProfile = async (req, res) => {
 export const logout = async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ message: 'Токен не надано' });
 
-    const decoded = jwt.verify(token, publicKey, { algorithms: [alg] });
-    Tokens.deleteMany({ userId: decoded.id });
+  if (token) {
+    const payload = jwt.decode(token);
+    const userId = payload?.id;
+    if (userId) await Tokens.deleteMany({ userId });
+  }
 
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false,
       sameSite: 'lax',
       path: '/',
     });
 
-    res.json({ message: 'Успішний вихід' });
+    return res.json({ message: 'Успішний вихід' });
   } catch (error) {
     console.error('Logout error:', error);
-    res.status(500).json({ message: 'Помилка виходу' });
+    return res.status(500).json({ message: 'Помилка виходу' });
   }
 };
+
 
 const createAccessT = (payload) => {
   const accessT = jwt.sign(payload, privateKey, {
@@ -161,7 +173,10 @@ const createAccessT = (payload) => {
 };
 
 export const createTokens = async (userId) => {
-  const accessT = jwt.sign({ id: userId }, privateKey, {
+  const user = await User.findById(userId).select('roles');
+  const roles = Array.isArray(user?.roles) && user.roles.length ? user.roles : ['user'];
+
+  const accessT = jwt.sign({ id: userId, roles }, privateKey, {
     algorithm: alg,
     expiresIn: lifedur / 1000,
   });
