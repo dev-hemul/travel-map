@@ -10,7 +10,6 @@ import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yaml';
 
-
 // Роути
 import adminRoutes from './routes/admin.js';
 import announcementsRouter from './routes/annoucementsAdding.js';
