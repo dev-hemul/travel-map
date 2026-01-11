@@ -106,14 +106,6 @@ function App() {
               </SidebarLayout>
             }
           />
-            <Route
-            path="/admin-test"
-            element={
-              <SidebarLayout>
-                <AdminTestPage />
-              </SidebarLayout>
-            }
-          />
           <Route
             path="/announcements"
             element={

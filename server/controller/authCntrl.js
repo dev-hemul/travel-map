@@ -4,14 +4,15 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { nanoid } from 'nanoid';
 
+
 import Tokens from '../model/token.js';
 import User from '../model/user.js';
 
 const privateKey = readFileSync('keys/privateKey.pem', 'utf8');
 const publicKey = readFileSync('keys/publicKey.pem', 'utf8');
 const alg = 'RS512';
-const lifedur = 10 * 1000;         // 7 днів
-const refreshLifedur = 30 * 1000; // 21 день
+const lifedur = 7 * 24 * 60 * 1000;        // 7 днів
+const refreshLifedur = 21 * 24 * 60 * 1000; // 21 день
 
 if (!privateKey || !publicKey) {
   throw new Error('Ключі не ініціалізовані в файлах keys/');
@@ -38,7 +39,6 @@ export const register = async (req, res) => {
       email,
       password: hashedPassword,
       provider: 'local',
-      roles: ['user'], 
     });
     await user.save();
 
@@ -63,17 +63,13 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+
     const user = await User.findOne({ email });
-     
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({
         success: false,
         message: 'Невірний email або пароль',
       });
-    }
-    if (!Array.isArray(user.roles) || user.roles.length === 0) {
-      user.roles = ['user'];
-      await user.save();
     }
 
     await Tokens.deleteMany({ userId: user._id });
@@ -93,9 +89,9 @@ export const login = async (req, res) => {
     res.status(500).json({ message: 'Помилка сервера' });
   }
 };
-
 export const getRefreshToken = async (req, res) => {
   const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+
   if (!refreshToken) {
     return res.status(401).json({ message: 'Refresh token not provided' });
   }
@@ -108,7 +104,7 @@ export const getRefreshToken = async (req, res) => {
     const user = await User.findById(tokenDoc.userId).select('roles');
     const roles = Array.isArray(user?.roles) && user.roles.length ? user.roles : ['user'];
 
-    const { accessT } = createAccessT({ id: tokenDoc.userId, roles });
+    const { accessT } = createAccessT({ id: tokenDoc.userId });
     res.json({ accessToken: accessT });
   } catch (error) {
     console.error('Refresh error:', error);
@@ -141,26 +137,22 @@ export const logout = async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
 
-  if (token) {
-    const payload = jwt.decode(token);
-    const userId = payload?.id;
-    if (userId) await Tokens.deleteMany({ userId });
-  }
+    const decoded = jwt.verify(token, publicKey, { algorithms: [alg] });
+    Tokens.deleteMany({ userId: decoded.id });
 
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
     });
 
-    return res.json({ message: 'Успішний вихід' });
+    res.json({ message: 'Успішний вихід' });
   } catch (error) {
     console.error('Logout error:', error);
     return res.status(500).json({ message: 'Помилка виходу' });
   }
 };
-
 
 const createAccessT = (payload) => {
   const accessT = jwt.sign(payload, privateKey, {
@@ -171,10 +163,7 @@ const createAccessT = (payload) => {
 };
 
 export const createTokens = async (userId) => {
-  const user = await User.findById(userId).select('roles');
-  const roles = Array.isArray(user?.roles) && user.roles.length ? user.roles : ['user'];
-
-  const accessT = jwt.sign({ id: userId, roles }, privateKey, {
+  const accessT = jwt.sign({ id: userId }, privateKey, {
     algorithm: alg,
     expiresIn: lifedur / 1000,
   });
