@@ -217,7 +217,7 @@ export default function AnnouncementModal() {
                 {/* Footer */}
                 <div className="pt-4 border-t border-gray-200">
                   <p className="text-center text-sm text-gray-500">
-                    Всього пропозицій: {announcements.length}
+                    Всьoгo пропозицій: {announcements.length}
                   </p>
                 </div>
               </div>
