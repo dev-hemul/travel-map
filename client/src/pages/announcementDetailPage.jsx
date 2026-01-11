@@ -33,7 +33,7 @@ export default function AnnouncementDetailPage() {
   const mockOffers = [
     {
       id: 1,
-      title: 'Шлях до успіху: від ідеї до реалізації',
+      title: 'Шлях до успiху: від ідеї до реалізації',
       shortDescription: 'Особистий досвід побудови кар\'єри в IT',
       description: 'Як я почав з нуля та досяг успіху за 5 років. Крок за кроком розповім про свої перемоги та помилки.',
       fullDescription: `Повний опис мого шляху:

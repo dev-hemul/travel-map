@@ -1,17 +1,22 @@
+
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
+
+import AnnouncementDetailPage from './pages/announcementDetailPage.jsx';
 import AnnouncementModal from './components/announcements/announcementModal';
 import MapView from './components/MapView';
 import PrivateRouter from './components/PrivateRouter';
 import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
-import AnnouncementDetailsPage from './pages/announcementDetailPage';
+import AdminTestPage from './pages/adminTestPage.jsx';
 import CreateAnnouncementPage from './pages/createAnnouncementPage';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
+
+
 
 axios.defaults.withCredentials = true;
 
@@ -90,7 +95,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         
         {/* Додано маршрут для сторінки деталей оголошення */}
-        <Route path="/announcement/:id" element={<AnnouncementDetailsPage />} />
+        <Route path="/announcement/:id" element={<AnnouncementDetailPage />} />
 
         <Route element={<PrivateRouter />}>
           <Route
@@ -101,7 +106,14 @@ function App() {
               </SidebarLayout>
             }
           />
-
+            <Route
+            path="/admin-test"
+            element={
+              <SidebarLayout>
+                <AdminTestPage />
+              </SidebarLayout>
+            }
+          />
           <Route
             path="/announcements"
             element={
