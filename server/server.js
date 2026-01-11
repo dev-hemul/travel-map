@@ -10,14 +10,15 @@ import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yaml';
 
-
 // Роути
+import adminRoutes from './routes/admin.js';
 import announcementsRouter from './routes/annoucementsAdding.js';
 import authRouter from './routes/auth.js';
 import getReportsRouter from './routes/main.js';
 import marker from './routes/markerRouter.js';
 import profileEdditRouter from './routes/profileChanges.js';
 import supportRouter from './routes/support.js';
+import usersRoutes from './routes/users.js';
 import weatherRouter from './routes/weather.js';
 
 const app = express();
@@ -81,6 +82,8 @@ app.use('/', marker);
 app.use('/', authRouter);
 app.use('/profile', profileEdditRouter);
 app.use('/', weatherRouter);
+app.use('/', adminRoutes);
+app.use('/', usersRoutes);
 
 // Обробка 404
 app.use((req, res, next) => {

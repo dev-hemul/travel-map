@@ -296,7 +296,7 @@ export default function AnnouncementModal() {
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
-                          Утримуй для прев'ю
+                          Утримуй для превю
                         </motion.button>
                       </div>
                       
