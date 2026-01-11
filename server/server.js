@@ -22,6 +22,7 @@ import supportRouter from './routes/support.js';
 import usersRoutes from './routes/users.js';
 import weatherRouter from './routes/weather.js';
 
+
 const app = express();
 
 // Завантажуємо YAML

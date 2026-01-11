@@ -5,7 +5,6 @@ import React, { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
 
-import AnnouncementDetailPage from './pages/announcementDetailPage.jsx';
 import AnnouncementModal from './components/announcements/announcementModal';
 import MapView from './components/MapView';
 import PrivateRouter from './components/PrivateRouter';
@@ -103,6 +102,14 @@ function App() {
             element={
               <SidebarLayout>
                 <ProfilePage />
+              </SidebarLayout>
+            }
+          />
+            <Route
+            path="/admin-test"
+            element={
+              <SidebarLayout>
+                <AdminTestPage />
               </SidebarLayout>
             }
           />
