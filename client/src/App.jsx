@@ -11,7 +11,6 @@ import PrivateRouter from './components/PrivateRouter';
 import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
 import AdminTestPage from './pages/adminTestPage.jsx';
-import AnnouncementDetailPage from './pages/announcementDetailPage.jsx';
 import CreateAnnouncementPage from './pages/createAnnouncementPage';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
