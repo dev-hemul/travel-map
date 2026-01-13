@@ -1,4 +1,3 @@
-import axios from 'axios';
 import L from 'leaflet';
 import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -12,6 +11,8 @@ import RouletteWidget from './map/RouletteWidget.jsx';
 import SidePanel from './map/SidePanel.jsx';
 import WeatherWidget from './map/WeatherWidget';
 import { useMapMeasure } from '../hooks/useMapMeasure.jsx';
+
+import api from '@/api/api';
 
 const MapView = () => {
   const [uploadProgress, setUploadProgress] = useState({}); // Об'єкт для збереження прогресу завантаження кожного файлу
@@ -51,7 +52,7 @@ const MapView = () => {
   useEffect(() => {
     const fetchMarkers = async () => {
       try {
-        const response = await axios.get('http://localhost:4000/markers');
+        const response = await api.get('/markers');
 
         // Обрабатываем данные с сервера, чтобы они соответствовали нужному формату
         const processedMarkers = response.data.map(marker => ({
@@ -128,7 +129,7 @@ const MapView = () => {
   // Функция для удаления маркера
   const handleDeleteMarker = async markerId => {
     try {
-      await axios.delete(`http://localhost:4000/marker/${markerId}`);
+      await api.delete(`/marker/${markerId}`);
 
       // Удаляем маркер из локального состояния
       setMarkers(prevMarkers => prevMarkers.filter(marker => marker._id !== markerId));
@@ -359,7 +360,7 @@ const MapView = () => {
 
         try {
           // Завантажуємо файл на сервер
-          const response = await axios.post('http://localhost:4000/upload', fileData, {
+          const response = await api.post('/upload', fileData, {
             onUploadProgress: progressEvent => {
               const percentCompleted = Math.round(
                 (progressEvent.loaded * 100) / progressEvent.total
@@ -473,7 +474,7 @@ const MapView = () => {
     };
 
     try {
-      const response = await axios.post('http://localhost:4000/marker', data, {
+      const response = await api.post('/marker', data, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -568,7 +569,7 @@ const MapView = () => {
 
   const handleDeleteMediaFromMarker = async (markerId, url) => {
     try {
-      const resp = await axios.delete(`http://localhost:4000/marker/${markerId}/media`, {
+      const resp = await api.delete(`/marker/${markerId}/media`, {
         data: { url },
         headers: { 'Content-Type': 'application/json' },
         withCredentials: true,

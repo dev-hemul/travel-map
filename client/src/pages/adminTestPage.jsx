@@ -1,5 +1,6 @@
-import axios from 'axios';
 import React, { useState } from 'react';
+
+import api from '@/api/api';
 
 const AdminDebugPage = () => {
   const [me, setMe] = useState(null);
@@ -14,7 +15,7 @@ const AdminDebugPage = () => {
     setError(null);
     setMe(null);
     try {
-      const res = await axios.get('http://localhost:4000/users/me', {
+      const res = await api.get('/users/me', {
         headers: authHeaders(),
         withCredentials: true,
       });
@@ -28,7 +29,7 @@ const AdminDebugPage = () => {
     setError(null);
     setAdminPing(null);
     try {
-      const res = await axios.get('http://localhost:4000/admin/ping', {
+      const res = await api.get('/admin/ping', {
         headers: authHeaders(),
         withCredentials: true,
       });
@@ -44,10 +45,14 @@ const AdminDebugPage = () => {
   return (
     <div className="min-h-screen p-6 bg-gray-50">
       <div className="max-w-3xl mx-auto bg-white rounded-xl shadow p-6 space-y-4">
-        <h1 className="text-xl font-semibold text-[#744ce9]">це сторінка під адмінку, зараз для тесту показування ролей</h1>
+        <h1 className="text-xl font-semibold text-[#744ce9]">
+          це сторінка під адмінку, зараз для тесту показування ролей
+        </h1>
 
         <div className="text-sm p-3 rounded border bg-gray-50">
-          <div><b>Has accessToken:</b> {String(!!localStorage.getItem('accessToken'))}</div>
+          <div>
+            <b>Has accessToken:</b> {String(!!localStorage.getItem('accessToken'))}
+          </div>
         </div>
 
         <div className="flex gap-3 flex-wrap">
@@ -82,10 +87,13 @@ const AdminDebugPage = () => {
         {adminPing && (
           <div className="text-sm p-3 rounded border">
             <div className="font-semibold mb-2">/admin/ping response:</div>
-            <div><b>Status:</b> {String(adminPing.status)}</div>
+            <div>
+              <b>Status:</b> {String(adminPing.status)}
+            </div>
             <pre className="whitespace-pre-wrap">{JSON.stringify(adminPing.data, null, 2)}</pre>
             <div className="mt-2 text-gray-500">
-              Очікування: <b>200</b> якщо admin, <b>403</b> якщо user, <b>401</b> якщо не залогінена.
+              Очікування: <b>200</b> якщо admin, <b>403</b> якщо user, <b>401</b> якщо не
+              залогінена.
             </div>
           </div>
         )}

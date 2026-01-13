@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { motion } from 'framer-motion';
 import React, { useState, useRef, useEffect } from 'react';
 import {
@@ -17,6 +16,8 @@ import {
   FiCheck,
 } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+
+import api from '@/api/api';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -45,8 +46,8 @@ const ProfilePage = () => {
       setWindowWidth(window.innerWidth);
       if (window.innerWidth > 768) setIsMobileMenuOpen(false);
     };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
@@ -102,7 +103,7 @@ const ProfilePage = () => {
         formDataToSend.append(key, value);
       });
       if (avatar) formDataToSend.append('avatar', avatar);
-      const response = await axios.post('http://localhost:4000/profileChanges', formDataToSend, {
+      const response = await api.post('/profileChanges', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -132,22 +133,17 @@ const ProfilePage = () => {
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
-const handleLogout = async () => {
-  localStorage.removeItem('accessToken');
+  const handleLogout = async () => {
+    localStorage.removeItem('accessToken');
 
-  try {
-    await axios.post(
-      'http://localhost:4000/logout',
-      {},
-      { withCredentials: true } 
-    );
-  } catch (error) {
-    console.error('Помилка логауту (ігноруємо, бо клієнт вже вийшов):', error);
-  } finally {
-    navigate('/');
-  }
-};
-
+    try {
+      await api.post('/logout', {}, { withCredentials: true });
+    } catch (error) {
+      console.error('Помилка логауту (ігноруємо, бо клієнт вже вийшов):', error);
+    } finally {
+      navigate('/');
+    }
+  };
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
