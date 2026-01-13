@@ -1,9 +1,6 @@
-
-import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
-
 
 import AnnouncementModal from './components/announcements/announcementModal';
 import MapView from './components/MapView';
@@ -15,9 +12,9 @@ import CreateAnnouncementPage from './pages/createAnnouncementPage';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
 
+import api from '@/api/api';
 
-
-axios.defaults.withCredentials = true;
+api.defaults.withCredentials = true;
 
 function App() {
   const [isReady, setIsReady] = useState(false);
@@ -35,11 +32,7 @@ function App() {
       const now = Date.now() / 1000;
 
       if (decoded.exp < now + 300) {
-        const res = await axios.post(
-          'http://localhost:4000/refresh-token',
-          {},
-          { withCredentials: true }
-        );
+        const res = await api.post('/refresh-token', {}, { withCredentials: true });
         localStorage.setItem('accessToken', res.data.accessToken);
       }
     } catch {
@@ -55,8 +48,8 @@ function App() {
     const interval = setInterval(() => {
       const token = localStorage.getItem('accessToken');
       if (token) {
-        axios
-          .post('http://localhost:4000/refresh-token', {}, { withCredentials: true })
+        api
+          .post('/refresh-token', {}, { withCredentials: true })
           .then(res => localStorage.setItem('accessToken', res.data.accessToken))
           .catch(() => localStorage.removeItem('accessToken'));
       }
@@ -102,7 +95,7 @@ function App() {
               </SidebarLayout>
             }
           />
-            <Route
+          <Route
             path="/admin-test"
             element={
               <SidebarLayout>

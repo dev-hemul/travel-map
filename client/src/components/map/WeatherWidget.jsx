@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useRef, useEffect } from 'react';
 import { FaCloudRain } from 'react-icons/fa';
@@ -11,6 +10,8 @@ import {
   WiThunderstorm,
 } from 'react-icons/wi';
 import { useDebounce } from 'use-debounce';
+
+import api from '@/api/api';
 
 export default function WeatherWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,7 +40,7 @@ export default function WeatherWidget() {
     }
 
     try {
-      const res = await axios.get(`http://localhost:4000/cities`, {
+      const res = await api.get(`/cities`, {
         params: { query },
       });
 
@@ -61,7 +62,7 @@ export default function WeatherWidget() {
     setError('');
 
     try {
-      const res = await axios.get(`http://localhost:4000/weather`, {
+      const res = await api.get(`/weather`, {
         params: { city: cityInput, date: selectedDate },
       });
 

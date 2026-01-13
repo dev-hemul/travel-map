@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   frontend:
-    build: ./frontend
+    build: ./client
     container_name: frontend
     ports:
       - "5173:5173"
@@ -10,6 +10,8 @@ services:
       - backend
     networks:
       - app-network
+    environment:
+      - VITE_API_URL=http://backend:4000
 
   backend:
     build: ./server
