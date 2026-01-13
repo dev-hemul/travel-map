@@ -4,8 +4,6 @@ services:
   frontend:
     build: ./client
     container_name: frontend
-    ports:
-      - "5173:5173"
     depends_on:
       - backend
     networks:
@@ -14,8 +12,6 @@ services:
   backend:
     build: ./server
     container_name: backend
-    ports:
-      - "4000:4000"
     networks:
       - app-network
     env_file:
