@@ -11,6 +11,7 @@ import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
 import AdminTestPage from './pages/adminTestPage.jsx';
 import CreateAnnouncementPage from './pages/createAnnouncementPage';
+import GoogleCallback from './pages/GoogleCallback.jsx';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
 
@@ -88,6 +89,7 @@ function App() {
 
         <Route path="/create-announcement" element={<CreateAnnouncementPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth/google/callback" element={<GoogleCallback />} />
 
         <Route element={<PrivateRouter />}>
           <Route
