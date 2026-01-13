@@ -84,6 +84,11 @@ const LoginPage = () => {
     window.location.href = telegramAuthUrl;
   };
 
+    const handleGoogleLogin = async () => {
+    const { data } = await axios.get('http://localhost:4000/google/url');
+    window.location.href = data.url;
+  };
+
   if (isChecking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F4EFFF] to-[#744ce9]/10 p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12">
@@ -214,6 +219,7 @@ const LoginPage = () => {
 
         <div className="flex justify-center gap-3">
           <button
+          onClick={handleGoogleLogin}
             type="button"
             className="flex items-center justify-center bg-white border border-gray-300 rounded-full shadow-md hover:shadow-xl transition-all duration-200 w-10 h-10 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-12 lg:h-12 xl:w-14 xl:h-14 cursor-pointer"
             aria-label="Увійти через Google"
