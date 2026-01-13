@@ -10,8 +10,8 @@ import User from '../model/user.js';
 const privateKey = readFileSync('keys/privateKey.pem', 'utf8');
 const publicKey = readFileSync('keys/publicKey.pem', 'utf8');
 const alg = 'RS512';
-const lifedur = 10 * 1000;         // 7 днів
-const refreshLifedur = 30 * 1000; // 21 день
+const lifedur = 7 * 24 * 3600 * 1000 * 1000;         // 7 днів
+const refreshLifedur = 21 * 24 * 3600 * 1000 * 1000; // 21 день
 
 if (!privateKey || !publicKey) {
   throw new Error('Ключі не ініціалізовані в файлах keys/');
@@ -91,6 +91,52 @@ export const login = async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Помилка сервера' });
+  }
+};
+
+
+export const googleLogin = async (req, res) => {
+  try {
+    const gUser = req.googleUser;
+
+    const emailNorm = (gUser.email || '').trim().toLowerCase();
+
+    let user = await User.findOne({
+      $or: [{ googleId: gUser.googleId }, { email: emailNorm }],
+    });
+
+    if (!user) {
+      user = new User({
+        username: gUser.name || emailNorm.split('@')[0],
+        email: emailNorm,
+        provider: 'google',
+        googleId: gUser.googleId,
+        roles: ['user'],
+      });
+      await user.save();
+    } else {
+      if (!user.googleId) user.googleId = gUser.googleId;
+      if (!user.provider) user.provider = 'google';
+      if (!Array.isArray(user.roles) || user.roles.length === 0) user.roles = ['user'];
+      await user.save();
+    }
+
+    await Tokens.deleteMany({ userId: user._id });
+
+    const { accessT, refreshT } = await createTokens(user._id);
+
+    res.cookie('refreshToken', refreshT, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: refreshLifedur,
+      path: '/',
+    });
+
+    return res.json({ accessToken: accessT });
+  } catch (err) {
+    console.error('googleLogin controller error:', err);
+    return res.status(500).json({ message: 'Server error' });
   }
 };
 

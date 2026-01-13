@@ -11,6 +11,7 @@ import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
 import AdminTestPage from './pages/adminTestPage.jsx';
 import CreateAnnouncementPage from './pages/createAnnouncementPage';
+import GoogleCallback from './pages/GoogleCallback.jsx';
 import LoginPage from './pages/login/LoginPage';
 import ProfilePage from './pages/profilePage';
 
@@ -33,7 +34,7 @@ function App() {
       const decoded = jwtDecode(token);
       const now = Date.now() / 1000;
 
-      if (decoded.exp < now + 300) {
+      if (decoded.exp < now + 30) {
         const res = await api.post('/refresh-token', {}, { withCredentials: true });
         localStorage.setItem('accessToken', res.data.accessToken);
       }
@@ -54,8 +55,9 @@ function App() {
           .post('/refresh-token', {}, { withCredentials: true })
           .then(res => localStorage.setItem('accessToken', res.data.accessToken))
           .catch(() => localStorage.removeItem('accessToken'));
+          console.warn('check')
       }
-    }, 300000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, []);
@@ -88,6 +90,7 @@ function App() {
 
         <Route path="/create-announcement" element={<CreateAnnouncementPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth/google/callback" element={<GoogleCallback />} />
 
         <Route element={<PrivateRouter />}>
           <Route
