@@ -369,6 +369,9 @@ const MapView = () => {
         try {
           // Завантажуємо файл на сервер
           const response = await api.post('/upload', fileData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
             onUploadProgress: progressEvent => {
               const percentCompleted = Math.round(
                 (progressEvent.loaded * 100) / progressEvent.total
