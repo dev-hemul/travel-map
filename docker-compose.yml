@@ -10,8 +10,6 @@ services:
       - backend
     networks:
       - app-network
-    environment:
-      - VITE_API_URL=http://backend:4000
 
   backend:
     build: ./server
