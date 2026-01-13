@@ -1,3 +1,4 @@
+import axios from 'axios'
 import React, { useState, useEffect } from 'react';
 import { FaGoogle, FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
@@ -82,6 +83,11 @@ const LoginPage = () => {
     const origin = window.location.origin;
     const telegramAuthUrl = `https://oauth.telegram.org/auth?bot_id=${botId}&bot=${botUsername}&origin=${encodeURIComponent(origin)}&request_access=write&redirect_uri=${encodeURIComponent(redirectUri)}`;
     window.location.href = telegramAuthUrl;
+  };
+
+    const handleGoogleLogin = async () => {
+    const { data } = await axios.get('http://localhost:4000/api/google/url');
+    window.location.href = data.url;
   };
 
   if (isChecking) {
@@ -214,6 +220,7 @@ const LoginPage = () => {
 
         <div className="flex justify-center gap-3">
           <button
+          onClick={handleGoogleLogin}
             type="button"
             className="flex items-center justify-center bg-white border border-gray-300 rounded-full shadow-md hover:shadow-xl transition-all duration-200 w-10 h-10 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-12 lg:h-12 xl:w-14 xl:h-14 cursor-pointer"
             aria-label="Увійти через Google"
