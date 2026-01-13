@@ -1,7 +1,8 @@
-import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
+
+import api from '@/api/api';
 
 export default function SupportModal({ onClose }) {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -21,7 +22,7 @@ export default function SupportModal({ onClose }) {
   const handleSubmit = async e => {
     e.preventDefault();
     try {
-      const { status } = await axios.post('http://localhost:4000/support', form);
+      const { status } = await api.post('/support', form);
       if (status === 200) {
         setSubmitted(true);
         setTimeout(() => {
