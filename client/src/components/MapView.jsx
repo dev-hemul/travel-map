@@ -10,6 +10,7 @@ import LayersSwitcher from './map/LayersSwitcher';
 import RouletteWidget from './map/RouletteWidget.jsx';
 import SidePanel from './map/SidePanel.jsx';
 import WeatherWidget from './map/WeatherWidget';
+import markerIconSvg from '../accets/map-marker-32px.svg';
 import { useMapMeasure } from '../hooks/useMapMeasure.jsx';
 
 import api from '@/api/api';
@@ -208,8 +209,15 @@ const MapView = () => {
     }
 
     // Додаємо маркери на карту
+
+    const markerIcon = L.icon({
+      iconUrl: markerIconSvg,
+      iconSize: [32, 32], // размер иконки
+      iconAnchor: [16, 32], // точка "указателя"
+    });
+
     markers.forEach(marker => {
-      L.marker([marker.lat, marker.lng])
+      L.marker([marker.lat, marker.lng], { icon: markerIcon })
         .addTo(map)
         .on('click', () => {
           setSelectedMarkerForPanel(marker);
