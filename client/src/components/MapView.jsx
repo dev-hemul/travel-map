@@ -614,7 +614,7 @@ const MapView = () => {
             <h3 className="text-2xl sm:text-2xl font-semibold text-white leading-tight">
               Створення маркера
             </h3>
-            <p className="text-blue-100 mt-1 text-base">Додайте інформацію про нову локацію</p>
+            <p className="text-blue-100 mt-1 text-base">Додайте інформацію про нову локацію555</p>
 
             <div className="absolute -bottom-4 left-0 right-0 h-8 bg-white rounded-full"></div>
           </div>
