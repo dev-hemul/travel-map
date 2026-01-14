@@ -817,7 +817,7 @@ const MapView = () => {
                         after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full
                         after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"
                   ></div>
-                  <span className="ml-3 text-sm text-gray-700">Приватний маркер</span>
+                  <span className="ml-3 text-sm text-gray-700">Приватний маркер111</span>
                 </label>
               </div>
               {/*Input для завантаження файлів*/}
