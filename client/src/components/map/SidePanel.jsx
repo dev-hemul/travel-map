@@ -145,7 +145,7 @@ const SidePanel = ({ isOpen, onClose, markerData, onEdit, onDelete, onDeleteMedi
               damping: 30,
               stiffness: 300,
             }}
-            className="fixed top-0 right-0 h-full w-80 sm:w-96 bg-white shadow-2xl z-[1001] overflow-y-auto"
+            className="fixed top-0 right-0 h-full w-full sm:w-80 md:w-96 bg-white shadow-2xl z-[1001] overflow-y-auto"
             style={{
               filter: showDeleteConfirm || showShareModal ? 'blur(3px)' : 'none',
               transition: 'filter 0.3s ease-in-out',
@@ -360,13 +360,13 @@ const SidePanel = ({ isOpen, onClose, markerData, onEdit, onDelete, onDeleteMedi
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed top-0 right-0 h-full w-80 sm:w-96 flex items-center justify-center p-4 z-[1002]"
+            className="fixed inset-0 flex items-center justify-center p-4 z-[1002]"
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
-              className="bg-white p-6 rounded-lg shadow-2xl w-full max-w-sm border border-gray-200"
+              className="bg-white p-6 rounded-lg shadow-2xl w-full max-w-sm mx-auto border border-gray-200"
             >
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Видалити маркер?</h3>
               <p className="text-gray-600 mb-6">
@@ -398,13 +398,13 @@ const SidePanel = ({ isOpen, onClose, markerData, onEdit, onDelete, onDeleteMedi
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed top-0 right-0 h-full w-80 sm:w-96 flex items-center justify-center p-4 z-[1002]"
+            className="fixed inset-0 flex items-center justify-center p-4 z-[1002]"
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
-              className="bg-white p-6 rounded-lg shadow-2xl w-full max-w-sm border border-gray-200"
+              className="bg-white p-6 rounded-lg shadow-2xl w-full max-w-sm mx-auto border border-gray-200"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Поділитися маркером</h3>
