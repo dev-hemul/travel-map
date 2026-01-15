@@ -5,7 +5,7 @@ export default function RouletteButton({ isMeasureEnabled, onToggleMeasure }) {
     <div className="relative">
       <button
         onClick={onToggleMeasure}
-        className={`w-full flex items-center justify-center p-2 rounded-full shadow-md border hover:cursor-pointer ${
+        className={`w-full flex items-center justify-center p-2 rounded-full shadow-md border ${
           isMeasureEnabled
             ? 'bg-blue-500 text-white border-blue-600 hover:bg-blue-600'
             : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-100'
