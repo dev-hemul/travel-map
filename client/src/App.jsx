@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 
 import AnnouncementModal from './components/announcements/announcementModal';
 import MapView from './components/MapView';
+import NotFoundPage from './components/NotFoundPage';
 import PrivateRouter from './components/PrivateRouter';
 import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
@@ -144,6 +145,8 @@ function App() {
             }
           />
         </Route>
+
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </div>
   );
