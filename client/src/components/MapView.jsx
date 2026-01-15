@@ -14,6 +14,7 @@ import markerIconSvg from '../accets/map-marker-32px.svg';
 import { useMapMeasure } from '../hooks/useMapMeasure.jsx';
 
 import api from '@/api/api';
+import MyLocation from '@/components/map/MyLocation';
 
 const MapView = () => {
   const [uploadProgress, setUploadProgress] = useState({}); // Об'єкт для збереження прогресу завантаження кожного файлу
@@ -1082,6 +1083,7 @@ const MapView = () => {
           isMeasureEnabled={isMeasureEnabled}
           onToggleMeasure={() => setIsMeasureEnabled(prev => !prev)}
         />
+        <MyLocation mapRef={mapInstance} />
       </div>
     </div>
   );
