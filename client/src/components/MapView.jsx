@@ -603,6 +603,7 @@ const MapView = () => {
       <div ref={mapRef} className="w-auto h-screen">
         <h1 className="sr-only">Мапа</h1>
       </div>
+
       {modalOpen && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-0 md:p-4">
           {/* Оверлей только на мобильных устройствах */}
@@ -613,7 +614,8 @@ const MapView = () => {
 
           {/* Основной контейнер модалки */}
           <div
-            className="absolute inset-0 md:relative md:inset-auto md:top-1/2 md:left-1/2 md:transform md:-translate-x-1/2 md:-translate-y-1/2
+            className="md:absolute md:top-1/2 md:left-1/2 md:transform md:-translate-x-1/2 md:-translate-y-1/2
+        absolute inset-0 md:inset-auto
         bg-gradient-to-br from-white to-gray-50
         border-0 md:border md:border-gray-100 rounded-none md:rounded-2xl
         shadow-none md:shadow-xl z-[1000]
@@ -649,7 +651,7 @@ const MapView = () => {
                       value={formData.title}
                       onChange={handleFormChange}
                       className="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-xl
-    text-gray-800 placeholder:text-base placeholder-gray-400 focus:border-blue-500 focus:ring focus:ring-blue-200
+    text-gray-800 placeholder-gray-400 focus:border-blue-500 focus:ring focus:ring-blue-200
     focus:outline-none hover:border-[#9ca3af] transition duration-200 text-sm sm:text-base"
                       placeholder="Введіть назву маркера"
                       required
@@ -1003,7 +1005,7 @@ const MapView = () => {
                     onChange={handleFormChange}
                     cols="50"
                     rows="2"
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 placeholder-gray-400 focus:border-blue-500"
+                    className="w-full px-4 py-3 rounded-xl border-2 outline-none border-gray-200 placeholder-gray-400 focus:border-blue-500"
                     placeholder="Уведіть опис (необов'язково)"
                   />
                 </div>
@@ -1062,6 +1064,7 @@ const MapView = () => {
           </div>
         </div>
       )}
+
       <SidePanel
         isOpen={sidePanelOpen}
         onClose={handleSidePanelClose}
