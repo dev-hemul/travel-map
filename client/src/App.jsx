@@ -1,6 +1,7 @@
 import { jwtDecode } from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 
 import AnnouncementModal from './components/announcements/announcementModal';
 import MapView from './components/MapView';
@@ -73,6 +74,7 @@ function App() {
 
   return (
     <div className="min-h-screen dark:bg-gray-900 bg-gray-50 relative">
+      <ToastContainer position="top-center" autoClose={2000} />
       <Routes>
         <Route
           path="/"
