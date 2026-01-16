@@ -1,19 +1,29 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useRef } from 'react';
-import { TbLocationFilled } from 'react-icons/tb';
+import { BiSolidNavigation } from 'react-icons/bi';
+import { toast } from 'react-toastify';
 
-import myLocationIcon from '../../accets/my-location.svg';
+import myLocationIcon from '../../assets/my-location.svg';
 
 function MyLocation({ mapRef }) {
   const markerRef = useRef(null);
 
   const locateMe = () => {
-    if (!navigator.geolocation || !mapRef.current) return;
+    if (!navigator.geolocation || !mapRef.current) {
+      toast.error('Геолокація недоступна в цьому браузері');
+      return;
+    }
+
+    toast.info('Визначаємо ваше місцеположення...', {
+      toastId: 'locating',
+    });
 
     navigator.geolocation.getCurrentPosition(
       position => {
-        const { latitude, longitude } = position.coords;
+        toast.dismiss('locating');
+
+        const { latitude, longitude, accuracy } = position.coords;
         const latlng = [latitude, longitude];
 
         mapRef.current.setView(latlng, 15);
@@ -31,23 +41,33 @@ function MyLocation({ mapRef }) {
             .addTo(mapRef.current)
             .bindPopup('Ви тут');
         }
-      },
-      error => {
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            alert('Користувач заборонив доступ до геолокації');
-            break;
-          case error.POSITION_UNAVAILABLE:
-            alert('Місцеположення недоступне');
-            break;
-          case error.TIMEOUT:
-            alert('Час очікування вичерпано');
-            break;
-          default:
-            alert('Невідома помилка');
+
+        if (accuracy > 200) {
+          toast.warning('Низька точність визначення (може використовуватись Wi-Fi)');
         }
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      error => {
+        toast.dismiss('locating');
+
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            toast.error('Немає доступу до геолокації. Перевірте дозволи або налаштування GPS');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            toast.error('Місцеположення недоступне. Спробуйте пізніше');
+            break;
+          case error.TIMEOUT:
+            toast.warning('Не вдалося визначити місцеположення. Спробуйте увімкнути GPS');
+            break;
+          default:
+            toast.error('Сталася невідома помилка геолокації');
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
     );
   };
 
@@ -57,6 +77,7 @@ function MyLocation({ mapRef }) {
     if (markerRef.current) {
       mapRef.current.removeLayer(markerRef.current);
       markerRef.current = null;
+      toast.info('Місцеположення приховано');
     } else {
       locateMe();
     }
@@ -67,7 +88,7 @@ function MyLocation({ mapRef }) {
       className="w-full flex items-center justify-center p-2 bg-white text-gray-700 rounded-full shadow-md hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 border border-gray-200"
       onClick={toggleLocation}
     >
-      <TbLocationFilled className="text-2xl" />
+      <BiSolidNavigation className="text-3xl" />
     </button>
   );
 }
