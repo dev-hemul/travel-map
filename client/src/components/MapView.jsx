@@ -625,7 +625,7 @@ const MapView = () => {
           >
             <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 p-5 sm:p-6 pb-7 rounded-none md:rounded-t-2xl">
               <h3 className="text-2xl sm:text-2xl font-semibold text-white leading-tight">
-                Створення маркера
+                Створення маркера55
               </h3>
               <p className="text-blue-100 mt-1 text-base">Додайте інформацію про нову локацію</p>
 
