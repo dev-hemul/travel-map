@@ -1,4 +1,5 @@
-import axios from 'axios';
+/* eslint-disable react-hooks/exhaustive-deps */
+
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useRef, useEffect } from 'react';
 import { FaCloudRain } from 'react-icons/fa';
@@ -11,6 +12,8 @@ import {
   WiThunderstorm,
 } from 'react-icons/wi';
 import { useDebounce } from 'use-debounce';
+
+import api from '@/api/api';
 
 export default function WeatherWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,10 +42,7 @@ export default function WeatherWidget() {
     }
 
     try {
-      const res = await axios.get(`http://localhost:4000/cities`, {
-        params: { query },
-      });
-
+      const res = await api.get('/cities', { params: { query } });
       if (res.data.status === 'OK') {
         setSuggestions(res.data.predictions);
         setError('');
@@ -61,7 +61,7 @@ export default function WeatherWidget() {
     setError('');
 
     try {
-      const res = await axios.get(`http://localhost:4000/weather`, {
+      const res = await api.get('/weather', {
         params: { city: cityInput, date: selectedDate },
       });
 
@@ -80,44 +80,37 @@ export default function WeatherWidget() {
     }
   };
 
-  // --- Логіка відкриття: запуск запитів ---
-  /* eslint-disable react-hooks/exhaustive-deps */
+  // --- Відкриття ---
   useEffect(() => {
     if (!isOpen) return;
 
     fetchWeather(city, date);
-
-    if (city.length > 1) {
-      fetchCitySuggestions(city);
-    }
+    if (city.length > 1) fetchCitySuggestions(city);
   }, [isOpen]);
 
-  // --- Debounce-пошук міст ---
-  /* eslint-disable react-hooks/exhaustive-deps */
+  // --- Debounce ---
   useEffect(() => {
-    if (!isOpen) return;
-    if (isSelecting) return;
-
+    if (!isOpen || isSelecting) return;
     fetchCitySuggestions(debouncedCity);
   }, [debouncedCity, isOpen]);
 
-  // --- Зміна дати: оновити погоду, але тільки коли відкрито ---
+  // --- Зміна дати ---
   useEffect(() => {
     if (isOpen && city) {
       fetchWeather(city, date);
     }
   }, [date, isOpen]);
 
-  // --- Закриття по кліку поза компонентом ---
+  // --- Клік поза ---
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleClickOutside = event => {
+    const handleClickOutside = e => {
       if (
         menuRef.current &&
-        !menuRef.current.contains(event.target) &&
+        !menuRef.current.contains(e.target) &&
         buttonRef.current &&
-        !buttonRef.current.contains(event.target)
+        !buttonRef.current.contains(e.target)
       ) {
         setIsOpen(false);
       }
@@ -127,7 +120,7 @@ export default function WeatherWidget() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  // --- Обробка індекса погоди ---
+  // --- Дані погоди ---
   const currentIndex = weather?.time?.indexOf(`${date}T${time}`) ?? 0;
   const temperature = weather?.temperature_2m?.[currentIndex];
   const humidity = weather?.relativehumidity_2m?.[currentIndex];
@@ -136,7 +129,6 @@ export default function WeatherWidget() {
   const precipitation = weather?.precipitation_probability?.[currentIndex] ?? 0;
   const cloudcover = weather?.cloudcover?.[currentIndex] ?? 0;
 
-  // --- Іконки ---
   const getWeatherIcon = () => {
     if (precipitation >= 70) return <WiThunderstorm className="text-4xl text-purple-500" />;
     if (precipitation >= 40) return <WiRain className="text-4xl text-blue-500" />;
@@ -151,7 +143,7 @@ export default function WeatherWidget() {
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(prev => !prev)}
-        className="w-full flex items-center justify-center p-2 bg-white text-gray-700 rounded-full shadow-md hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 border border-gray-200"
+        className="flex items-center justify-center p-2 bg-white text-gray-700 rounded-full shadow-md hover:bg-gray-100 active:bg-gray-200 border border-gray-200"
         title="Погода"
       >
         <FaCloudRain className="text-3xl" />
@@ -165,9 +157,28 @@ export default function WeatherWidget() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-full right-0 mt-2 bg-[#F0F4F8] rounded-lg shadow-lg p-4 w-[300px] z-50 flex flex-col gap-4"
+            className="
+              fixed
+              inset-x-0
+              top-20
+
+              sm:absolute
+              sm:top-full
+              sm:right-0
+              sm:left-auto
+
+              bg-[#F0F4F8]
+              rounded-none sm:rounded-lg
+              shadow-lg
+              p-4
+              z-50
+              flex flex-col gap-4
+
+              w-full sm:w-[300px]
+              max-h-[80vh] overflow-y-auto
+            "
           >
-            {/* Пошук міста */}
+            {/* Місто */}
             <div className="relative">
               <input
                 type="text"
@@ -177,7 +188,7 @@ export default function WeatherWidget() {
                   setCity(e.target.value);
                 }}
                 placeholder="Введіть місто"
-                className="w-full p-2 border border-gray-300 rounded-md text-[#1E2939] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-3 sm:p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
               />
 
               <AnimatePresence>
@@ -186,7 +197,7 @@ export default function WeatherWidget() {
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}
-                    className="absolute left-0 right-0 bg-white border border-gray-200 rounded-md mt-1 shadow-lg max-height-48 overflow-y-auto z-50"
+                    className="absolute left-0 right-0 bg-white border rounded-md mt-1 shadow-lg max-h-48 overflow-y-auto z-50"
                   >
                     {suggestions.map(s => (
                       <li
@@ -198,7 +209,7 @@ export default function WeatherWidget() {
                           fetchWeather(s.description, date);
                           setTimeout(() => setIsSelecting(false), 800);
                         }}
-                        className="p-2 hover:bg-blue-100 cursor-pointer text-sm text-gray-700"
+                        className="p-2 hover:bg-blue-100 cursor-pointer text-sm"
                       >
                         {s.description}
                       </li>
@@ -208,19 +219,17 @@ export default function WeatherWidget() {
               </AnimatePresence>
             </div>
 
-            {/* Дата */}
             <input
               type="date"
               value={date}
               onChange={e => setDate(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 sm:p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
             />
 
-            {/* Час */}
             <select
               value={time}
               onChange={e => setTime(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 sm:p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
             >
               {Array.from({ length: 24 }, (_, i) => {
                 const hour = i.toString().padStart(2, '0');
@@ -232,48 +241,23 @@ export default function WeatherWidget() {
               })}
             </select>
 
-            {/* Погода / Помилка / Лоадер */}
             <AnimatePresence mode="wait">
               {loading ? (
-                <motion.div
-                  key="loading"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex flex-col items-center justify-center py-6"
-                >
+                <motion.div className="flex flex-col items-center py-6">
                   <motion.div
                     className="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full"
                     animate={{ rotate: 360 }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 1,
-                      ease: 'linear',
-                    }}
+                    transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
                   />
                   <p className="mt-3 text-sm text-gray-500">Завантаження...</p>
                 </motion.div>
               ) : error ? (
-                <motion.div
-                  key="error"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex flex-col items-center justify-center py-4"
-                >
-                  <p className="text-sm text-red-500 font-medium text-center">{error}</p>
-                </motion.div>
+                <motion.div className="text-center py-4 text-sm text-red-500">{error}</motion.div>
               ) : weather ? (
-                <motion.div
-                  key="weather"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex flex-col gap-2 mt-2 text-[#1E2939]"
-                >
-                  <div className="flex items-center gap-2 justify-center">
+                <motion.div className="flex flex-col gap-2 text-[#1E2939]">
+                  <div className="flex items-center justify-center gap-2">
                     {getWeatherIcon()}
-                    <span className="text-xl font-semibold">{temperature}°C</span>
+                    <span className="text-lg sm:text-xl font-semibold">{temperature}°C</span>
                   </div>
 
                   <div className="flex items-center gap-2">

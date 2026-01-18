@@ -30,7 +30,6 @@ const swaggerPath = path.join(__dirname, 'docs', 'swagger.yaml');
 const file = fs.readFileSync(swaggerPath, 'utf8');
 const swaggerDocument = YAML.parse(file);
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(morgan('dev'));
 
 app.use((req, res, next) => {
@@ -45,7 +44,12 @@ app.use((req, res, next) => {
 // CORS конфігурація
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: [
+      'http://localhost:5173',
+      'http://159.89.102.4',
+      'https://evgeniiviter.website',
+      'http://localhost',
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -75,15 +79,16 @@ app.use('/refresh-token', (req, res, next) => {
 app.use(express.static(path.join(__dirname, '../client')));
 
 // Роути
-app.use('/', announcementsRouter);
-app.use('/', supportRouter);
-app.use('/', getReportsRouter);
-app.use('/', marker);
-app.use('/', authRouter);
-app.use('/profile', profileEdditRouter);
-app.use('/', weatherRouter);
-app.use('/', adminRoutes);
-app.use('/', usersRoutes);
+app.use('/api/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api/', announcementsRouter);
+app.use('/api/', supportRouter);
+app.use('/api/', getReportsRouter);
+app.use('/api/', marker);
+app.use('/api/', authRouter);
+app.use('/api/profile', profileEdditRouter);
+app.use('/api/', weatherRouter);
+app.use('/api/', adminRoutes);
+app.use('/api/', usersRoutes);
 
 // Обробка 404
 app.use((req, res, next) => {

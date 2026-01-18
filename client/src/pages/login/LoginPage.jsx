@@ -1,13 +1,12 @@
-import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { FaGoogle, FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 
 import LoginTelegramButton from './TelegramLoginButton';
+
+import api from '@/api/api';
 import 'react-toastify/dist/ReactToastify.css';
-
-
 
 const LoginPage = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -33,19 +32,17 @@ const LoginPage = () => {
     } else {
       setIsChecking(false);
     }
-  }, [navigate]); 
-  
-  const handleChange = (e) => {
+  }, [navigate]);
+
+  const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     try {
-      const url = isRegister 
-        ? 'http://localhost:4000/register' 
-        : 'http://localhost:4000/login';
-            
+      const url = isRegister ? '/register' : '/login';
+
       const payload = isRegister
         ? {
             username: formData.username.trim(),
@@ -58,17 +55,16 @@ const LoginPage = () => {
             password: formData.password,
           };
 
-      const res = await axios.post(url, payload, { withCredentials: true });
+      const res = await api.post(url, payload, { withCredentials: true });
       localStorage.setItem('accessToken', res.data.accessToken);
       toast.success(isRegister ? 'Реєстрація успішна!' : 'Успішний вхід!');
       setTimeout(() => navigate('/profile'), 1500);
-
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Щось пішло не так';
       toast.error(errorMessage);
     }
   };
-  const handleResetPassword = (e) => {
+  const handleResetPassword = e => {
     e.preventDefault();
 
     if (!resetEmail.trim()) {
@@ -93,7 +89,9 @@ const LoginPage = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F4EFFF] to-[#744ce9]/10 p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12">
         <div className="flex flex-col items-center space-y-3">
           <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16 xl:h-20 xl:w-20 border-4 border-[#744ce9] border-t-transparent"></div>
-          <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-[#744ce9] font-medium">Перевірка...</p>
+          <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-[#744ce9] font-medium">
+            Перевірка...
+          </p>
         </div>
       </div>
     );
@@ -133,7 +131,7 @@ const LoginPage = () => {
               leading-none
               border border-indigo-200 rounded-md
               focus:outline-none focus:ring-2 focus:ring-[#744ce9]"
-              />
+            />
           </div>
         )}
 
@@ -270,7 +268,7 @@ const LoginPage = () => {
                 type="email"
                 placeholder="Email"
                 value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
+                onChange={e => setResetEmail(e.target.value)}
                 className="w-full px-3 py-2 sm:py-2 md:py-3 lg:py-3 xl:py-4 text-sm sm:text-base md:text-lg lg:text-l xl:text-xl border border-indigo-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] placeholder:text-[13px] placeholder:text-gray-500 sm:placeholder:text-[13px] md:placeholder:text-[14px] lg:placeholder:text-[15px] xl:placeholder:text-[16px]"
               />
               <button

@@ -59,7 +59,7 @@ export default [
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
 
       // Import rules
-      'import/no-unresolved': ['error', { ignore: ['@tailwindcss/vite'] }],
+      'import/no-unresolved': ['error', { ignore: ['@', '@tailwindcss/vite'] }],
       'import/order': [
         'warn',
         {
@@ -80,6 +80,10 @@ export default [
       react: { version: 'detect' },
       'import/resolver': {
         node: { extensions: ['.js', '.jsx'] },
+        alias: {
+          map: [['@', './src']], // @ -> src
+          extensions: ['.js', '.jsx'],
+        },
       },
     },
   },

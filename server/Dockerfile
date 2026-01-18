@@ -4,17 +4,17 @@ FROM node:20-alpine
 # Робоча директорія у контейнері
 WORKDIR /app
 
-# Копіюємо залежності
+# Копіюємо package.json та yarn.lock
 COPY package.json yarn.lock ./
 
-# Встановлюємо залежності через yarn
+# Встановлюємо залежності
 RUN yarn install --frozen-lockfile
 
 # Копіюємо весь код проекту
 COPY . .
 
-# Відкриваємо порт для сервера
+# Відкриваємо порт сервера
 EXPOSE 4000
 
-# Старт сервера
-CMD ["yarn", "start"]
+# Команда запуску сервера (вказуємо точний шлях до скрипту)
+CMD ["node", "bin/www.js"]
