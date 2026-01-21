@@ -1,0 +1,103 @@
+diff --git a/client/Dockerfile b/client/Dockerfile
+new file mode 100644
+index 0000000..12f21cd
+--- /dev/null
++++ b/client/Dockerfile
+@@ -0,0 +1,26 @@
++# Використовуємо офіційний Node образ
++FROM node:20-alpine
++
++# Робоча директорія у контейнері
++WORKDIR /app
++
++# Копіюємо залежності
++COPY package.json yarn.lock ./
++
++# Встановлюємо залежності через yarn
++RUN yarn install --frozen-lockfile
++
++# Копіюємо весь код проекту
++COPY . .
++
++# Сборка React-застосунку
++RUN yarn build
++
++# Встановлюємо serve для віддачі сборки
++RUN yarn global add serve
++
++# Запуск застосунку на порту 5173
++CMD ["serve", "-s", "build", "-l", "5173"]
++
++# Відкриваємо порт усередині контейнера
++EXPOSE 5173
+\ No newline at end of file
+diff --git a/client/src/components/announcements/announcementModal.jsx b/client/src/components/announcements/announcementModal.jsx
+index ef59b6b..00753fb 100644
+--- a/client/src/components/announcements/announcementModal.jsx
++++ b/client/src/components/announcements/announcementModal.jsx
+@@ -217,7 +217,7 @@ export default function AnnouncementModal() {
+                 {/* Footer */}
+                 <div className="pt-4 border-t border-gray-200">
+                   <p className="text-center text-sm text-gray-500">
+-                    Всього пропозицій: {announcements.length}
++                    Всьoгo пропозицій: {announcements.length}
+                   </p>
+                 </div>
+               </div>
+diff --git a/docker-compose.yml b/docker-compose.yml
+new file mode 100644
+index 0000000..b9e005d
+--- /dev/null
++++ b/docker-compose.yml
+@@ -0,0 +1,25 @@
++version: "3.9"
++
++services:
++  frontend:
++    build: ./frontend
++    container_name: frontend
++    ports:
++      - "5173:5173"
++    depends_on:
++      - backend
++    networks:
++      - app-network
++
++  backend:
++    build: ./server
++    container_name: backend
++    ports:
++      - "4000:4000"
++    networks:
++      - app-network
++    env_file:
++      - ./server/.env
++
++networks:
++  app-network:
+diff --git a/server/Dockerfile b/server/Dockerfile
+new file mode 100644
+index 0000000..9d15ab9
+--- /dev/null
++++ b/server/Dockerfile
+@@ -0,0 +1,20 @@
++# Використовуємо офіційний Node образ
++FROM node:20-alpine
++
++# Робоча директорія у контейнері
++WORKDIR /app
++
++# Копіюємо залежності
++COPY package.json yarn.lock ./
++
++# Встановлюємо залежності через yarn
++RUN yarn install --frozen-lockfile
++
++# Копіюємо весь код проекту
++COPY . .
++
++# Відкриваємо порт для сервера
++EXPOSE 4000
++
++# Старт сервера
++CMD ["yarn", "start"]
