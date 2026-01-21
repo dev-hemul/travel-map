@@ -687,7 +687,7 @@ export default function AnnouncementDetailPage() {
                       whileTap={{ scale: 0.95 }}
                       className="px-4 py-2 md:px-6 md:py-3 bg-[#744ce9] text-white rounded-xl font-medium cursor-pointer text-sm md:text-base"
                     >
-                      Забронювати
+                      Зaбронювати
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.05 }}
