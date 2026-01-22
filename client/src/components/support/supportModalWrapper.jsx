@@ -13,7 +13,7 @@ export default function SupportModalWrapper() {
     setShowSupport(prev => !prev);
   };
 
-  const telegramLink = 'https://t.me/TravelMapSupport_bot'; // Замените на вашу ссылку
+  const telegramLink = 'https://t.me/dobrotvorcev'; // Замените на вашу ссылку
 
   return (
     <>

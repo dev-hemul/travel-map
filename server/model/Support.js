@@ -1,18 +1,27 @@
-import { Schema, model } from 'mongoose';
+import mongoose from 'mongoose';
 
-const supportSchema = new Schema({
-  userId: { type: Number },  // Додано ID користувача з Telegram
-  username: String,                         // Юзернейм 
-  name: String,                             // Ім'я користувача
-  email: String,                            // Email 
-  subject: { type: String, required: true },// Тема повідомлення
-  message: { type: String, required: true },// Текст скарги/питання
-  date: { type: Date, default: Date.now },  // Дата створення
-  status: {                                 // Статус обробки
-    type: String,
-    default: 'pending',                     // pending / resolved
-    enum: ['pending', 'resolved'],          // Обмеження значень
+const supportSchema = new mongoose.Schema({
+  userId: {
+    type: Number,
+    required: true,
   },
-}, { collection: 'user-report' });          // Явно вказуємо колекцію
+  username: String,
+  name: String,
+  subject: String,
+  message: String,
+  status: {
+    type: String,
+    enum: ['pending', 'in_progress', 'resolved'],
+    default: 'pending',
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+  messageId: Number,
+  resolvedBy: String,
+  resolvedAt: Date,
+});
 
-export default model('Support', supportSchema);
+const Support = mongoose.model('Support', supportSchema);
+export default Support;
