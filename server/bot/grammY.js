@@ -6,38 +6,36 @@ import 'dotenv/config';
 
 const DB_URL = process.env.DB_URL;
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const ADMIN_ID = Number(process.env.ADMIN_ID);
+const BOT_ADMIN_ID = Number(process.env.BOT_ADMIN_ID);
+const GROUP_ID = process.env.GROUP_ID;
 
-if (!BOT_TOKEN) throw new Error('BOT_TOKEN не встановлено в .env');
-if (!ADMIN_ID) throw new Error('ADMIN_ID не встановлено в .env');
-if (!DB_URL) throw new Error('DB_URL не встановлено в .env');
+if (!BOT_TOKEN) throw new Error('BOT_TOKEN не встановлено');
+if (!BOT_ADMIN_ID) throw new Error('BOT_ADMIN_ID не встановлено');
+if (!DB_URL) throw new Error('DB_URL не встановлено');
+if (!GROUP_ID) throw new Error('GROUP_ID не встановлено');
 
-// Підключення до MongoDB
 mongoose
   .connect(DB_URL)
   .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .catch(err => console.error('MongoDB error:', err));
 
-// Ініціалізація бота
 const bot = new Bot(BOT_TOKEN);
-
-// Об'єкти для зберігання станів
 const userState = {};
 const operatorChats = {};
 const activeComplaints = {};
-const COOLDOWN_MS = 5 * 60 * 1000; // 5 хвилин
+const COOLDOWN_MS = 5 * 60 * 1000;
 const lastComplaintTime = {};
 const queue = [];
+const assignedOperators = {};
 
-// Встановлення команд бота
 bot.api.setMyCommands([
   { command: 'start', description: 'Запуск бота' },
-  { command: 'complaints', description: 'Переглянути скарги (оператор)' },
-  { command: 'contact', description: "Зв'язатися з оператором" },
+  { command: 'complaints', description: 'Скарги (оператор)' },
+  { command: 'contact', description: "Зв'язатися" },
   { command: 'help', description: 'Допомога' },
 ]);
 
-// Обробка /start
+// Команди
 bot.command('start', async ctx => {
   await ctx.reply('Привіт! Я бот підтримки, чим можу допомогти?', {
     reply_markup: new InlineKeyboard()
@@ -47,139 +45,368 @@ bot.command('start', async ctx => {
   });
 });
 
-// Обробка /help
 bot.command('help', async ctx => {
-  await ctx.reply(
-    `Команди бота:
+  await ctx.reply(`Команди бота:
 /start — Запуск бота
-/complaints — Переглянути скарги (оператор)
+/complaints — Скарги (оператор)
 /contact — Зв'язатися з оператором
-/help — Допомога`
-  );
+/help — Допомога`);
 });
 
-// Обробка /complaints (тільки для адміна)
 bot.command('complaints', async ctx => {
-  if (ctx.from.id !== ADMIN_ID) {
-    return ctx.reply('Ця команда доступна лише оператору.');
-  }
-
+  if (ctx.from.id !== BOT_ADMIN_ID) return ctx.reply('Тільки для оператора.');
   const complaints = await Support.find({ status: 'pending' }).sort({ date: -1 }).limit(5);
-
-  if (complaints.length === 0) {
-    return ctx.reply('Поки немає нових скарг.');
-  }
+  if (complaints.length === 0) return ctx.reply('Немає нових скарг.');
 
   for (const c of complaints) {
-    const text =
-      `📬 Нова скарга:\n\n` +
-      `📌 Тема: ${c.subject}\n` +
-      `👤 Від: ${c.name || 'користувача'}${c.username ? ` (@${c.username})` : ''}\n` +
-      `🆔 ID: ${c.userId}\n` +
-      `📅 Дата: ${c.date.toLocaleString()}`;
-
+    const operatorInfo = assignedOperators[c._id]
+      ? `👤 Займається: ${assignedOperators[c._id].operatorName}`
+      : '👤 Займається: ❌ Ніхто';
+    const text = `📬 Нова скарга:\n\n📌 Тема: ${c.subject}\n👤 Від: ${c.name || 'користувача'}${c.username ? ` (@${c.username})` : ''}\n🆔 ID: ${c.userId}\n${operatorInfo}\n📅 Дата: ${c.date.toLocaleString()}`;
     activeComplaints[c._id] = { userId: c.userId, complaintId: c._id };
 
-    await ctx.reply(text, {
-      reply_markup: new InlineKeyboard()
-        .text('Відповісти', `start_chat_${c._id}`)
-        .text('Вирішити', `resolve_${c._id}`),
-    });
+    const keyboard = new InlineKeyboard();
+    if (assignedOperators[c._id] && assignedOperators[c._id].operatorId === ctx.from.id) {
+      keyboard.text('💬 Чат', `start_chat_${c._id}`).row().text('✅ Вирішити', `resolve_${c._id}`);
+    } else if (!assignedOperators[c._id]) {
+      keyboard
+        .text('Взяти в роботу', `take_complaint_${c._id}`)
+        .row()
+        .text('💬 Чат', `start_chat_${c._id}`)
+        .row()
+        .text('✅ Вирішити', `resolve_${c._id}`);
+    } else {
+      keyboard.text('💬 Чат', `start_chat_${c._id}`);
+    }
+    await ctx.reply(text, { reply_markup: keyboard });
   }
 });
 
-// Кнопка скасування
+// Callback-и
 bot.callbackQuery('cancel', async ctx => {
   const userId = ctx.from.id;
   delete userState[userId];
   if (operatorChats[userId]) delete operatorChats[userId];
   await ctx.reply('Дію скасовано.', { reply_markup: { remove_keyboard: true } });
+  await ctx.answerCallbackQuery();
 });
 
-// Відправка скарги
 bot.callbackQuery('send_complaint', async ctx => {
   const userId = ctx.from.id;
-
-  // Перевірка кулдауну
   const lastTime = lastComplaintTime[userId] || 0;
   const now = Date.now();
   if (now - lastTime < COOLDOWN_MS) {
     const waitSec = Math.ceil((COOLDOWN_MS - (now - lastTime)) / 1000);
-    await ctx.reply(`Будь ласка, зачекайте ${waitSec} секунд перед наступною скаргою.`);
+    await ctx.reply(`Зачекайте ${waitSec} секунд перед наступною скаргою.`);
     return;
   }
-
   userState[userId] = { step: 'choose_category', data: {} };
-
   await ctx.reply('Оберіть тип проблеми:', {
     reply_markup: new InlineKeyboard()
-      .text('🧍 Проблема з профілем', 'cat_profile')
+      .text('🧍 Профіль', 'cat_profile')
       .row()
-      .text('📍 Проблема з мітками на карті', 'cat_marker')
+      .text('📍 Мітки', 'cat_marker')
       .row()
-      .text('👥 Проблема з друзями', 'cat_friends')
+      .text('👥 Друзі', 'cat_friends')
       .row()
       .text('📝 Інше', 'cat_other')
       .row()
       .text('❌ Скасувати', 'cancel'),
   });
+  await ctx.answerCallbackQuery();
 });
 
-// Вирішення скарги (оператор)
-bot.callbackQuery(/^resolve_(.+)$/, async ctx => {
-  if (ctx.from.id !== ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
-
+// Оператор бере скаргу
+bot.callbackQuery(/^take_complaint_(.+)$/, async ctx => {
   const complaintId = ctx.match[1];
-  await Support.findByIdAndUpdate(complaintId, { status: 'resolved' });
+  const operatorId = ctx.from.id;
+  const operatorName = ctx.from.first_name || 'Оператор';
 
-  // Видаляємо з активних скарг
-  for (const userId in activeComplaints) {
-    if (activeComplaints[userId] === complaintId) {
-      delete activeComplaints[userId];
-      try {
-        await bot.api.sendMessage(userId, '✅ Ваша скарга була успішно вирішена оператором.');
-      } catch (e) {
-        console.log('Не вдалось повідомити користувача:', e.message);
-      }
-      break;
-    }
-  }
-
-  await ctx.reply('Скаргу позначено як вирішену.');
-  await ctx.deleteMessage();
-});
-
-// Вибір категорії скарги
-bot.callbackQuery(/^cat_/, async ctx => {
-  const userId = ctx.from.id;
-  const state = userState[userId];
-
-  if (!state || state.step !== 'choose_category') {
-    await ctx.reply('Будь ласка, почніть спочатку командою /start');
+  if (assignedOperators[complaintId]) {
+    await ctx.answerCallbackQuery({
+      text: `Цей репорт вже займає ${assignedOperators[complaintId].operatorName}`,
+    });
     return;
   }
 
-  const choice = ctx.callbackQuery.data.split('_')[1];
+  assignedOperators[complaintId] = { operatorId, operatorName, assignedAt: new Date() };
+  await Support.findByIdAndUpdate(complaintId, { status: 'in_progress' });
 
+  try {
+    const complaint = await Support.findById(complaintId);
+    if (complaint && complaint.messageId) {
+      await bot.api.editMessageText(
+        GROUP_ID,
+        complaint.messageId,
+        `🟡 СКАРГА #${complaintId} (В РОБОТІ):\n\n📌 Тема: ${complaint.subject}\n👤 Від: ${complaint.name || 'користувача'}${complaint.username ? ` (@${complaint.username})` : ''}\n🆔 ID: ${complaint.userId}\n👤 Займається: 🔵 ${operatorName}\n📅 Дата: ${complaint.date.toLocaleString()}\n⏱️ Взято: ${new Date().toLocaleString()}\n\n✉️ Повідомлення:\n${complaint.message}`,
+        {
+          reply_markup: new InlineKeyboard()
+            .text('💬 Чат', `start_chat_from_group_${complaintId}`)
+            .text('✅ Вирішити', `resolve_group_${complaintId}`),
+        }
+      );
+    }
+  } catch (error) {
+    console.error('Помилка оновлення в групі:', error);
+  }
+
+  await ctx.answerCallbackQuery({ text: 'Ви взяли цей репорт у роботу' });
+
+  try {
+    const complaint = await Support.findById(complaintId);
+    if (complaint) {
+      await bot.api.sendMessage(
+        operatorId,
+        `🟡 Ви взяли скаргу #${complaintId}:\n\n📌 Тема: ${complaint.subject}\n👤 Від: ${complaint.name || 'користувача'}${complaint.username ? ` (@${complaint.username})` : ''}\n🆔 ID: ${complaint.userId}\n📅 Дата: ${complaint.date.toLocaleString()}\n\n✉️ Повідомлення:\n${complaint.message}`,
+        {
+          reply_markup: new InlineKeyboard()
+            .text('💬 Чат', `start_chat_${complaintId}`)
+            .row()
+            .text('✅ Вирішити', `resolve_${complaintId}`),
+        }
+      );
+    }
+  } catch (error) {
+    console.error('Не вдалося відправити оператору:', error);
+  }
+
+  try {
+    const complaintData = activeComplaints[complaintId];
+    if (complaintData) {
+      await bot.api.sendMessage(
+        complaintData.userId,
+        `👤 Оператор ${operatorName} взяв вашу скаргу #${complaintId} у роботу.`
+      );
+    }
+  } catch (error) {
+    console.error('Не вдалося повідомити користувача:', error);
+  }
+});
+
+// Чат з групи
+bot.callbackQuery(/^start_chat_from_group_(.+)$/, async ctx => {
+  const complaintId = ctx.match[1];
+  const operatorId = ctx.from.id;
+  const operatorName = ctx.from.first_name || 'Оператор';
+
+  const complaint = await Support.findById(complaintId);
+  if (!complaint || (complaint.status !== 'pending' && complaint.status !== 'in_progress')) {
+    await ctx.answerCallbackQuery({ text: 'Скарга не знайдена або вирішена' });
+    return;
+  }
+
+  if (!assignedOperators[complaintId]) {
+    assignedOperators[complaintId] = { operatorId, operatorName, assignedAt: new Date() };
+    await Support.findByIdAndUpdate(complaintId, { status: 'in_progress' });
+
+    try {
+      if (complaint.messageId) {
+        await bot.api.editMessageText(
+          GROUP_ID,
+          complaint.messageId,
+          `🟡 СКАРГА #${complaintId} (В РОБОТІ):\n\n📌 Тема: ${complaint.subject}\n👤 Від: ${complaint.name || 'користувача'}${complaint.username ? ` (@${complaint.username})` : ''}\n🆔 ID: ${complaint.userId}\n👤 Займається: 🔵 ${operatorName}\n📅 Дата: ${complaint.date.toLocaleString()}\n⏱️ Взято: ${new Date().toLocaleString()}\n\n✉️ Повідомлення:\n${complaint.message}`,
+          {
+            reply_markup: new InlineKeyboard()
+              .text('💬 Чат', `start_chat_from_group_${complaintId}`)
+              .text('✅ Вирішити', `resolve_group_${complaintId}`),
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Помилка оновлення в групі:', error);
+    }
+  }
+
+  try {
+    await bot.api.sendMessage(
+      operatorId,
+      `🟡 Перехід до чату по скарзі #${complaintId}:\n\n📌 Тема: ${complaint.subject}\n👤 Від: ${complaint.name || 'користувача'}${complaint.username ? ` (@${complaint.username})` : ''}\n🆔 ID: ${complaint.userId}\n📅 Дата: ${complaint.date.toLocaleString()}\n\n✉️ Повідомлення:\n${complaint.message}`,
+      {
+        reply_markup: new InlineKeyboard()
+          .text('💬 Почати чат', `start_chat_${complaintId}`)
+          .row()
+          .text('✅ Вирішити', `resolve_${complaintId}`),
+      }
+    );
+    await ctx.answerCallbackQuery({ text: 'Перехід до приватного чату з ботом' });
+  } catch (error) {
+    console.error('Не вдалося відправити оператору:', error);
+    await ctx.answerCallbackQuery({ text: 'Помилка. Спробуйте пізніше.' });
+  }
+});
+
+// Початок чату
+bot.callbackQuery(/^start_chat_(.+)$/, async ctx => {
+  const complaintId = ctx.match[1];
+  const operatorId = ctx.from.id;
+  const operatorName = ctx.from.first_name || 'Оператор';
+
+  let complaintData = activeComplaints[complaintId];
+  if (!complaintData) {
+    const complaint = await Support.findById(complaintId);
+    if (!complaint || (complaint.status !== 'pending' && complaint.status !== 'in_progress')) {
+      await ctx.answerCallbackQuery({ text: 'Скарга не знайдена або вирішена' });
+      return;
+    }
+    complaintData = { userId: complaint.userId, complaintId: complaint._id };
+    activeComplaints[complaintId] = complaintData;
+  }
+
+  if (!assignedOperators[complaintId]) {
+    assignedOperators[complaintId] = { operatorId, operatorName, assignedAt: new Date() };
+    await Support.findByIdAndUpdate(complaintId, { status: 'in_progress' });
+
+    try {
+      const complaint = await Support.findById(complaintId);
+      if (complaint && complaint.messageId) {
+        await bot.api.editMessageText(
+          GROUP_ID,
+          complaint.messageId,
+          `🟡 СКАРГА #${complaintId} (В РОБОТІ):\n\n📌 Тема: ${complaint.subject}\n👤 Від: ${complaint.name || 'користувача'}${complaint.username ? ` (@${complaint.username})` : ''}\n🆔 ID: ${complaint.userId}\n👤 Займається: 🔵 ${operatorName}\n📅 Дата: ${complaint.date.toLocaleString()}\n⏱️ Взято: ${new Date().toLocaleString()}\n\n✉️ Повідомлення:\n${complaint.message}`,
+          {
+            reply_markup: new InlineKeyboard()
+              .text('💬 Чат', `start_chat_from_group_${complaintId}`)
+              .text('✅ Вирішити', `resolve_group_${complaintId}`),
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Помилка оновлення в групі:', error);
+    }
+  }
+
+  operatorChats[operatorId] = complaintData.userId;
+  operatorChats[complaintData.userId] = operatorId;
+  userState[operatorId] = { step: 'replying', targetUserId: complaintData.userId };
+
+  try {
+    await bot.api.sendMessage(
+      complaintData.userId,
+      `💬 Оператор ${operatorName} приєднався до чату по скарзі #${complaintId}.`
+    );
+  } catch (e) {
+    console.log('Не вдалося повідомити користувача:', e.message);
+  }
+
+  await ctx.reply(
+    `💬 Чат з користувачем ${complaintData.userId} по скарзі #${complaintId}.\n\nТепер ви можете спілкуватися тут.`,
+    { reply_markup: new InlineKeyboard().text('✅ Завершити чат', `end_chat_${complaintId}`) }
+  );
+
+  try {
+    await ctx.deleteMessage();
+  } catch (e) {
+    console.log('Не вдалося видалити повідомлення:', e.message);
+  }
+  await ctx.answerCallbackQuery();
+});
+
+// Вирішення скарги
+bot.callbackQuery(/^resolve_(.+)$/, async ctx => {
+  const complaintId = ctx.match[1];
+  const operatorId = ctx.from.id;
+  const operatorName = ctx.from.first_name || 'Оператор';
+
+  if (assignedOperators[complaintId] && assignedOperators[complaintId].operatorId !== operatorId) {
+    await ctx.answerCallbackQuery({
+      text: `Цю скаргу займає ${assignedOperators[complaintId].operatorName}. Тільки він може її вирішити.`,
+    });
+    return;
+  }
+
+  await handleResolveComplaint(ctx, complaintId, operatorName);
+  await ctx.answerCallbackQuery();
+});
+
+bot.callbackQuery(/^resolve_group_(.+)$/, async ctx => {
+  const complaintId = ctx.match[1];
+  const operatorId = ctx.from.id;
+  const operatorName = ctx.from.first_name || 'Оператор';
+
+  if (assignedOperators[complaintId] && assignedOperators[complaintId].operatorId !== operatorId) {
+    await ctx.answerCallbackQuery({
+      text: `Цю скаргу займає ${assignedOperators[complaintId].operatorName}. Тільки він може її вирішити.`,
+    });
+    return;
+  }
+
+  await handleResolveComplaint(ctx, complaintId, operatorName);
+  await ctx.answerCallbackQuery();
+});
+
+async function handleResolveComplaint(ctx, complaintId, operatorName) {
+  await Support.findByIdAndUpdate(complaintId, {
+    status: 'resolved',
+    resolvedBy: operatorName,
+    resolvedAt: new Date(),
+  });
+
+  if (activeComplaints[complaintId]) {
+    const complaintData = activeComplaints[complaintId];
+    delete activeComplaints[complaintId];
+    try {
+      await bot.api.sendMessage(
+        complaintData.userId,
+        `✅ Ваша скарга #${complaintId} вирішена оператором ${operatorName}.`
+      );
+    } catch (e) {
+      console.log('Не вдалось повідомити користувача:', e.message);
+    }
+  }
+
+  delete assignedOperators[complaintId];
+
+  try {
+    const complaint = await Support.findById(complaintId);
+    if (complaint && complaint.messageId) {
+      await bot.api.editMessageText(
+        GROUP_ID,
+        complaint.messageId,
+        `✅ СКАРГА #${complaintId} ВИРІШЕНА:\n\n📌 Тема: ${complaint.subject}\n👤 Від: ${complaint.name || 'користувача'}${complaint.username ? ` (@${complaint.username})` : ''}\n🆔 ID: ${complaint.userId}\n👤 Вирішив: ${operatorName}\n📅 Створено: ${complaint.date.toLocaleString()}\n📅 Вирішено: ${new Date().toLocaleString()}\n\n✉️ Повідомлення:\n${complaint.message}`,
+        { reply_markup: new InlineKeyboard() }
+      );
+    }
+  } catch (error) {
+    console.error('Помилка оновлення в групі:', error);
+  }
+
+  await ctx.reply('Скаргу позначено як вирішену.');
+  try {
+    await ctx.deleteMessage();
+  } catch (e) {
+    console.log('Не вдалося видалити повідомлення:', e.message);
+  }
+}
+
+// Категорії скарг
+bot.callbackQuery(/^cat_/, async ctx => {
+  const userId = ctx.from.id;
+  const state = userState[userId];
+  if (!state || state.step !== 'choose_category') {
+    await ctx.reply('Почніть спочатку командою /start');
+    return;
+  }
+  const choice = ctx.callbackQuery.data.split('_')[1];
   const typeMap = {
     profile: 'Проблема з профілем',
-    marker: 'Проблема з мітками на карті',
+    marker: 'Проблема з мітками',
     friends: 'Проблема з друзями',
     other: 'Інша проблема',
   };
 
   if (choice === 'other') {
     state.step = 'waiting_text';
-    await ctx.reply('Будь ласка, опишіть свою проблему детальніше');
+    await ctx.reply('Опишіть свою проблему детальніше');
     return;
   }
 
   await saveComplaintAndNotify(ctx, typeMap[choice], typeMap[choice]);
   lastComplaintTime[userId] = Date.now();
   delete userState[userId];
+  await ctx.answerCallbackQuery();
 });
 
-// Обробка тексту від користувача
+// Обробка повідомлень
 bot.on('message:text', async ctx => {
   const userId = ctx.from.id;
   const state = userState[userId];
@@ -191,49 +418,46 @@ bot.on('message:text', async ctx => {
     return;
   }
 
-  // Якщо це оператор (ADMIN_ID) і він у режимі відповіді
-  if (userId === ADMIN_ID && state && state.step === 'replying') {
-    const targetUserId = state.targetUserId;
+  if (userId === BOT_ADMIN_ID && state && state.step === 'replying') {
     const text = ctx.message.text;
     try {
-      await bot.api.sendMessage(targetUserId, `📩 Відповідь від оператора:\n\n${text}`);
+      await bot.api.sendMessage(state.targetUserId, `📩 Відповідь від оператора:\n\n${text}`);
       await ctx.reply('Повідомлення відправлено користувачу.');
     } catch {
-      await ctx.reply(
-        'Не вдалося відправити повідомлення користувачу. Можливо, він заблокував бота.'
-      );
+      await ctx.reply('Не вдалося відправити повідомлення користувачу.');
     }
     return;
   }
 
-  // Якщо це оператор (ADMIN_ID) і він у чаті з користувачем
-  if (userId === ADMIN_ID && operatorChats[ADMIN_ID]) {
-    const targetUserId = operatorChats[ADMIN_ID];
+  if (operatorChats[userId]) {
+    const targetUserId = operatorChats[userId];
     try {
       await bot.api.sendMessage(targetUserId, `📩 Оператор: ${ctx.message.text}`);
-      await ctx.reply('Ваше повідомлення надіслано користувачу.');
+      await ctx.reply('✅ Повідомлення відправлено користувачу.');
     } catch {
       await ctx.reply('Не вдалося надіслати повідомлення користувачу.');
     }
     return;
   }
 
-  // Якщо це звичайний користувач і він у чаті з оператором
-  if (operatorChats[userId] === ADMIN_ID) {
+  if (operatorChats[userId]) {
     try {
-      await bot.api.sendMessage(ADMIN_ID, `📞 Користувач (ID: ${userId}): ${ctx.message.text}`);
-      await ctx.reply('Ваше повідомлення надіслано оператору.');
+      await bot.api.sendMessage(
+        operatorChats[userId],
+        `📞 Користувач (ID: ${userId}): ${ctx.message.text}`
+      );
+      await ctx.reply('✅ Ваше повідомлення надіслано оператору.');
     } catch {
       await ctx.reply('Не вдалося надіслати повідомлення оператору.');
     }
     return;
   }
 });
-// Збереження скарги та сповіщення оператора
+
+// Збереження скарги
 async function saveComplaintAndNotify(ctx, subject, message = '') {
   try {
     const finalMessage = message || subject;
-
     const complaint = new Support({
       userId: ctx.from.id,
       username: ctx.from.username || '',
@@ -243,106 +467,126 @@ async function saveComplaintAndNotify(ctx, subject, message = '') {
     });
 
     const savedComplaint = await complaint.save();
-
-    activeComplaints[savedComplaint._id] = {
-      userId: ctx.from.id,
-      complaintId: savedComplaint._id,
-    };
+    activeComplaints[savedComplaint._id] = { userId: ctx.from.id, complaintId: savedComplaint._id };
 
     await ctx.reply('Дякуємо! Ваше повідомлення передано оператору ✅', {
       reply_markup: { remove_keyboard: true },
     });
 
-    const adminMessage =
-      `📬 Нова скарга:\n\n` +
-      `📌 Тема: ${subject}\n` +
-      `👤 Від: ${ctx.from.first_name}${ctx.from.username ? ` (@${ctx.from.username})` : ''}\n` +
-      `🆔 ID: ${ctx.from.id}\n\n` +
-      `✉️ Повідомлення:\n${finalMessage}`;
+    const groupMessage = `📬 НОВА СКАРГА #${savedComplaint._id}:\n\n📌 Тема: ${subject}\n👤 Від: ${ctx.from.first_name}${ctx.from.username ? ` (@${ctx.from.username})` : ''}\n🆔 ID: ${ctx.from.id}\n👤 Займається: 🔴 ОЧІКУЄ\n📅 Дата: ${new Date().toLocaleString()}\n\n✉️ Повідомлення:\n${finalMessage}`;
 
-    await bot.api.sendMessage(ADMIN_ID, adminMessage, {
+    try {
+      const sentMessage = await bot.api.sendMessage(GROUP_ID, groupMessage, {
+        reply_markup: new InlineKeyboard()
+          .text('Взяти в роботу', `take_complaint_${savedComplaint._id}`)
+          .text('Вирішити', `resolve_group_${savedComplaint._id}`),
+      });
+      savedComplaint.messageId = sentMessage.message_id;
+      await savedComplaint.save();
+    } catch (error) {
+      console.error('Не вдалося відправити в групу:', error);
+    }
+
+    const adminMessage = `📬 Нова скарга #${savedComplaint._id}:\n\n📌 Тема: ${subject}\n👤 Від: ${ctx.from.first_name}${ctx.from.username ? ` (@${ctx.from.username})` : ''}\n🆔 ID: ${ctx.from.id}\n\n✉️ Повідомлення:\n${finalMessage}`;
+
+    await bot.api.sendMessage(BOT_ADMIN_ID, adminMessage, {
       reply_markup: new InlineKeyboard()
-        .text('Відповісти', `start_chat_${savedComplaint._id}`)
-        .text('Вирішити', `resolve_${savedComplaint._id}`),
+        .text('Взяти в роботу', `take_complaint_${savedComplaint._id}`)
+        .row()
+        .text('💬 Чат', `start_chat_${savedComplaint._id}`)
+        .row()
+        .text('✅ Вирішити', `resolve_${savedComplaint._id}`),
     });
   } catch (e) {
     console.error('Помилка збереження скарги:', e);
-    await ctx.reply('Виникла помилка при збереженні скарги. Спробуйте пізніше.');
+    await ctx.reply('Виникла помилка. Спробуйте пізніше.');
   }
 }
+
+// Завершення чату
+bot.callbackQuery(/^end_chat_(.+)$/, async ctx => {
+  const operatorId = ctx.from.id;
+
+  if (operatorChats[operatorId]) {
+    const targetUserId = operatorChats[operatorId];
+    try {
+      await bot.api.sendMessage(targetUserId, '✅ Чат з оператором завершено.');
+    } catch (e) {
+      console.log('Не вдалось повідомити користувача:', e.message);
+    }
+    delete operatorChats[operatorId];
+    delete operatorChats[targetUserId];
+  }
+
+  delete userState[operatorId];
+  await ctx.reply('💬 Чат завершено.');
+  try {
+    await ctx.deleteMessage();
+  } catch (e) {
+    console.log('Не вдалося видалити повідомлення:', e.message);
+  }
+  await ctx.answerCallbackQuery();
+});
+
 // Зв'язок з оператором
 bot.callbackQuery('contact_operator', async ctx => {
   const userId = ctx.from.id;
-
-  // Перевірка чи користувач вже в черзі
-  const inQueue = queue.some(user => user.id === userId);
-  if (inQueue) {
-    return ctx.reply("Ви вже в черзі на з'єднання з оператором.");
+  if (queue.some(user => user.id === userId)) {
+    await ctx.answerCallbackQuery();
+    return ctx.reply('Ви вже в черзі.');
   }
-
-  // Перевірка чи користувач вже в чаті з оператором
   if (operatorChats[userId]) {
+    await ctx.answerCallbackQuery();
     return ctx.reply('Ви вже спілкуєтеся з оператором.');
   }
 
-  // Додаємо користувача в чергу
   queue.push({
     id: userId,
     name: ctx.from.first_name || 'Користувач',
     username: ctx.from.username,
   });
+  await ctx.reply('⌛ Вас додано в чергу. Очікуйте.');
 
-  await ctx.reply(
-    "⌛ Вас додано в чергу на з'єднання з оператором. Очікуйте, скоро з вами зв'яжуться."
-  );
-
-  // Сповіщаємо оператора про нового користувача в черзі
   try {
     await bot.api.sendMessage(
-      ADMIN_ID,
-      `🆕 Новий запит в черзі від ${ctx.from.first_name}${ctx.from.username ? ` (@${ctx.from.username})` : ''} [ID: ${userId}]\n\nЗагальна кількість в черзі: ${queue.length}`,
-      {
-        reply_markup: new InlineKeyboard().text('Переглянути чергу', 'view_queue'),
-      }
+      BOT_ADMIN_ID,
+      `🆕 Новий запит в черзі від ${ctx.from.first_name}${ctx.from.username ? ` (@${ctx.from.username})` : ''} [ID: ${userId}]\n\nВ черзі: ${queue.length}`,
+      { reply_markup: new InlineKeyboard().text('Переглянути чергу', 'view_queue') }
     );
   } catch (e) {
-    console.error('Не вдалося сповістити оператора:', e);
+    console.error('Не вдалося сповістити оператором:', e);
   }
+
+  await ctx.answerCallbackQuery();
 });
 
-// Обробка кнопки "Переглянути чергу"
 bot.callbackQuery('view_queue', async ctx => {
-  if (ctx.from.id !== ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
-
+  if (ctx.from.id !== BOT_ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
   if (queue.length === 0) {
+    await ctx.answerCallbackQuery();
     return ctx.reply('Черга пуста.');
   }
 
-  let message = '📋 Черга запитів на чат:\n\n';
+  let message = '📋 Черга:\n\n';
   queue.forEach((user, index) => {
     message += `${index + 1}. ${user.name}${user.username ? ` (@${user.username})` : ''} [ID: ${user.id}]\n`;
   });
 
   await ctx.editMessageText(message, {
-    reply_markup: new InlineKeyboard().text('Прийняти першого в черзі', 'accept_first'),
+    reply_markup: new InlineKeyboard().text('Прийняти першого', 'accept_first'),
   });
+  await ctx.answerCallbackQuery();
 });
 
-// Обробка кнопки "Прийняти першого в черзі"
 bot.callbackQuery('accept_first', async ctx => {
-  if (ctx.from.id !== ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
+  if (ctx.from.id !== BOT_ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
+  if (queue.length === 0) return ctx.answerCallbackQuery({ text: 'Черга пуста.' });
 
-  if (queue.length === 0) {
-    return ctx.answerCallbackQuery({ text: 'Черга пуста.' });
-  }
+  const firstUser = queue.shift();
+  operatorChats[BOT_ADMIN_ID] = firstUser.id;
+  operatorChats[firstUser.id] = BOT_ADMIN_ID;
+  userState[BOT_ADMIN_ID] = { step: 'replying', targetUserId: firstUser.id };
 
-  const firstUser = queue.shift(); // Видаляємо першого користувача з черги
-
-  // Встановлюємо з'єднання
-  operatorChats[ADMIN_ID] = firstUser.id;
-  operatorChats[firstUser.id] = ADMIN_ID;
-
-  // Сповіщаємо користувача
   try {
     await bot.api.sendMessage(
       firstUser.id,
@@ -353,125 +597,34 @@ bot.callbackQuery('accept_first', async ctx => {
   }
 
   await ctx.editMessageText(
-    `Ви почали чат з користувачем ${firstUser.name}${firstUser.username ? ` (@${firstUser.username})` : ''} [ID: ${firstUser.id}]`,
-    {
-      reply_markup: new InlineKeyboard().text('Завершити чат', `end_chat_${firstUser.id}`),
-    }
+    `💬 Чат з ${firstUser.name}${firstUser.username ? ` (@${firstUser.username})` : ''} [ID: ${firstUser.id}]\n\nТепер ви можете спілкуватися тут.`,
+    { reply_markup: new InlineKeyboard().text('Завершити чат', `end_queue_chat_${firstUser.id}`) }
   );
+  await ctx.answerCallbackQuery();
 });
 
-// Оновлений обробник завершення чату
-bot.callbackQuery(/^end_chat_(\d+)$/, async ctx => {
-  if (ctx.from.id !== ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
-
+bot.callbackQuery(/^end_queue_chat_(\d+)$/, async ctx => {
   const targetUserId = Number(ctx.match[1]);
+  const operatorId = ctx.from.id;
 
-  // Сповіщаємо користувача
-  try {
-    await bot.api.sendMessage(targetUserId, '✅ Чат з оператором завершено. Дякуємо за звернення!');
-  } catch (e) {
-    console.error('Не вдалося сповістити користувача:', e);
-  }
-
-  // Видаляємо з активних чатів
-  delete operatorChats[ADMIN_ID];
-  delete operatorChats[targetUserId];
-
-  await ctx.editMessageText(`Чат з користувачем ${targetUserId} завершено.`);
-});
-
-// Оператор починає чат
-bot.callbackQuery(/^start_chat_(.+)$/, async ctx => {
-  if (ctx.from.id !== ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
-
-  const complaintId = ctx.match[1];
-
-  // Перевіряємо, чи є скарга в activeComplaints
-  if (!activeComplaints[complaintId]) {
-    // Якщо немає, шукаємо в базі
-    const complaint = await Support.findById(complaintId);
-
-    if (!complaint || complaint.status !== 'pending') {
-      return ctx.answerCallbackQuery({ text: 'Скарга не знайдена або вже вирішена' });
-    }
-
-    // Додаємо до активних
-    activeComplaints[complaintId] = {
-      userId: complaint.userId,
-      complaintId: complaint._id,
-    };
-  }
-
-  const complaintData = activeComplaints[complaintId];
-
-  // Ініціалізуємо чат
-  operatorChats[ADMIN_ID] = complaintData.userId;
-  operatorChats[complaintData.userId] = ADMIN_ID;
-  userState[ADMIN_ID] = { step: 'replying', targetUserId: complaintData.userId };
-
-  try {
-    await bot.api.sendMessage(complaintData.userId, '💬 Оператор приєднався до чату з вами.');
-  } catch (e) {
-    console.log('Не вдалося повідомити користувача:', e.message);
-  }
-
-  await ctx.reply(
-    `Ви почали чат з користувачем ${complaintData.userId} по скарзі #${complaintId}.`,
-    {
-      reply_markup: new InlineKeyboard().text('✅ Завершити чат', `end_chat_${complaintId}`),
-    }
-  );
-
-  await ctx.deleteMessage();
-});
-
-// Завершення чату оператором (для чату через скаргу)
-bot.callbackQuery(/^end_chat_(.+)$/, async ctx => {
-  if (ctx.from.id !== ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
-
-  const complaintId = ctx.match[1];
-
-  // Знаходимо інформацію про скаргу
-  const complaintData = activeComplaints[complaintId];
-
-  if (!complaintData) {
-    return ctx.reply('Скарга не знайдена або вже вирішена.');
-  }
-
-  try {
-    // Оновлюємо конкретну скаргу
-    await Support.findByIdAndUpdate(complaintId, { status: 'resolved' });
-
-    // Видаляємо з активних скарг
-    delete activeComplaints[complaintId];
-
-    // Сповіщаємо користувача
+  if (operatorChats[operatorId] === targetUserId) {
     try {
-      await bot.api.sendMessage(
-        complaintData.userId,
-        '✅ Оператор завершив чат. Ваша скарга вирішена.'
-      );
+      await bot.api.sendMessage(targetUserId, '✅ Чат з оператором завершено. Дякуємо!');
     } catch (e) {
       console.log('Не вдалось повідомити користувача:', e.message);
     }
-
-    await ctx.reply(`Чат завершено. Скарга #${complaintId} позначена як вирішена.`);
-    await ctx.deleteMessage();
-  } catch (e) {
-    console.error('Помилка при оновленні статусу скарги:', e);
-    await ctx.reply('Сталася помилка при оновленні статусу скарги.');
+    delete operatorChats[operatorId];
+    delete operatorChats[targetUserId];
+    delete userState[operatorId];
   }
 
-  // Завершуємо чат
-  delete operatorChats[ADMIN_ID];
-  delete operatorChats[complaintData.userId];
-  delete userState[ADMIN_ID];
+  await ctx.editMessageText(`💬 Чат з користувачем ${targetUserId} завершено.`);
+  await ctx.answerCallbackQuery();
 });
 
 // Запуск бота
 bot.start();
-console.log('Бот запущено');
+console.log('Бoт запущено');
 
-// Обробка завершення роботи
 process.once('SIGINT', () => bot.stop());
 process.once('SIGTERM', () => bot.stop());
