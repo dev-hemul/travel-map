@@ -67,7 +67,7 @@ export default function CreateAnnouncementPage() {
       </div>
 
       {/* Content */}
-      <div className="p-6 max-w-4xl mx-auto">
+      <div className="p-6 max-w-4xl mx-auto relative">
         <motion.form
           onSubmit={handleSubmit}
           className="space-y-6"
@@ -133,50 +133,61 @@ export default function CreateAnnouncementPage() {
             </motion.div>
 
             {/* Категорія (React Select) */}
-            <motion.div
-              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 hover:border-blue-300 transition-all duration-200"
-              whileHover={{ scale: 1.01 }}
-            >
-              <label className="block text-lg font-semibold mb-3 flex items-center gap-2">
-                <FaTag className="text-green-500" />
-                Категорія
-              </label>
-              <CreatableSelect
-                isClearable
-                options={categories}
-                value={category}
-                onChange={newValue => setCategory(newValue)}
-                onCreateOption={newOption => {
-                  const newCategory = { value: newOption, label: newOption };
-                  setCategories(prev => [newCategory, ...prev]);
-                  setCategory(newCategory);
-                }}
-                placeholder="Оберіть або створіть категорію..."
-                classNamePrefix="react-select"
-                styles={{
-                  control: base => ({
-                    ...base,
-                    borderRadius: '0.75rem',
-                    borderColor: '#d1d5db',
-                    backgroundColor: '#f9fafb',
-                    padding: '4px',
-                    boxShadow: 'none',
-                    ':hover': { borderColor: '#60a5fa' },
-                  }),
-                  menu: base => ({
-                    ...base,
-                    borderRadius: '0.75rem',
-                    zIndex: 20,
-                  }),
-                }}
-              />
-            </motion.div>
+            <div className="relative z-30">
+              <motion.div
+                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 hover:border-blue-300 transition-all duration-200"
+                whileHover={{ scale: 1.01 }}
+              >
+                <label className="block text-lg font-semibold mb-3 flex items-center gap-2">
+                  <FaTag className="text-green-500" />
+                  Категорія
+                </label>
+                <CreatableSelect
+                  isClearable
+                  options={categories}
+                  value={category}
+                  onChange={newValue => setCategory(newValue)}
+                  onCreateOption={newOption => {
+                    const newCategory = { value: newOption, label: newOption };
+                    setCategories(prev => [newCategory, ...prev]);
+                    setCategory(newCategory);
+                  }}
+                  placeholder="Оберіть або створіть категорію..."
+                  classNamePrefix="react-select"
+                  styles={{
+                    control: base => ({
+                      ...base,
+                      borderRadius: '0.75rem',
+                      borderColor: '#d1d5db',
+                      backgroundColor: '#f9fafb',
+                      padding: '4px',
+                      boxShadow: 'none',
+                      ':hover': { borderColor: '#60a5fa' },
+                    }),
+                    menu: base => ({
+                      ...base,
+                      borderRadius: '0.75rem',
+                      marginTop: '8px',
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                      zIndex: 50,
+                    }),
+                    menuPortal: base => ({
+                      ...base,
+                      zIndex: 50,
+                    }),
+                  }}
+                  menuPortalTarget={document.body}
+                  menuPosition="fixed"
+                />
+              </motion.div>
+            </div>
           </div>
 
           {/* Фото */}
           <motion.div
             className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 hover:border-blue-300 transition-all duration-200"
             whileHover={{ scale: 1.01 }}
+            style={{ position: 'relative', zIndex: 1 }}
           >
             <label className="block text-lg font-semibold mb-3 flex items-center gap-2">
               <FaImage className="text-purple-500" />

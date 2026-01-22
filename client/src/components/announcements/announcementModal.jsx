@@ -1,45 +1,57 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
-import { FaBullhorn, FaTimes, FaPlus } from 'react-icons/fa';
+import { FaBullhorn, FaTimes, FaPlus, FaInfoCircle } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 export default function AnnouncementModal() {
   const navigate = useNavigate();
   const [showSidebar, setShowSidebar] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-
+  
   const [announcements] = useState([
     {
       id: 1,
       title: 'Перша пропозиція',
       description: 'Опис першої пропозиції',
-      image:
-        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=60',
+      image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=60',
       address: 'Львівська область, м. Львів',
+      category: 'Шляхотворець',
+      author: 'Іван Іванов',
+      rating: 4.8,
+      price: 'Безкоштовно'
     },
     {
       id: 2,
       title: 'Друга пропозиція',
       description: 'Опис другої пропозиції',
-      image:
-        'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=60',
+      image: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=60',
       address: 'Київська область, м. Буча',
+      category: 'Організовую події',
+      author: 'Петро Петренко',
+      rating: 4.5,
+      price: '500 грн'
     },
     {
       id: 3,
       title: 'Третя пропозиція',
       description: 'Ще один опис пропозиції для перевірки скролу',
-      image:
-        'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=60',
+      image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=60',
       address: 'Одеська область, м. Одеса',
+      category: 'Продаю тренажери',
+      author: 'Марія Сидоренко',
+      rating: 4.9,
+      price: '1500 грн'
     },
     {
       id: 4,
       title: 'Четверта пропозиція',
       description: 'Тестовий опис четвертої пропозиції',
-      image:
-        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=60',
+      image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=60',
       address: 'Харківська область, м. Харків',
+      category: 'Шляхотворець',
+      author: 'Олег Коваль',
+      rating: 4.7,
+      price: 'Безкоштовно'
     },
   ]);
 
@@ -55,6 +67,10 @@ export default function AnnouncementModal() {
   const handleOpenSidebar = () => {
     setShowSidebar(true);
     setIsClosing(false);
+  };
+
+  const handleDetailsClick = (announcement) => {
+    navigate(`/announcement/${announcement.id}`);
   };
 
   return (
@@ -140,23 +156,58 @@ export default function AnnouncementModal() {
                   {announcements.map(a => (
                     <motion.div
                       key={a.id}
-                      className="p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
+                      className="relative p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                     >
-                      <h3 className="font-bold text-lg mb-1 text-gray-800">{a.title}</h3>
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-bold text-lg mb-1 text-gray-800">{a.title}</h3>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          a.category === 'Шляхотворець' ? 'bg-purple-100 text-purple-800' :
+                          a.category === 'Організовую події' ? 'bg-blue-100 text-blue-800' :
+                          'bg-green-100 text-green-800'
+                        }`}>
+                          {a.category}
+                        </span>
+                      </div>
+                      
                       <p className="text-gray-500 text-xs italic mb-3">{a.address}</p>
                       <img
                         src={a.image}
                         alt={a.title}
                         className="w-full h-40 object-cover rounded-lg mb-3"
                       />
+                      
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-gray-700">{a.author}</span>
+                          <div className="flex items-center gap-1">
+                            <div className="flex">
+                              {[...Array(5)].map((_, i) => (
+                                <FaTimes 
+                                  key={i}
+                                  className={`w-3 h-3 ${i < Math.floor(a.rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-xs text-gray-500">{a.rating}</span>
+                          </div>
+                        </div>
+                        <span className="font-bold text-green-600">{a.price}</span>
+                      </div>
+                      
                       <p className="text-sm text-gray-600 mb-3 line-clamp-2">{a.description}</p>
+                      
                       <motion.button
-                        className="text-xs px-3 py-1 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDetailsClick(a);
+                        }}
+                        className="w-full px-3 py-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors font-medium flex items-center justify-center gap-2"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
+                        <FaInfoCircle />
                         Детальніше
                       </motion.button>
                     </motion.div>
