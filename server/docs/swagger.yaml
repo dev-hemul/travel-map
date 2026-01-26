@@ -92,6 +92,32 @@ paths:
       responses:
         200: { description: Успішний вихід, очищення кукі }
 
+  /google/url:
+    get:
+      tags: [Автентифікація]
+      summary: Отримати Google OAuth URL
+      responses:
+        200: { description: Повертає URL для авторизації через Google }
+        500: { description: Помилка сервера }
+
+  /google:
+    post:
+      tags: [Автентифікація]
+      summary: Вхід або реєстрація через Google
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string }
+      responses:
+        200: { description: Повертає accessToken та встановлює refreshToken у кукі }
+        401: { description: Невалідний Google code }
+        500: { description: Помилка сервера }
+
   # --- ПРОФІЛЬ ТА КОРИСТУВАЧІ ---
   /profile:
     get:

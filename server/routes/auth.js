@@ -2,8 +2,10 @@ import express from 'express';
 
 
 import { verifyAccessToken, verifyRefreshToken } from '../middlewares/auth.js';
+import Tokens from '../model/token.js';
 import User from '../model/user.js'; // Імпорт User для GET /profile
-import { register, login, logout, updateProfile, getRefreshToken } from './../controller/authCntrl.js';
+import { register, login, googleLogin, logout, updateProfile, getRefreshToken } from './../controller/authCntrl.js';
+import { googleCodeToUser, getGoogleAuthUrl } from './../middlewares/googleAuth.js'
 import {
   validateLoginBody,
   validateRegisterBody,
@@ -18,7 +20,6 @@ router.post('/login', validateLoginBody, (req, res, next) => {
 router.post('/refresh-token', verifyRefreshToken, getRefreshToken);
 router.post('/logout', verifyAccessToken, logout);
 
-// GET /profile для перевірки токена
 router.get('/profile', verifyAccessToken, async (req, res) => {
   try {
     if (!req.userId) {
@@ -34,7 +35,11 @@ router.get('/profile', verifyAccessToken, async (req, res) => {
   }
 });
 
-// POST /profile для оновлення
 router.post('/profile', verifyAccessToken, updateProfile);
+
+router.get('/google/url', getGoogleAuthUrl);
+
+router.post('/google', googleCodeToUser, googleLogin);
+
 
 export default router;
