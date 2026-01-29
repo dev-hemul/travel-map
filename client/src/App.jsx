@@ -10,6 +10,7 @@ import PrivateRouter from './components/PrivateRouter';
 import SidebarLayout from './components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from './components/support/supportModalWrapper';
 import AdminTestPage from './pages/adminTestPage.jsx';
+import AnnouncementDetailPage from './pages/announcementDetailPage.jsx';
 import CreateAnnouncementPage from './pages/createAnnouncementPage';
 import GoogleCallback from './pages/GoogleCallback.jsx';
 import LoginPage from './pages/login/LoginPage';
@@ -91,6 +92,9 @@ function App() {
         <Route path="/create-announcement" element={<CreateAnnouncementPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/google/callback" element={<GoogleCallback />} />
+        
+        {/* Додано маршрут для сторінки деталей оголошення */}
+        <Route path="/announcement/:id" element={<AnnouncementDetailPage />} />
 
         <Route element={<PrivateRouter />}>
           <Route
