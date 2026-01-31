@@ -1,82 +1,65 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { 
-  FiArrowLeft, 
-  FiMap, 
-  FiStar, 
-  FiMessageCircle, 
+import {
+  FiArrowLeft,
+  FiStar,
+  FiMessageCircle,
   FiShare2,
   FiCalendar,
   FiUser,
   FiHeart,
-  FiImage,
   FiMapPin,
-  FiMail,
   FiPhone,
   FiGlobe,
   FiChevronRight,
-  FiCheckCircle,
-  FiClock,
-  FiTrendingUp,
-  FiUsers,
-  FiFileText,
   FiMessageSquare,
   FiMenu,
   FiX,
   FiExternalLink,
   FiTool,
-  FiHome,
   FiNavigation,
   FiCode,
-  FiTool as FiSpoon
+  FiTool as FiSpoon,
 } from 'react-icons/fi';
 import { useParams, useNavigate } from 'react-router-dom';
 
-export default function AnnouncementDetailPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [offer, setOffer] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('travel');
-  const [showFullDescription, setShowFullDescription] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeSubTab, setActiveSubTab] = useState('details');
-  const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
+// Мокові дані на основі інформації з ko.in.ua
+const mockOffers = [
+  {
+    id: 1,
+    title: 'Валентин Добротворцев',
+    shortDescription:
+      'Організовую подорожі, практикую тілесну терапію, створюю сайти та виготовляю ложки з дерева',
+    description:
+      'Відкритий до безгрошових взаємообмінів через Клуб Організаторів. Практикую бартерний обмін послугами та знаннями.',
 
-  // Мокові дані на основі інформації з ko.in.ua
-  const mockOffers = [
-    {
-      id: 1,
-      title: 'Валентин Добротворцев',
-      shortDescription: 'Організовую подорожі, практикую тілесну терапію, створюю сайти та виготовляю ложки з дерева',
-      description: 'Відкритий до безгрошових взаємообмінів через Клуб Організаторів. Практикую бартерний обмін послугами та знаннями.',
-      
-      // Зображення
-      mainImage: 'https://ko.in.ua/wp-content/uploads/2020/11/logoVD-e1609080023185.jpg',
-      images: [
-        'https://ko.in.ua/wp-content/uploads/2020/11/logoVD-e1609080023185.jpg',
-        'https://ko.in.ua/wp-content/uploads/bfi_thumb/Logo_ST-qiuj3pbukfjvfzmxw5bkil2jcfjecb7f8wphelpuqw.png',
-        'https://ko.in.ua/wp-content/uploads/2020/11/4.0.jpg',
-        'https://ko.in.ua/wp-content/uploads/2020/11/photo_2022-02-10-00.01.49.jpeg',
-      ],
-      
-      // Контактна інформація
-      address: 'Київ, Україна',
-      contacts: {
-        phone: '+38 (093) 927-72-39',
-        facebook: 'facebook.com/dobrotvorcev',
-        youtube: 'youtube.com/@zkowt',
-        instagram: 'instagram.com/shliah_tvorcia',
-        telegram: 'https://bit.ly/valentin-dobrotvorcev'
-      },
-      
-      // Розділи з сайту
-      sections: {
-        travel: {
-          title: 'Шлях Творця',
-          subtitle: 'Туристичний маршрут від Києва до моря',
-          description: 'Започаткував та розвиваю туристичний маршрут через всю Україну. Акцентую увагу на відрізку маршруту від Українки до Канева і далі на захід проробляю нову гілку маршруту.',
-          fullDescription: `Організовую групові та індивідуальні подорожі Шляхом Творця, а також консультую бажаючих пройтися Шляхом самостійно.
+    // Зображення
+    mainImage: 'https://ko.in.ua/wp-content/uploads/2020/11/logoVD-e1609080023185.jpg',
+    images: [
+      'https://ko.in.ua/wp-content/uploads/2020/11/logoVD-e1609080023185.jpg',
+      'https://ko.in.ua/wp-content/uploads/bfi_thumb/Logo_ST-qiuj3pbukfjvfzmxw5bkil2jcfjecb7f8wphelpuqw.png',
+      'https://ko.in.ua/wp-content/uploads/2020/11/4.0.jpg',
+      'https://ko.in.ua/wp-content/uploads/2020/11/photo_2022-02-10-00.01.49.jpeg',
+    ],
+
+    // Контактна інформація
+    address: 'Київ, Україна',
+    contacts: {
+      phone: '+38 (093) 927-72-39',
+      facebook: 'facebook.com/dobrotvorcev',
+      youtube: 'youtube.com/@zkowt',
+      instagram: 'instagram.com/shliah_tvorcia',
+      telegram: 'https://bit.ly/valentin-dobrotvorcev',
+    },
+
+    // Розділи з сайту
+    sections: {
+      travel: {
+        title: 'Шлях Творця',
+        subtitle: 'Туристичний маршрут від Києва до моря',
+        description:
+          'Започаткував та розвиваю туристичний маршрут через всю Україну. Акцентую увагу на відрізку маршруту від Українки до Канева і далі на захід проробляю нову гілку маршруту.',
+        fullDescription: `Організовую групові та індивідуальні подорожі Шляхом Творця, а також консультую бажаючих пройтися Шляхом самостійно.
 
 В подорожах ми:
 • Пізнаємо рідний край
@@ -95,75 +78,82 @@ export default function AnnouncementDetailPage() {
 • TikTok: @shliah_tvorcia
 • Сайт: shliah-tvorcia.com.ua
 • YouTube: @zkowt`,
-          projects: [
-            {
-              id: 1,
-              name: 'Шлях Творця 2023',
-              image: 'https://ko.in.ua/wp-content/uploads/bfi_thumb/11-qaektgj3y35je8r6in98zkcl70lm26sxsozpwm4trg.jpg',
-              description: 'Середній похід Шляхом Творця, йдемо з Українки до Канева в Пошуках Домів',
-              link: 'https://shliah-tvorcia.ko.in.ua/pohid-shliahom-tvorcia-2023/'
-            }
-          ],
-          videos: [
-            { id: 1, url: 'https://www.youtube.com/embed/bjQ2grA3FIg', title: 'Про Шлях Творця' },
-            { id: 2, url: 'https://www.youtube.com/embed/7XBSp-0EDU8', title: 'Три Купелі' },
-            { id: 3, url: 'https://www.youtube.com/embed/y2RtjdSYX9I', title: 'Озеро за лісом' }
-          ],
-          reports: [
-            {
-              id: 1,
-              title: 'Три Купелі',
-              image: 'https://ko.in.ua/wp-content/uploads/bfi_thumb/245271560_4390566621024964_6261619414226046259_n-peeu34k3hefai29isvb4ip2b6nj1nkouzw12c1it9o.jpg',
-              description: 'Активна прогулянка по Києву',
-              date: '10.10.2021',
-              link: 'https://ko.in.ua/tru-kypeli/'
-            },
-            {
-              id: 2,
-              title: 'Озеро за лісом',
-              image: 'https://ko.in.ua/wp-content/uploads/bfi_thumb/photo1634493912-1-peqxmb2slm1i03dnea5ga3xwhaua59yaompl8xuegc.jpeg',
-              description: 'Активна прогулянка по Києву',
-              date: '17.10.2021',
-              link: 'https://ko.in.ua/ozero-za-lisom-zvit/'
-            }
-          ],
-          reviews: [
-            { 
-              id: 1, 
-              user: 'Катерина з Екопростору "Писанка"', 
-              avatar: 'https://ko.in.ua/wp-content/uploads/2023/08/290686197_1206662836766525_3937860109189581756_n.jpeg',
-              text: 'Валентин зупиняється у нас зі своїми туристами. Він згуртовує навколо себе таких самих добротворчих людей, як і він сам.', 
-              date: '2023'
-            },
-            { 
-              id: 2, 
-              user: 'Annete', 
-              avatar: 'https://ko.in.ua/wp-content/uploads/2021/10/photo_2021-06-04_01-41-25-150x150.jpg',
-              text: 'Це була чудова прогулянка. Я відкрила для себе нові місця рідного міста. Валентин — чудовий провідник, що розказує цікаву інформацію про відвідані місця.', 
-              date: '10.10.2021'
-            },
-            { 
-              id: 3, 
-              user: 'Алёна Коваленко', 
-              avatar: 'https://ko.in.ua/wp-content/uploads/2021/10/244788142_4556055331138338_3349937057014784655_n-150x150.jpeg',
-              text: 'Була на цій прогулянці — отримала океан задоволення! Відчула себе живою, адже ходити – це головна потреба людини!', 
-              date: '10.10.2021'
-            },
-            { 
-              id: 4, 
-              user: 'Олексій Носівець', 
-              avatar: 'https://ko.in.ua/wp-content/uploads/2021/10/leha-150x150.jpeg',
-              text: 'Мені давно не вистачало такої активності. Поспілкувавшись з Валентином і зрозумівши що це за людина, я старатимусь підтримувать його ініціативи що є сил.', 
-              date: '17.10.2021'
-            }
-          ]
-        },
-        
-        wellness: {
-          title: 'Оздоровлення',
-          subtitle: 'Ретритний Суботник',
-          description: 'День внутрішнього очищення через неїдення та взаємодію з Природою через стихії',
-          fullDescription: `Запрошую у гості на програму Суботника, яка може формуватися в залежності від вашого запиту наперед, або у довільній формі по ходу діла. З мене супровід, підтримка, увага, відгук.
+        projects: [
+          {
+            id: 1,
+            name: 'Шлях Творця 2023',
+            image:
+              'https://ko.in.ua/wp-content/uploads/bfi_thumb/11-qaektgj3y35je8r6in98zkcl70lm26sxsozpwm4trg.jpg',
+            description: 'Середній похід Шляхом Творця, йдемо з Українки до Канева в Пошуках Домів',
+            link: 'https://shliah-tvorcia.ko.in.ua/pohid-shliahom-tvorcia-2023/',
+          },
+        ],
+        videos: [
+          { id: 1, url: 'https://www.youtube.com/embed/bjQ2grA3FIg', title: 'Про Шлях Творця' },
+          { id: 2, url: 'https://www.youtube.com/embed/7XBSp-0EDU8', title: 'Три Купелі' },
+          { id: 3, url: 'https://www.youtube.com/embed/y2RtjdSYX9I', title: 'Озеро за лісом' },
+        ],
+        reports: [
+          {
+            id: 1,
+            title: 'Три Купелі',
+            image:
+              'https://ko.in.ua/wp-content/uploads/bfi_thumb/245271560_4390566621024964_6261619414226046259_n-peeu34k3hefai29isvb4ip2b6nj1nkouzw12c1it9o.jpg',
+            description: 'Активна прогулянка по Києву',
+            date: '10.10.2021',
+            link: 'https://ko.in.ua/tru-kypeli/',
+          },
+          {
+            id: 2,
+            title: 'Озеро за лісом',
+            image:
+              'https://ko.in.ua/wp-content/uploads/bfi_thumb/photo1634493912-1-peqxmb2slm1i03dnea5ga3xwhaua59yaompl8xuegc.jpeg',
+            description: 'Активна прогулянка по Києву',
+            date: '17.10.2021',
+            link: 'https://ko.in.ua/ozero-za-lisom-zvit/',
+          },
+        ],
+        reviews: [
+          {
+            id: 1,
+            user: 'Катерина з Екопростору "Писанка"',
+            avatar:
+              'https://ko.in.ua/wp-content/uploads/2023/08/290686197_1206662836766525_3937860109189581756_n.jpeg',
+            text: 'Валентин зупиняється у нас зі своїми туристами. Він згуртовує навколо себе таких самих добротворчих людей, як і він сам.',
+            date: '2023',
+          },
+          {
+            id: 2,
+            user: 'Annete',
+            avatar:
+              'https://ko.in.ua/wp-content/uploads/2021/10/photo_2021-06-04_01-41-25-150x150.jpg',
+            text: 'Це була чудова прогулянка. Я відкрила для себе нові місця рідного міста. Валентин — чудовий провідник, що розказує цікаву інформацію про відвідані місця.',
+            date: '10.10.2021',
+          },
+          {
+            id: 3,
+            user: 'Алёна Коваленко',
+            avatar:
+              'https://ko.in.ua/wp-content/uploads/2021/10/244788142_4556055331138338_3349937057014784655_n-150x150.jpeg',
+            text: 'Була на цій прогулянці — отримала океан задоволення! Відчула себе живою, адже ходити – це головна потреба людини!',
+            date: '10.10.2021',
+          },
+          {
+            id: 4,
+            user: 'Олексій Носівець',
+            avatar: 'https://ko.in.ua/wp-content/uploads/2021/10/leha-150x150.jpeg',
+            text: 'Мені давно не вистачало такої активності. Поспілкувавшись з Валентином і зрозумівши що це за людина, я старатимусь підтримувать його ініціативи що є сил.',
+            date: '17.10.2021',
+          },
+        ],
+      },
+
+      wellness: {
+        title: 'Оздоровлення',
+        subtitle: 'Ретритний Суботник',
+        description:
+          'День внутрішнього очищення через неїдення та взаємодію з Природою через стихії',
+        fullDescription: `Запрошую у гості на програму Суботника, яка може формуватися в залежності від вашого запиту наперед, або у довільній формі по ходу діла. З мене супровід, підтримка, увага, відгук.
 
 **Опції суботника:**
 • Неїдення
@@ -182,18 +172,19 @@ export default function AnnouncementDetailPage() {
 За програму можливий бартерний взаємообмін по цінностях (обговорюється).
 
 Проводжу таку програму регулярно на тих місцях де живу чи в тих подіях, в яких прийматиму участь.`,
-          videos: [
-            { id: 1, url: 'https://www.youtube.com/embed/b4nnOEya3HA', title: 'Суботник' },
-            { id: 2, url: 'https://www.youtube.com/embed/BbnBus4Pxts', title: 'Ретрит' }
-          ],
-          reviews: []
-        },
-        
-        websites: {
-          title: 'Сайти',
-          subtitle: 'Створення сайтів на WordPress',
-          description: 'Створюю сайти під ключ на wordpress: сайти-візитки та лендінги. По дизайну сайта — консультую!',
-          fullDescription: `**Послуги:**
+        videos: [
+          { id: 1, url: 'https://www.youtube.com/embed/b4nnOEya3HA', title: 'Суботник' },
+          { id: 2, url: 'https://www.youtube.com/embed/BbnBus4Pxts', title: 'Ретрит' },
+        ],
+        reviews: [],
+      },
+
+      websites: {
+        title: 'Сайти',
+        subtitle: 'Створення сайтів на WordPress',
+        description:
+          'Створюю сайти під ключ на wordpress: сайти-візитки та лендінги. По дизайну сайта — консультую!',
+        fullDescription: `**Послуги:**
 • Сайти-візитки
 • Лендінги
 • Консультації по дизайну
@@ -209,20 +200,21 @@ export default function AnnouncementDetailPage() {
 Від 10 000 грн
 
 Маю досвід створення функціональних та зручних сайтів з урахуванням потреб клієнта. Працюю на WordPress з використанням сучасних технологій.`,
-          portfolio: [
-            { name: 'Authentic', url: 'http://authentic.com.ua/' },
-            { name: 'Tesla Garage', url: 'https://teslagarage.com.ua/' },
-            { name: 'Шлях Творця', url: 'https://shliah-tvorcia.com.ua/' },
-            { name: 'Клуб Організаторів', url: 'https://ko.in.ua/' }
-          ],
-          reviews: []
-        },
-        
-        spoons: {
-          title: 'Ложки з дерева',
-          subtitle: 'Виготовлення дерев\'яних ложок на замовлення',
-          description: 'Обожнюю робити ложки з дерева для людей на замовлення. Під час роботи думаю про людину і ложка виходить особливою та суто індивідуальною.',
-          fullDescription: `**Переваги дерев'яних ложок:**
+        portfolio: [
+          { name: 'Authentic', url: 'http://authentic.com.ua/' },
+          { name: 'Tesla Garage', url: 'https://teslagarage.com.ua/' },
+          { name: 'Шлях Творця', url: 'https://shliah-tvorcia.com.ua/' },
+          { name: 'Клуб Організаторів', url: 'https://ko.in.ua/' },
+        ],
+        reviews: [],
+      },
+
+      spoons: {
+        title: 'Ложки з дерева',
+        subtitle: "Виготовлення дерев'яних ложок на замовлення",
+        description:
+          'Обожнюю робити ложки з дерева для людей на замовлення. Під час роботи думаю про людину і ложка виходить особливою та суто індивідуальною.',
+        fullDescription: `**Переваги дерев'яних ложок:**
 • Не окислюються (на відміну від металу)
 • Не збивають емаль із зубів
 • Натуральний матеріал
@@ -235,75 +227,100 @@ export default function AnnouncementDetailPage() {
 Від 500 грн
 
 **Галерея робіт:**`,
-          images: [
-            'https://ko.in.ua/wp-content/uploads/bfi_thumb/photo_2022-02-10-00.01.44-pka0iek2egucce3w38dlkc4hrpyt6js7rhe6rwut9o.jpeg',
-            'https://ko.in.ua/wp-content/uploads/bfi_thumb/photo_2022-02-10-00.01.46-pka0igfqs4wwzm15s96upbneyhpjlxzofqp5qgs0x8.jpeg',
-            'https://ko.in.ua/wp-content/uploads/bfi_thumb/photo_2022-02-10-00.01.48-pka0igfqs4wwzm15s96upbneyhpjlxzofqp5qgs0x8.jpeg',
-            'https://ko.in.ua/wp-content/uploads/bfi_thumb/photo_2022-02-10-00.01.49-pka0iibf5szhmtyfha03ub6c59ga1c754004p0p8ks.jpeg',
-            'https://ko.in.ua/wp-content/uploads/bfi_thumb/photo_2022-02-10-00.01.53-pka0ik73jh22a1vp6atczap9c170gqels9b3nkmg8c.jpeg',
-            'https://ko.in.ua/wp-content/uploads/bfi_thumb/photo_2022-02-10-00.01.55-pka0im2rx54mx9syvbmm4a86isxqw4m2gim2m4jnvw.jpeg'
-          ],
-          reviews: []
-        }
+        images: [
+          'https://ko.in.ua/wp-content/uploads/bfi_thumb/photo_2022-02-10-00.01.44-pka0iek2egucce3w38dlkc4hrpyt6js7rhe6rwut9o.jpeg',
+          'https://ko.in.ua/wp-content/uploads/bfi_thumb/photo_2022-02-10-00.01.46-pka0igfqs4wwzm15s96upbneyhpjlxzofqp5qgs0x8.jpeg',
+          'https://ko.in.ua/wp-content/uploads/bfi_thumb/photo_2022-02-10-00.01.48-pka0igfqs4wwzm15s96upbneyhpjlxzofqp5qgs0x8.jpeg',
+          'https://ko.in.ua/wp-content/uploads/bfi_thumb/photo_2022-02-10-00.01.49-pka0iibf5szhmtyfha03ub6c59ga1c754004p0p8ks.jpeg',
+          'https://ko.in.ua/wp-content/uploads/bfi_thumb/photo_2022-02-10-00.01.53-pka0ik73jh22a1vp6atczap9c170gqels9b3nkmg8c.jpeg',
+          'https://ko.in.ua/wp-content/uploads/bfi_thumb/photo_2022-02-10-00.01.55-pka0im2rx54mx9syvbmm4a86isxqw4m2gim2m4jnvw.jpeg',
+        ],
+        reviews: [],
       },
-      
-      // Додаткова інформація
-      category: 'Клуб Організаторів',
-      author: {
-        name: 'Валентин Добротворцев',
-        avatar: 'https://ko.in.ua/wp-content/uploads/2020/11/logoVD-e1609080023185.jpg',
-        rating: 4.8,
-        reviews: 24,
-        experience: 'Організатор подорожей, тілесний терапевт, веб-розробник',
-        location: 'Київ, Україна',
-        memberSince: '2020 року',
-        bio: 'Організовую подорожі Шляхом Творця, збираю охочих людей до бартерного взаємообміну у Клубі Організаторів, практикую тілесну терапію, роблю простенькі сайти та на замовлення виготовляю ложки з дерева.',
-        skills: ['Організація подорожей', 'Тілесна терапія', 'Веб-розробка', 'Робота з деревом', 'Бартерний обмін'],
-        contacts: {
-          email: '',
-          phone: '+38 (093) 927-72-39',
-          telegram: 'https://bit.ly/valentin-dobrotvorcev',
-          facebook: 'facebook.com/dobrotvorcev',
-          instagram: 'instagram.com/shliah_tvorcia',
-          youtube: 'youtube.com/@zkowt'
-        },
-        stats: {
-          offers: 4,
-          completed: 50,
-          responseRate: '100%',
-          responseTime: '2 години',
-          successRate: '95%',
-          avgRating: 4.8
-        }
-      },
-      price: 'Бартер / Вільний внесок',
-      date: 'Оновлено 07.02.2024',
-      reviews: [],
-      tags: ['Подорожі', 'Тілесна терапія', 'Веб-розробка', 'Деревообробка', 'Бартер', 'Еко-життя', 'Клуб Організаторів'],
-      details: {
-        format: 'Онлайн/Офлайн',
-        exchange: 'Бартерний обмін',
-        location: 'Київ та Україна',
-        languages: 'Українська, Російська'
-      },
-      
-      // Головні події
-      events: [
-        {
-          id: 1,
-          title: 'Шлях Творця 2024',
-          date: 'Весна-Осінь 2024',
-          description: 'Груповий похід маршрутом від Українки до Канева'
-        },
-        {
-          id: 2,
-          title: 'Ретритний Суботник',
-          date: 'Кожні вихідні',
-          description: 'Оздоровчий ретрит на природі'
-        }
-      ]
     },
-  ];
+
+    // Додаткова інформація
+    category: 'Клуб Організаторів',
+    author: {
+      name: 'Валентин Добротворцев',
+      avatar: 'https://ko.in.ua/wp-content/uploads/2020/11/logoVD-e1609080023185.jpg',
+      rating: 4.8,
+      reviews: 24,
+      experience: 'Організатор подорожей, тілесний терапевт, веб-розробник',
+      location: 'Київ, Україна',
+      memberSince: '2020 року',
+      bio: 'Організовую подорожі Шляхом Творця, збираю охочих людей до бартерного взаємообміну у Клубі Організаторів, практикую тілесну терапію, роблю простенькі сайти та на замовлення виготовляю ложки з дерева.',
+      skills: [
+        'Організація подорожей',
+        'Тілесна терапія',
+        'Веб-розробка',
+        'Робота з деревом',
+        'Бартерний обмін',
+      ],
+      contacts: {
+        email: '',
+        phone: '+38 (093) 927-72-39',
+        telegram: 'https://bit.ly/valentin-dobrotvorcev',
+        facebook: 'facebook.com/dobrotvorcev',
+        instagram: 'instagram.com/shliah_tvorcia',
+        youtube: 'youtube.com/@zkowt',
+      },
+      stats: {
+        offers: 4,
+        completed: 50,
+        responseRate: '100%',
+        responseTime: '2 години',
+        successRate: '95%',
+        avgRating: 4.8,
+      },
+    },
+    price: 'Бартер / Вільний внесок',
+    date: 'Оновлено 07.02.2024',
+    reviews: [],
+    tags: [
+      'Подорожі',
+      'Тілесна терапія',
+      'Веб-розробка',
+      'Деревообробка',
+      'Бартер',
+      'Еко-життя',
+      'Клуб Організаторів',
+    ],
+    details: {
+      format: 'Онлайн/Офлайн',
+      exchange: 'Бартерний обмін',
+      location: 'Київ та Україна',
+      languages: 'Українська, Російська',
+    },
+
+    // Головні події
+    events: [
+      {
+        id: 1,
+        title: 'Шлях Творця 2024',
+        date: 'Весна-Осінь 2024',
+        description: 'Груповий похід маршрутом від Українки до Канева',
+      },
+      {
+        id: 2,
+        title: 'Ретритний Суботник',
+        date: 'Кожні вихідні',
+        description: 'Оздоровчий ретрит на природі',
+      },
+    ],
+  },
+];
+
+export default function AnnouncementDetailPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [offer, setOffer] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('travel');
+  const [showFullDescription, setShowFullDescription] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeSubTab, setActiveSubTab] = useState('details');
+  const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -313,16 +330,15 @@ export default function AnnouncementDetailPage() {
     }, 500);
 
     return () => clearTimeout(timer);
-    //eslint-disable-next-line
   }, [id]);
 
   const renderTabContent = () => {
     if (!offer) return null;
-    
+
     const section = offer.sections[activeTab];
     if (!section) return null;
 
-    switch(activeSubTab) {
+    switch (activeSubTab) {
       case 'details':
         return (
           <div className="space-y-6">
@@ -385,10 +401,17 @@ export default function AnnouncementDetailPage() {
                 <h3 className="text-xl font-bold mb-4">Поточні проекти</h3>
                 <div className="grid grid-cols-1 gap-6">
                   {section.projects.map(project => (
-                    <div key={project.id} className="bg-white rounded-2xl border border-gray-200 p-6 hover:border-[#e65000]/30 transition-colors">
+                    <div
+                      key={project.id}
+                      className="bg-white rounded-2xl border border-gray-200 p-6 hover:border-[#e65000]/30 transition-colors"
+                    >
                       <div className="flex flex-col md:flex-row gap-6">
                         <div className="md:w-1/3">
-                          <img src={project.image} alt={project.name} className="w-full h-48 object-cover rounded-lg" />
+                          <img
+                            src={project.image}
+                            alt={project.name}
+                            className="w-full h-48 object-cover rounded-lg"
+                          />
                         </div>
                         <div className="md:w-2/3">
                           <h4 className="text-xl font-bold text-gray-900 mb-2">{project.name}</h4>
@@ -459,13 +482,22 @@ export default function AnnouncementDetailPage() {
       case 'reports':
         return activeTab === 'travel' ? (
           <div className="space-y-6">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Звіти про подорожі</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
+              Звіти про подорожі
+            </h2>
             {section.reports && section.reports.length > 0 ? (
               section.reports.map(report => (
-                <div key={report.id} className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-[#e65000]/30 transition-colors">
+                <div
+                  key={report.id}
+                  className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-[#e65000]/30 transition-colors"
+                >
                   <div className="flex flex-col md:flex-row">
                     <div className="md:w-1/3">
-                      <img src={report.image} alt={report.title} className="w-full h-64 md:h-full object-cover" />
+                      <img
+                        src={report.image}
+                        alt={report.title}
+                        className="w-full h-64 md:h-full object-cover"
+                      />
                     </div>
                     <div className="md:w-2/3 p-6">
                       <h3 className="text-xl font-bold text-gray-900 mb-2">{report.title}</h3>
@@ -496,7 +528,9 @@ export default function AnnouncementDetailPage() {
           </div>
         ) : (
           <div className="text-center py-12 bg-white rounded-2xl border border-gray-200">
-            <div className="text-gray-400 text-lg mb-3">Звіти доступні тільки для розділу `&quot;`Подорожі`&quot;`</div>
+            <div className="text-gray-400 text-lg mb-3">
+              Звіти доступні тільки для розділу `&quot;`Подорожі`&quot;`
+            </div>
           </div>
         );
 
@@ -504,14 +538,18 @@ export default function AnnouncementDetailPage() {
         return (
           <div className="space-y-6">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
-              Відгуки {section.reviews && section.reviews.length > 0 && `(${section.reviews.length})`}
+              Відгуки{' '}
+              {section.reviews && section.reviews.length > 0 && `(${section.reviews.length})`}
             </h2>
-            
+
             {section.reviews && section.reviews.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 gap-6">
                   {section.reviews.map(review => (
-                    <div key={review.id} className="border border-gray-200 rounded-2xl p-6 hover:border-[#e65000]/30 transition-colors">
+                    <div
+                      key={review.id}
+                      className="border border-gray-200 rounded-2xl p-6 hover:border-[#e65000]/30 transition-colors"
+                    >
                       <div className="flex items-start gap-4">
                         <img
                           src={review.avatar}
@@ -529,7 +567,7 @@ export default function AnnouncementDetailPage() {
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="text-center mt-8">
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -544,7 +582,9 @@ export default function AnnouncementDetailPage() {
             ) : (
               <div className="text-center py-12 bg-white rounded-2xl border border-gray-200">
                 <div className="text-gray-400 text-lg mb-3">Ще немає відгуків</div>
-                <p className="text-gray-500 mb-6">Будьте першим, хто залишить відгук про цю послугу</p>
+                <p className="text-gray-500 mb-6">
+                  Будьте першим, хто залишить відгук про цю послугу
+                </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -616,7 +656,7 @@ export default function AnnouncementDetailPage() {
           </div>
           <h3 className="text-xl md:text-2xl font-bold text-gray-900">{offer.author.name}</h3>
           <p className="text-gray-600 mt-1 text-sm md:text-base">{offer.author.experience}</p>
-          
+
           {/* Статус бартерного обміну */}
           <div className="mt-4 px-4 py-2 bg-gradient-to-r from-[#e65000] to-[#f57c00] text-white rounded-full">
             <div className="flex items-center gap-2">
@@ -625,11 +665,11 @@ export default function AnnouncementDetailPage() {
           </div>
         </div>
       </div>
-      
+
       {/* Контактна інформація */}
       <div className="p-4 md:p-6">
         <h4 className="font-semibold text-gray-900 mb-3 md:mb-4 text-base md:text-lg">Контакти</h4>
-        
+
         {/* Місто */}
         <div className="mb-3 md:mb-4">
           <div className="flex items-center text-gray-700 mb-3">
@@ -637,7 +677,7 @@ export default function AnnouncementDetailPage() {
             <span className="text-sm font-medium">{offer.author.location}</span>
           </div>
         </div>
-        
+
         {/* Телефон */}
         <div className="mb-4 md:mb-6">
           <div className="flex items-center text-gray-700 mb-3">
@@ -696,7 +736,7 @@ export default function AnnouncementDetailPage() {
             <FiMessageCircle size={16} />
             Написати в Telegram
           </motion.a>
-          
+
           <motion.a
             href={`tel:${offer.author.contacts.phone.replace(/\s/g, '')}`}
             whileHover={{ scale: 1.02 }}
@@ -756,7 +796,7 @@ export default function AnnouncementDetailPage() {
               >
                 {isMobileMenuOpen ? <FiX size={20} /> : <FiMenu size={20} />}
               </motion.button>
-              
+
               <motion.button
                 onClick={() => navigate(-1)}
                 whileHover={{ scale: 1.05 }}
@@ -791,13 +831,15 @@ export default function AnnouncementDetailPage() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-4 md:py-6">
         {/* Mobile Left Panel */}
-        <div className={`lg:hidden mb-6 transition-all duration-300 ${isMobileMenuOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+        <div
+          className={`lg:hidden mb-6 transition-all duration-300 ${isMobileMenuOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
+        >
           <LeftPanel />
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Left Sidebar - Desktop only */}
-          <div className="hidden lg:block w-96 flex-shrink-0">        
+          <div className="hidden lg:block w-96 flex-shrink-0">
             <div className="sticky top-24">
               <LeftPanel />
             </div>
@@ -810,7 +852,7 @@ export default function AnnouncementDetailPage() {
               <div className="mb-6 md:mb-8">
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{offer.title}</h1>
                 <p className="text-base md:text-lg text-gray-600 mb-4">{offer.shortDescription}</p>
-                
+
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 mt-4">
                   {offer.tags.map((tag, index) => (
@@ -832,8 +874,8 @@ export default function AnnouncementDetailPage() {
                       { id: 'travel', label: 'Подорожі', icon: <FiNavigation /> },
                       { id: 'wellness', label: 'Оздоровлення', icon: <FiTool /> },
                       { id: 'websites', label: 'Сайти', icon: <FiCode /> },
-                      { id: 'spoons', label: 'Ложки', icon: <FiSpoon /> }
-                    ].map((tab) => (
+                      { id: 'spoons', label: 'Ложки', icon: <FiSpoon /> },
+                    ].map(tab => (
                       <button
                         key={tab.id}
                         onClick={() => {
@@ -860,8 +902,10 @@ export default function AnnouncementDetailPage() {
                       { id: 'details', label: 'Детальніше' },
                       ...(activeTab === 'travel' ? [{ id: 'reports', label: 'Звіти' }] : []),
                       { id: 'reviews', label: 'Відгуки' },
-                      ...(offer.sections[activeTab]?.videos ? [{ id: 'videos', label: 'Відео' }] : [])
-                    ].map((tab) => (
+                      ...(offer.sections[activeTab]?.videos
+                        ? [{ id: 'videos', label: 'Відео' }]
+                        : []),
+                    ].map(tab => (
                       <button
                         key={tab.id}
                         onClick={() => setActiveSubTab(tab.id)}
@@ -878,9 +922,7 @@ export default function AnnouncementDetailPage() {
                 </div>
 
                 {/* Tab Content */}
-                <div className="p-4 md:p-6 lg:p-8">
-                  {renderTabContent()}
-                </div>
+                <div className="p-4 md:p-6 lg:p-8">{renderTabContent()}</div>
               </div>
 
               {/* Footer Info */}

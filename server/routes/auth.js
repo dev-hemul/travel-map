@@ -1,15 +1,17 @@
 import express from 'express';
 
-
 import { verifyAccessToken, verifyRefreshToken } from '../middlewares/auth.js';
-import Tokens from '../model/token.js';
 import User from '../model/user.js'; // Імпорт User для GET /profile
-import { register, login, googleLogin, logout, updateProfile, getRefreshToken } from './../controller/authCntrl.js';
-import { googleCodeToUser, getGoogleAuthUrl } from './../middlewares/googleAuth.js'
 import {
-  validateLoginBody,
-  validateRegisterBody,
-} from './../middlewares/validation.js';
+  register,
+  login,
+  googleLogin,
+  logout,
+  updateProfile,
+  getRefreshToken,
+} from './../controller/authCntrl.js';
+import { googleCodeToUser, getGoogleAuthUrl } from './../middlewares/googleAuth.js';
+import { validateLoginBody, validateRegisterBody } from './../middlewares/validation.js';
 
 const router = express.Router();
 
@@ -40,6 +42,5 @@ router.post('/profile', verifyAccessToken, updateProfile);
 router.get('/google/url', getGoogleAuthUrl);
 
 router.post('/google', googleCodeToUser, googleLogin);
-
 
 export default router;
