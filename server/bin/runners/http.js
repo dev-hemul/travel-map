@@ -1,5 +1,7 @@
 import http from 'http';
 
+import chalk from 'chalk';
+
 import server from '../../server.js';
 
 export default function startServer() {
@@ -7,16 +9,16 @@ export default function startServer() {
   const PORT = process.env.PORT;
 
   httpServer.listen(PORT, () => {
-    console.log('==============================='.green);
-    console.log('🚀 SERVER STARTED:'.bold + ' HTTP server is running'.green);
-    console.log('🌐 URL:'.bold + ` http://localhost:${PORT}`.cyan);
-    console.log('==============================='.green);
+    console.log(chalk.green('==============================='));
+    console.log(chalk.green.bold('🚀 SERVER STARTED:') + ' HTTP server is running');
+    console.log(chalk.cyan.bold('🌐 URL:') + ` http://localhost:${PORT}`);
+    console.log(chalk.green('==============================='));
   });
 
   httpServer.on('error', err => {
-    console.log('==============================='.red);
-    console.log('❌ SERVER ERROR:'.bold + ' Failed to start HTTP server'.red);
-    console.log(`📄 ${err.message}`.yellow);
-    console.log('==============================='.red);
+    console.log(chalk.red('==============================='));
+    console.log(chalk.red.bold('❌ SERVER ERROR:') + ' Failed to start HTTP server');
+    console.log(chalk.yellow(`📄 ${err.message}`));
+    console.log(chalk.red('==============================='));
   });
 }
