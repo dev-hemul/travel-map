@@ -19,7 +19,7 @@ services:
     networks:
       - app-network
     env_file:
-      - ./server/.env
+      - ./server/.env.${DEPLOY_ENV}
 
 networks:
   app-network:
