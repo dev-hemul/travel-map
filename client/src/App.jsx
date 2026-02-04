@@ -56,7 +56,7 @@ function App() {
           .post('/refresh-token', {}, { withCredentials: true })
           .then(res => localStorage.setItem('accessToken', res.data.accessToken))
           .catch(() => localStorage.removeItem('accessToken'));
-          console.warn('check')
+        console.warn('check');
       }
     }, 10000);
 
@@ -92,7 +92,7 @@ function App() {
         <Route path="/create-announcement" element={<CreateAnnouncementPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/google/callback" element={<GoogleCallback />} />
-        
+
         {/* Додано маршрут для сторінки деталей оголошення */}
         <Route path="/announcement/:id" element={<AnnouncementDetailPage />} />
 

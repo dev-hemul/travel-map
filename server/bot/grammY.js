@@ -624,7 +624,7 @@ bot.callbackQuery(/^end_queue_chat_(\d+)$/, async ctx => {
 
 // Запуск бота
 bot.start();
-console.log('Бот запущено');
+console.log('Бoт запущено');
 
 process.once('SIGINT', () => bot.stop());
 process.once('SIGTERM', () => bot.stop());
