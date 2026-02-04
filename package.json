@@ -15,7 +15,7 @@
   "devDependencies": {
     "@eslint/js": "^9.26.0",
     "eslint": "^9.28.0",
-    "eslint-config-prettier": "^10.1.5",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-alias": "^1.1.2",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-react": "^7.37.5",

@@ -6,10 +6,10 @@ import 'dotenv/config';
 
 const DB_URL = process.env.DB_URL;
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const ADMIN_ID = Number(process.env.ADMIN_ID);
+const BOT_ADMIN_ID = Number(process.env.BOT_ADMIN_ID);
 
 if (!BOT_TOKEN) throw new Error('BOT_TOKEN не встановлено в .env');
-if (!ADMIN_ID) throw new Error('ADMIN_ID не встановлено в .env');
+if (!BOT_ADMIN_ID) throw new Error('BOT_ADMIN_ID не встановлено в .env');
 if (!DB_URL) throw new Error('DB_URL не встановлено в .env');
 
 // Підключення до MongoDB
@@ -60,7 +60,7 @@ bot.command('help', async ctx => {
 
 // Обробка /complaints (тільки для адміна)
 bot.command('complaints', async ctx => {
-  if (ctx.from.id !== ADMIN_ID) {
+  if (ctx.from.id !== BOT_ADMIN_ID) {
     return ctx.reply('Ця команда доступна лише оператору.');
   }
 
@@ -127,7 +127,7 @@ bot.callbackQuery('send_complaint', async ctx => {
 
 // Вирішення скарги (оператор)
 bot.callbackQuery(/^resolve_(.+)$/, async ctx => {
-  if (ctx.from.id !== ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
+  if (ctx.from.id !== BOT_ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
 
   const complaintId = ctx.match[1];
   await Support.findByIdAndUpdate(complaintId, { status: 'resolved' });
@@ -191,8 +191,8 @@ bot.on('message:text', async ctx => {
     return;
   }
 
-  // Якщо це оператор (ADMIN_ID) і він у режимі відповіді
-  if (userId === ADMIN_ID && state && state.step === 'replying') {
+  // Якщо це оператор (BOT_ADMIN_ID) і він у режимі відповіді
+  if (userId === BOT_ADMIN_ID && state && state.step === 'replying') {
     const targetUserId = state.targetUserId;
     const text = ctx.message.text;
     try {
@@ -206,9 +206,9 @@ bot.on('message:text', async ctx => {
     return;
   }
 
-  // Якщо це оператор (ADMIN_ID) і він у чаті з користувачем
-  if (userId === ADMIN_ID && operatorChats[ADMIN_ID]) {
-    const targetUserId = operatorChats[ADMIN_ID];
+  // Якщо це оператор (BOT_ADMIN_ID) і він у чаті з користувачем
+  if (userId === BOT_ADMIN_ID && operatorChats[BOT_ADMIN_ID]) {
+    const targetUserId = operatorChats[BOT_ADMIN_ID];
     try {
       await bot.api.sendMessage(targetUserId, `📩 Оператор: ${ctx.message.text}`);
       await ctx.reply('Ваше повідомлення надіслано користувачу.');
@@ -219,9 +219,9 @@ bot.on('message:text', async ctx => {
   }
 
   // Якщо це звичайний користувач і він у чаті з оператором
-  if (operatorChats[userId] === ADMIN_ID) {
+  if (operatorChats[userId] === BOT_ADMIN_ID) {
     try {
-      await bot.api.sendMessage(ADMIN_ID, `📞 Користувач (ID: ${userId}): ${ctx.message.text}`);
+      await bot.api.sendMessage(BOT_ADMIN_ID, `📞 Користувач (ID: ${userId}): ${ctx.message.text}`);
       await ctx.reply('Ваше повідомлення надіслано оператору.');
     } catch {
       await ctx.reply('Не вдалося надіслати повідомлення оператору.');
@@ -260,7 +260,7 @@ async function saveComplaintAndNotify(ctx, subject, message = '') {
       `🆔 ID: ${ctx.from.id}\n\n` +
       `✉️ Повідомлення:\n${finalMessage}`;
 
-    await bot.api.sendMessage(ADMIN_ID, adminMessage, {
+    await bot.api.sendMessage(BOT_ADMIN_ID, adminMessage, {
       reply_markup: new InlineKeyboard()
         .text('Відповісти', `start_chat_${savedComplaint._id}`)
         .text('Вирішити', `resolve_${savedComplaint._id}`),
@@ -299,7 +299,7 @@ bot.callbackQuery('contact_operator', async ctx => {
   // Сповіщаємо оператора про нового користувача в черзі
   try {
     await bot.api.sendMessage(
-      ADMIN_ID,
+      BOT_ADMIN_ID,
       `🆕 Новий запит в черзі від ${ctx.from.first_name}${ctx.from.username ? ` (@${ctx.from.username})` : ''} [ID: ${userId}]\n\nЗагальна кількість в черзі: ${queue.length}`,
       {
         reply_markup: new InlineKeyboard().text('Переглянути чергу', 'view_queue'),
@@ -312,7 +312,7 @@ bot.callbackQuery('contact_operator', async ctx => {
 
 // Обробка кнопки "Переглянути чергу"
 bot.callbackQuery('view_queue', async ctx => {
-  if (ctx.from.id !== ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
+  if (ctx.from.id !== BOT_ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
 
   if (queue.length === 0) {
     return ctx.reply('Черга пуста.');
@@ -330,7 +330,7 @@ bot.callbackQuery('view_queue', async ctx => {
 
 // Обробка кнопки "Прийняти першого в черзі"
 bot.callbackQuery('accept_first', async ctx => {
-  if (ctx.from.id !== ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
+  if (ctx.from.id !== BOT_ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
 
   if (queue.length === 0) {
     return ctx.answerCallbackQuery({ text: 'Черга пуста.' });
@@ -339,8 +339,8 @@ bot.callbackQuery('accept_first', async ctx => {
   const firstUser = queue.shift(); // Видаляємо першого користувача з черги
 
   // Встановлюємо з'єднання
-  operatorChats[ADMIN_ID] = firstUser.id;
-  operatorChats[firstUser.id] = ADMIN_ID;
+  operatorChats[BOT_ADMIN_ID] = firstUser.id;
+  operatorChats[firstUser.id] = BOT_ADMIN_ID;
 
   // Сповіщаємо користувача
   try {
@@ -362,7 +362,7 @@ bot.callbackQuery('accept_first', async ctx => {
 
 // Оновлений обробник завершення чату
 bot.callbackQuery(/^end_chat_(\d+)$/, async ctx => {
-  if (ctx.from.id !== ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
+  if (ctx.from.id !== BOT_ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
 
   const targetUserId = Number(ctx.match[1]);
 
@@ -374,7 +374,7 @@ bot.callbackQuery(/^end_chat_(\d+)$/, async ctx => {
   }
 
   // Видаляємо з активних чатів
-  delete operatorChats[ADMIN_ID];
+  delete operatorChats[BOT_ADMIN_ID];
   delete operatorChats[targetUserId];
 
   await ctx.editMessageText(`Чат з користувачем ${targetUserId} завершено.`);
@@ -382,7 +382,7 @@ bot.callbackQuery(/^end_chat_(\d+)$/, async ctx => {
 
 // Оператор починає чат
 bot.callbackQuery(/^start_chat_(.+)$/, async ctx => {
-  if (ctx.from.id !== ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
+  if (ctx.from.id !== BOT_ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
 
   const complaintId = ctx.match[1];
 
@@ -405,9 +405,9 @@ bot.callbackQuery(/^start_chat_(.+)$/, async ctx => {
   const complaintData = activeComplaints[complaintId];
 
   // Ініціалізуємо чат
-  operatorChats[ADMIN_ID] = complaintData.userId;
-  operatorChats[complaintData.userId] = ADMIN_ID;
-  userState[ADMIN_ID] = { step: 'replying', targetUserId: complaintData.userId };
+  operatorChats[BOT_ADMIN_ID] = complaintData.userId;
+  operatorChats[complaintData.userId] = BOT_ADMIN_ID;
+  userState[BOT_ADMIN_ID] = { step: 'replying', targetUserId: complaintData.userId };
 
   try {
     await bot.api.sendMessage(complaintData.userId, '💬 Оператор приєднався до чату з вами.');
@@ -427,7 +427,7 @@ bot.callbackQuery(/^start_chat_(.+)$/, async ctx => {
 
 // Завершення чату оператором (для чату через скаргу)
 bot.callbackQuery(/^end_chat_(.+)$/, async ctx => {
-  if (ctx.from.id !== ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
+  if (ctx.from.id !== BOT_ADMIN_ID) return ctx.answerCallbackQuery({ text: 'Ви не оператор.' });
 
   const complaintId = ctx.match[1];
 
@@ -463,9 +463,9 @@ bot.callbackQuery(/^end_chat_(.+)$/, async ctx => {
   }
 
   // Завершуємо чат
-  delete operatorChats[ADMIN_ID];
+  delete operatorChats[BOT_ADMIN_ID];
   delete operatorChats[complaintData.userId];
-  delete userState[ADMIN_ID];
+  delete userState[BOT_ADMIN_ID];
 });
 
 // Запуск бота

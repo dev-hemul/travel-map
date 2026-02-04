@@ -235,7 +235,7 @@ export default function AnnouncementDetailPage() {
           subtitle: "Виготовлення дерев'яних ложок на замовлення",
           description:
             'Обожнюю робити ложки з дерева для людей на замовлення. Під час роботи думаю про людину і ложка виходить особливою та суто індивідуальною.',
-          fullDescription: `**Переваги дерев\'яних ложок:**
+          fullDescription: `**Переваги дерев'яних ложок:**
 • Не окислюються (на відміну від металу)
 • Не збивають емаль із зубів
 • Натуральний матеріал
@@ -340,7 +340,7 @@ export default function AnnouncementDetailPage() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [id]);
+  });
 
   const renderTabContent = () => {
     if (!offer) return null;
@@ -532,14 +532,14 @@ export default function AnnouncementDetailPage() {
             ) : (
               <div className="text-center py-12 bg-white rounded-2xl border border-gray-200">
                 <div className="text-gray-400 text-lg mb-3">Ще немає звітів</div>
-                <p className="text-gray-500">Звіти з'являться після проведення подорожей</p>
+                <p className="text-gray-500">Звіти з&#39;являться після проведення подорожей</p>
               </div>
             )}
           </div>
         ) : (
           <div className="text-center py-12 bg-white rounded-2xl border border-gray-200">
             <div className="text-gray-400 text-lg mb-3">
-              Звіти доступні тільки для розділу "Подорожі"
+              Звіти доступні тільки для розділу &#34;Подорожі&#34;
             </div>
           </div>
         );
