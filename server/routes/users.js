@@ -24,4 +24,13 @@ router.get('/users/me', verifyAccessToken, async (req, res) => {
   }
 });
 
+  router.pre('save', function (next) {
+    if (this.provider === 'local' && this.googleId) {
+      console.error('🚨 LOCAL+GOOGLEID SAVE ATTEMPT', this.email, this.googleId);
+      return next(new Error('Invariant: local user cannot have googleId'));
+    }
+    next();
+  });
+
+
 export default router;
