@@ -63,14 +63,33 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
-     
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+
+    const emailNorm = (email || '').trim().toLowerCase();
+    const user = await User.findOne({ email: emailNorm });
+
+    if (!user) {
       return res.status(401).json({
         success: false,
         message: 'Невірний email або пароль',
       });
     }
+
+    if (!user.password) {
+      return res.status(409).json({
+        success: false,
+        message: 'Ця адреса використовувалась для авторизації через Google',
+        code: 'GOOGLE_AUTH_ONLY',
+      });
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(401).json({
+        success: false,
+        message: 'Невірний email або пароль',
+      });
+    }
+
     if (!Array.isArray(user.roles) || user.roles.length === 0) {
       user.roles = ['user'];
       await user.save();
@@ -104,6 +123,13 @@ export const googleLogin = async (req, res) => {
     let user = await User.findOne({
       $or: [{ googleId: gUser.googleId }, { email: emailNorm }],
     });
+
+    if (user && user.email === emailNorm && user.password) {
+      return res.status(409).json({
+        message: 'Ця адреса використовувалась для авторизації через логін і пароль',
+        code: 'LOCAL_AUTH_ONLY',
+      });
+    }
 
     if (!user) {
       user = new User({
@@ -139,6 +165,7 @@ export const googleLogin = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 export const getRefreshToken = async (req, res) => {
   const refreshToken = req.cookies.refreshToken || req.body.refreshToken;

@@ -8,6 +8,20 @@ import LoginTelegramButton from './TelegramLoginButton';
 import api from '@/api/api';
 import 'react-toastify/dist/ReactToastify.css';
 
+const BackArrowIcon = ({ className = 'w-5 h-5' }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    className={className}
+    aria-hidden="true"
+  >
+    <path strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" d="M15 18l-6-6 6-6" />
+  </svg>
+);
+
+
 const LoginPage = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [formData, setFormData] = useState({
@@ -64,10 +78,16 @@ const LoginPage = () => {
       });
 
       setTimeout(() => navigate('/profile'), 1200);
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Щось пішло не так';
-      toast.error(errorMessage);
+      } catch (err) {
+      const msg = err.response?.data?.message || 'Щось пішло не так';
+
+      if (err.response?.status === 409) {
+        toast.warning(msg);
+      } else {
+        toast.error(msg);
+      }
     }
+
   };
 
   const handleResetPassword = e => {
@@ -133,7 +153,9 @@ const LoginPage = () => {
             transition
           "
         >
-          ← Повернутись до карти
+          <BackArrowIcon />
+          <span>Повернутись до карти</span>
+
         </Link>
       </div>
       {/* LG+ back button (зліва зверху) */}
