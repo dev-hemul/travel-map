@@ -7,6 +7,7 @@ import server from '../../server.js';
 export default function startServer() {
   const httpServer = http.createServer(server);
   const PORT = process.env.PORT;
+  console.warn(PORT);
 
   httpServer.listen(PORT, () => {
     console.log(chalk.green('==============================='));

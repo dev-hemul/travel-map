@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
   },
 },
   provider: { type: String, default: 'local' },
-  googleId: { type: String, default: null },
+  googleId: { type: String},
   avatar: { type: String, default: null },  
    roles: {
   type: [String],

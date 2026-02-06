@@ -10,8 +10,21 @@ import User from '../model/user.js';
 const privateKey = readFileSync('keys/privateKey.pem', 'utf8');
 const publicKey = readFileSync('keys/publicKey.pem', 'utf8');
 const alg = 'RS512';
-const lifedur = 7 * 24 * 3600 * 1000 * 1000;         // 7 днів
-const refreshLifedur = 21 * 24 * 3600 * 1000 * 1000; // 21 день
+const lifedur = 7 * 24 * 3600 * 1000;        // 7 днів
+const refreshLifedur = 21 * 24 * 3600 * 1000; // 21 день
+
+const normalizeEmail = (email) => String(email || '').trim().toLowerCase();
+
+const setRefreshCookie = (res, refreshT) => {
+  res.cookie('refreshToken', refreshT, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: refreshLifedur,
+    path: '/',
+  });
+};
+
 
 if (!privateKey || !publicKey) {
   throw new Error('Ключі не ініціалізовані в файлах keys/');
@@ -20,57 +33,87 @@ if (!privateKey || !publicKey) {
 export const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
-    const existingUser = await User.findOne({
-      $or: [{ email }, { username }],
-    });
 
-    if (existingUser) {
-      const message =
-        existingUser.email === email
-          ? 'Електронна пошта вже використовується'
-          : 'Імʼя користувача вже зайнято';
-      return res.status(400).json({ success: false, message });
+    const emailNorm = normalizeEmail(email);
+    const usernameNorm = String(username || '').trim();
+
+const existingByEmail = await User.findOne({ email: emailNorm }).select('provider');
+
+  if (existingByEmail) {
+    if (existingByEmail.provider === 'google') {
+      return res.status(409).json({
+        success: false,
+        message:
+          'Ця адреса вже використовується для входу через Google. Будь ласка авторизуйтесь обраним методом.',
+        code: 'GOOGLE_AUTH_ONLY',
+      });
+    }
+    return res.status(400).json({
+      success: false,
+      message: 'Електронна пошта вже використовується',
+    });
+  }
+    const existingByUsername = await User.findOne({ username: usernameNorm });
+    if (existingByUsername) {
+      return res.status(400).json({ success: false, message: "Імʼя користувача вже зайнято" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = new User({
-      username,
-      email,
+      username: usernameNorm,
+      email: emailNorm,
       password: hashedPassword,
       provider: 'local',
-      roles: ['user'], 
+      roles: ['user'],
     });
+
     await user.save();
 
     await Tokens.deleteMany({ userId: user._id });
     const { accessT, refreshT } = await createTokens(user._id);
 
-    res.cookie('refreshToken', refreshT, {
-      httpOnly: true,
-      secure: false, 
-      sameSite: 'lax',
-      maxAge: refreshLifedur,
-      domain: 'localhost',
-      path: '/',
-    });
-
-    res.status(200).json({ accessToken: accessT });
-  } catch {
-    res.status(500).json({ message: 'Помилка сервера' });
+    setRefreshCookie(res, refreshT);
+    return res.status(200).json({ accessToken: accessT });
+  } catch (e) {
+    console.error('Register error:', e);
+    return res.status(500).json({ message: 'Помилка сервера' });
   }
 };
 
+
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-     
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({
+    const emailNorm = req.body.email.trim().toLowerCase();
+    const password = req.body.password;
+
+    const user = await User.findOne({ email: emailNorm });
+
+    if (!user) {
+      return res.status(404).json({
         success: false,
-        message: 'Невірний email або пароль',
+        message: 'Користувача з таким email не існує',
+        code: 'USER_NOT_FOUND',
       });
     }
+
+    if (user.provider === 'google') {
+      return res.status(409).json({
+        success: false,
+        message: 'Цей email зареєстрований через Google. Будь ласка увійдіть обраним методом.',
+        code: 'GOOGLE_AUTH_ONLY',
+      });
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(401).json({
+        success: false,
+        message: 'Невірний пароль',
+        code: 'WRONG_PASSWORD',
+      });
+    }
+
     if (!Array.isArray(user.roles) || user.roles.length === 0) {
       user.roles = ['user'];
       await user.save();
@@ -87,10 +130,11 @@ export const login = async (req, res) => {
       path: '/',
     });
 
-    res.json({ accessToken: accessT });
+    return res.json({ accessToken: accessT });
+
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Помилка сервера' });
+    return res.status(500).json({ message: 'Помилка сервера' });
   }
 };
 
@@ -98,36 +142,72 @@ export const login = async (req, res) => {
 export const googleLogin = async (req, res) => {
   try {
     const gUser = req.googleUser;
-
     const emailNorm = (gUser.email || '').trim().toLowerCase();
 
-    let user = await User.findOne({
-      $or: [{ googleId: gUser.googleId }, { email: emailNorm }],
-    });
+    const byGoogleId = await User.findOne({ googleId: gUser.googleId });
 
-    if (!user) {
-      user = new User({
-        username: gUser.name || emailNorm.split('@')[0],
-        email: emailNorm,
-        provider: 'google',
-        googleId: gUser.googleId,
-        roles: ['user'],
+    if (byGoogleId) {
+      if (!Array.isArray(byGoogleId.roles) || byGoogleId.roles.length === 0) {
+        byGoogleId.roles = ['user'];
+        await byGoogleId.save();
+      }
+
+      await Tokens.deleteMany({ userId: byGoogleId._id });
+      const { accessT, refreshT } = await createTokens(byGoogleId._id);
+
+      res.cookie('refreshToken', refreshT, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: refreshLifedur,
+        path: '/',
       });
-      await user.save();
-    } else {
-      if (!user.googleId) user.googleId = gUser.googleId;
-      if (!user.provider) user.provider = 'google';
-      if (!Array.isArray(user.roles) || user.roles.length === 0) user.roles = ['user'];
-      await user.save();
+
+      return res.json({ accessToken: accessT });
     }
 
-    await Tokens.deleteMany({ userId: user._id });
+    const byEmail = await User.findOne({ email: emailNorm });
 
-    const { accessT, refreshT } = await createTokens(user._id);
+    if (byEmail) {
+      if (byEmail.provider === 'local' || byEmail.password) {
+        return res.status(409).json({
+          message: 'Ця адреса вже зареєстрована локально. Будь ласка авторизуйтесь обраним методом.',
+          code: 'LOCAL_AUTH_ONLY',
+        });
+      }
+      if (!Array.isArray(byEmail.roles) || byEmail.roles.length === 0) {
+        byEmail.roles = ['user'];
+        await byEmail.save();
+      }
+
+      await Tokens.deleteMany({ userId: byEmail._id });
+      const { accessT, refreshT } = await createTokens(byEmail._id);
+
+      res.cookie('refreshToken', refreshT, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: refreshLifedur,
+        path: '/',
+      });
+
+      return res.json({ accessToken: accessT });
+    }
+
+    const created = await User.create({
+      username: gUser.name || emailNorm.split('@')[0],
+      email: emailNorm,
+      provider: 'google',
+      googleId: gUser.googleId,
+      roles: ['user'],
+    });
+
+    await Tokens.deleteMany({ userId: created._id });
+    const { accessT, refreshT } = await createTokens(created._id);
 
     res.cookie('refreshToken', refreshT, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: refreshLifedur,
       path: '/',
@@ -139,6 +219,7 @@ export const googleLogin = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 export const getRefreshToken = async (req, res) => {
   const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
