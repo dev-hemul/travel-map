@@ -22,4 +22,13 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
+  userSchema.pre('save', function (next) {
+    if (this.provider === 'local' && this.googleId) {
+      console.error('🚨 LOCAL+GOOGLEID SAVE ATTEMPT', this.email, this.googleId);
+      return next(new Error('Invariant: local user cannot have googleId'));
+    }
+    next();
+  });
+
+
 export default mongoose.model('User', userSchema);

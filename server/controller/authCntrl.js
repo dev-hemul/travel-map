@@ -37,18 +37,22 @@ export const register = async (req, res) => {
     const emailNorm = normalizeEmail(email);
     const usernameNorm = String(username || '').trim();
 
-    const existingByEmail = await User.findOne({ email: emailNorm });
-    if (existingByEmail) {
-      if (!existingByEmail.password) {
-        return res.status(409).json({
-          success: false,
-          message: 'Ця адреса вже використовується для входу через Google. Будь ласка авторизуйтесь обраним методом.',
-          code: 'GOOGLE_AUTH_ONLY',
-        });
-      }
-      return res.status(400).json({ success: false, message: 'Електронна пошта вже використовується' });
-    }
+const existingByEmail = await User.findOne({ email: emailNorm }).select('provider');
 
+  if (existingByEmail) {
+    if (existingByEmail.provider === 'google') {
+      return res.status(409).json({
+        success: false,
+        message:
+          'Ця адреса вже використовується для входу через Google. Будь ласка авторизуйтесь обраним методом.',
+        code: 'GOOGLE_AUTH_ONLY',
+      });
+    }
+    return res.status(400).json({
+      success: false,
+      message: 'Електронна пошта вже використовується',
+    });
+  }
     const existingByUsername = await User.findOne({ username: usernameNorm });
     if (existingByUsername) {
       return res.status(400).json({ success: false, message: "Імʼя користувача вже зайнято" });
@@ -93,10 +97,10 @@ export const login = async (req, res) => {
       });
     }
 
-    if (user.googleId) {
+    if (user.provider === 'google') {
       return res.status(409).json({
         success: false,
-        message: 'Користувач з таким Email вже зареєстрований через Google. Будь ласка авторизуйтесь обраним методом.',
+        message: 'Цей email зареєстрований через Google. Будь ласка увійдіть обраним методом.',
         code: 'GOOGLE_AUTH_ONLY',
       });
     }
