@@ -92,8 +92,10 @@ app.use('/api/', usersRoutes);
 
 // Обробка 404
 app.use((req, res, next) => {
+  console.error('❌ 404:', req.method, req.originalUrl);
   next(createHttpError(404));
 });
+
 
 // Обробник помилок
 app.use((err, req, res) => {

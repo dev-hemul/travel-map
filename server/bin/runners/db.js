@@ -3,9 +3,12 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 
 dotenv.config();
-
+  const NODE_ENV = process.env.NODE_ENV
+  dotenv.config({path: `.env.${NODE_ENV}`})
+  
 const connectDB = async () => {
   const dbUrl = process.env.DB_URL;
+
 
   try {
     await mongoose.connect(dbUrl);

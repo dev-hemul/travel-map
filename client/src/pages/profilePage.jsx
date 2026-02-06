@@ -138,8 +138,6 @@ const ProfilePage = () => {
 
     try {
       await api.post('/logout', {}, { withCredentials: true });
-    } catch (error) {
-      console.error('Помилка логауту (ігноруємо, бо клієнт вже вийшов):', error);
     } finally {
       navigate('/');
     }

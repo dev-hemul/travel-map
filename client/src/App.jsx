@@ -56,7 +56,6 @@ function App() {
           .post('/refresh-token', {}, { withCredentials: true })
           .then(res => localStorage.setItem('accessToken', res.data.accessToken))
           .catch(() => localStorage.removeItem('accessToken'));
-          console.warn('check')
       }
     }, 10000);
 
