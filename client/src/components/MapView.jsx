@@ -606,7 +606,7 @@ const MapView = () => {
       </div>
 
       {modalOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-0 md:p-4">
+        <div className="fixed inset-0 z-1000 p-0 md:p-4">
           {/* Оверлей только на мобильных устройствах */}
           <div
             className="absolute inset-0 bg-black/30 md:bg-transparent"
@@ -620,7 +620,7 @@ const MapView = () => {
         bg-gradient-to-br from-white to-gray-50
         border-0 md:border md:border-gray-100 rounded-none md:rounded-2xl
         shadow-none md:shadow-xl z-[1000]
-        w-full md:w-11/12 md:max-w-[450px]
+        w-full min-w-full md:min-w-0 md:w-11/12 md:max-w-[450px]
         h-full md:h-auto md:max-h-[90vh]"
           >
             <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 p-5 sm:p-6 pb-7 rounded-none md:rounded-t-2xl">
