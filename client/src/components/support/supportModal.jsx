@@ -40,7 +40,13 @@ export default function SupportModal({ onClose }) {
     <AnimatePresence>
       {!isClosing && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="
+          fixed inset-0 z-50 flex
+    items-stretch justify-stretch      /* NEW: <md растягиваем модалку по высоте/ширине */
+    md:items-center md:justify-center  /* NEW: ≥md возвращаем центрирование */
+    p-0 md:p-4
+
+          "
           initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
           animate={{
             opacity: 1,
@@ -75,9 +81,21 @@ export default function SupportModal({ onClose }) {
                 ease: 'easeIn',
               },
             }}
-            className="relative w-full max-w-md mx-4 bg-gradient-to-br from-white to-gray-50 border border-gray-100 rounded-2xl shadow-xl"
+            className="
+            relative w-full
+            md:max-w-md
+            h-[100dvh] md:h-auto
+            md:max-h-[90vh]
+            mx-0 md:mx-4
+            flex flex-col
+            overflow-hidden
+            bg-gradient-to-br from-white to-gray-50
+            border border-gray-100
+            rounded-none md:rounded-2xl
+            shadow-xl
+            "
           >
-            <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 p-5 sm:p-6 pb-7 rounded-t-2xl">
+            <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 p-5 sm:p-6 pb-7">
               <h3 className="text-xl sm:text-3xl font-semibold text-white leading-tight">
                 Звернення до підтримки
               </h3>
@@ -119,7 +137,7 @@ export default function SupportModal({ onClose }) {
             ) : (
               <motion.form
                 onSubmit={handleSubmit}
-                className="p-5 sm:p-6 space-y-4"
+                className="p-5 sm:p-6 space-y-4 flex-1 min-h-0 overflow-y-auto"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
