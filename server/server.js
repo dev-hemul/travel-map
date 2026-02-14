@@ -46,7 +46,7 @@ app.use(
   cors({
     origin: [
       'http://localhost:5173',
-      'http://159.89.102.4',
+      'http://139.59.146.5',
       'https://evgeniiviter.website',
       'http://localhost',
     ],
@@ -95,7 +95,6 @@ app.use((req, res, next) => {
   console.error('❌ 404:', req.method, req.originalUrl);
   next(createHttpError(404));
 });
-
 
 // Обробник помилок
 app.use((err, req, res) => {
