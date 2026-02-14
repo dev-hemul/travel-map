@@ -1,17 +1,14 @@
 import express from 'express';
 
+import { googleLogin } from '../controller/authCntrl/google.authCntrl.js';
+import { register, login } from '../controller/authCntrl/local.authCntrl.js';
+import { getRefreshToken, logout } from '../controller/authCntrl/tokenCntrl.js';
 import { verifyAccessToken, verifyRefreshToken } from '../middlewares/auth.js';
 import User from '../model/user.js'; // Імпорт User для GET /profile
-import {
-  register,
-  login,
-  googleLogin,
-  logout,
-  updateProfile,
-  getRefreshToken,
-} from './../controller/authCntrl.js';
 import { googleCodeToUser, getGoogleAuthUrl } from './../middlewares/googleAuth.js';
 import { validateLoginBody, validateRegisterBody } from './../middlewares/validation.js';
+import { updateProfile } from '../controller/authCntrl/profileCntrl.js';
+
 
 const router = express.Router();
 
@@ -32,7 +29,7 @@ router.get('/profile', verifyAccessToken, async (req, res) => {
     if (!user) return res.status(404).json({ message: 'Користувача не знайдено' });
     res.json({ user });
   } catch (error) {
-    console.error('GET /profile error details:', error.message, error.stack); // Детальний лог
+    console.error('GET /profile error details:', error.message, error.stack); 
     res.status(500).json({ message: 'Помилка сервера' });
   }
 });
