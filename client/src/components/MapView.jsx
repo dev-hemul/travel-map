@@ -38,6 +38,7 @@ const MapView = () => {
   const mapRef = useRef(null);
   const [mapType, setMapType] = useState('standard');
   const mapInstance = useRef(null);
+  const focusRef = useRef(null);
   const [markers, setMarkers] = useState([]);
   /*  const [tagInput, setTagInput] = useState('');*/
 
@@ -50,6 +51,16 @@ const MapView = () => {
 
   // Підключаємо хук
   useMapMeasure(mapInstance, isMeasureEnabled);
+
+  useEffect(() => {
+    if (!modalOpen) return;
+
+    const t = setTimeout(() => {
+      focusRef.current?.focus();
+    }, 0);
+
+    return () => clearTimeout(t);
+  }, [modalOpen]);
 
   useEffect(() => {
     const fetchMarkers = async () => {
@@ -651,6 +662,7 @@ const MapView = () => {
                       name="title"
                       value={formData.title}
                       onChange={handleFormChange}
+                      ref={focusRef}
                       className="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-xl
     text-gray-800 placeholder-gray-400 focus:border-blue-500 focus:ring focus:ring-blue-200
     focus:outline-none hover:border-[#9ca3af] transition duration-200 text-sm sm:text-base"
