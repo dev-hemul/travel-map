@@ -33,7 +33,7 @@ jobs:
           node-version: 20
 
       - name: Install root dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Create .env for server
         run: |
@@ -58,13 +58,13 @@ jobs:
       - name: Install and Build Backend
         run: |
           cd server
-          yarn install --frozen-lockfile
+          pnpm install --frozen-lockfile
 
       - name: Install and Build Frontend
         run: |
           cd client
-          yarn install --frozen-lockfile
-          yarn build
+          pnpm install --frozen-lockfile
+          pnpm build
 
   notify:
     needs: validate

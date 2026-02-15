@@ -1,1 +1,23 @@
+#!/bin/sh
+# Husky 10+ pre-commit для pnpm
+
+# -----------------------------
+# 1️⃣ Перевірка зайвих lock-файлів
+# -----------------------------
+LOCK_FILES_FOUND=0
+for FILE in yarn.lock package-lock.json client/yarn.lock client/package-lock.json server/yarn.lock server/package-lock.json; do
+  if [ -f "$FILE" ]; then
+    echo "❌ Знайдено зайвий lock-файл: $FILE"
+    LOCK_FILES_FOUND=1
+  fi
+done
+
+if [ "$LOCK_FILES_FOUND" -eq 1 ]; then
+  echo "❌ Видаліть усі yarn.lock та package-lock.json. Використовуємо лише pnpm"
+  exit 1
+fi
+
+# -----------------------------
+# 2️⃣ Існуюча перевірка lint-staged
+# -----------------------------
 npx lint-staged

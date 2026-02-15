@@ -21,7 +21,7 @@ export default function ContactSupport({ onOpenForm, telegramLink }) {
         ) : (
           <>
             <FiHelpCircle className="text-2xl text-gray-700" />
-            <span className="font-medium">Підтримка</span>
+            <span className="font-medium">Підтримка11</span>
           </>
         )}
       </button>
