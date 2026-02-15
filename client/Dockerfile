@@ -1,33 +1,32 @@
-# Використовуємо Node 20 на Alpine
+# Используем Alpine (намного легче)
 FROM node:20-alpine
 
-# Встановлюємо пакети для складання залежностей (Vite іноді вимагає)
-RUN apk add --no-cache python3 make g++
+# Устанавливаем bash (опционально) и build tools
+RUN apk add --no-cache python3 make g++ bash
 
-# Робоча директорія у контейнері
+# Настройка PNPM
+RUN corepack enable && corepack prepare pnpm@10.29.3 --activate
+ENV PNPM_HOME="/pnpm-global"
+ENV PATH="$PNPM_HOME:$PATH"
+
+# Рабочая директория
 WORKDIR /app
 
-# Встановлюємо Corepack і pnpm (щоб бути впевненим у версії)
-RUN corepack enable \
-    && corepack prepare pnpm@10.29.3 --activate
-
-# Копіюємо package.json та pnpm-lock.yaml
+# Копируем ТОЛЬКО файлы зависимостей (для кеширования)
 COPY package.json pnpm-lock.yaml ./
 
-# Встановлюємо залежності
+# Устанавливаем зависимости
 RUN pnpm install --frozen-lockfile
 
-# Копіюємо весь код проекту
+# Копируем остальной код
 COPY . .
 
-# Збираємо React-застосунок (Vite)
+# Собираем фронтенд
 RUN pnpm build
 
-# Встановлюємо serve для віддачі збірки
+# Устанавливаем serve глобально
 RUN pnpm add -g serve
 
-# Відкриваємо порт усередині контейнера
 EXPOSE 5173
 
-# Команда запуску контейнера
 CMD ["serve", "-s", "dist", "-p", "5173"]
