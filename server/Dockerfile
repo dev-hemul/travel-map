@@ -4,11 +4,15 @@ FROM node:20-alpine
 # Робоча директорія у контейнері
 WORKDIR /app
 
-# Копіюємо package.json та yarn.lock
-COPY package.json yarn.lock ./
+# Встановлюємо Corepack і pnpm (щоб бути впевненим у версії)
+RUN corepack enable \
+    && corepack prepare pnpm@10.29.3 --activate
+
+# Копіюємо package.json та pnpm-lock.yaml
+COPY package.json pnpm-lock.yaml ./
 
 # Встановлюємо залежності
-RUN yarn install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Копіюємо весь код проекту
 COPY . .
@@ -16,5 +20,5 @@ COPY . .
 # Відкриваємо порт сервера
 EXPOSE 4000
 
-# Команда запуску сервера (вказуємо точний шлях до скрипту)
+# Команда запуску сервера
 CMD ["node", "bin/www.js"]

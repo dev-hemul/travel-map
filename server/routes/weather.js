@@ -1,7 +1,12 @@
 import axios from 'axios';
+import dotenv from 'dotenv';
 import express from 'express';
 
 const router = express.Router();
+
+const NODE_ENV = process.env.NODE_ENV || 'development';
+
+dotenv.config({ path: `.env.${NODE_ENV}` });
 
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 

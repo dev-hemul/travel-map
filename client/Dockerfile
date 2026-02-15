@@ -7,20 +7,24 @@ RUN apk add --no-cache python3 make g++
 # Робоча директорія у контейнері
 WORKDIR /app
 
-# Копіюємо package.json та yarn.lock
-COPY package.json yarn.lock ./
+# Встановлюємо Corepack і pnpm (щоб бути впевненим у версії)
+RUN corepack enable \
+    && corepack prepare pnpm@10.29.3 --activate
+
+# Копіюємо package.json та pnpm-lock.yaml
+COPY package.json pnpm-lock.yaml ./
 
 # Встановлюємо залежності
-RUN yarn install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Копіюємо весь код проекту
 COPY . .
 
 # Збираємо React-застосунок (Vite)
-RUN yarn build
+RUN pnpm build
 
 # Встановлюємо serve для віддачі збірки
-RUN yarn global add serve
+RUN pnpm add -g serve
 
 # Відкриваємо порт усередині контейнера
 EXPOSE 5173
