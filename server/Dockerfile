@@ -1,20 +1,23 @@
 # Використовуємо офіційний Node образ
 FROM node:20-alpine
 
+# Встановлюємо build tools для нативних модулів (на всяк випадок)
+RUN apk add --no-cache python3 make g++
+
 # Робоча директорія у контейнері
 WORKDIR /app
 
-# Встановлюємо Corepack і pnpm (щоб бути впевненим у версії)
+# Встановлюємо Corepack і pnpm
 RUN corepack enable \
     && corepack prepare pnpm@10.29.3 --activate
 
-# Копіюємо package.json та pnpm-lock.yaml
+# Копіюємо ТІЛЬКИ файли залежностей (для кешування)
 COPY package.json pnpm-lock.yaml ./
 
 # Встановлюємо залежності
 RUN pnpm install --frozen-lockfile
 
-# Копіюємо весь код проекту
+# Тепер копіюємо решту коду
 COPY . .
 
 # Відкриваємо порт сервера
