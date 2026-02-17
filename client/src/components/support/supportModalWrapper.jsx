@@ -1,7 +1,6 @@
-// components/support/SupportModalWrapper.js
 import { useState } from 'react';
 
-import ContactSupport from './ContactSupport'; // Обновленный импорт
+import ContactSupport from './ContactSupport';
 import useTheme from './hooks/useTheme';
 import SupportModal from './supportModal';
 
@@ -13,7 +12,7 @@ export default function SupportModalWrapper() {
     setShowSupport(prev => !prev);
   };
 
-  const telegramLink = 'https://t.me/TravelMapSupport_bot'; // Замените на вашу ссылку
+  const telegramLink = 'https://t.me/dobrotvorcev';
 
   return (
     <>
