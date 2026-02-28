@@ -45,6 +45,17 @@ jobs:
       - name: Install root dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install and Build Backend
+        run: |
+          cd server
+          pnpm install --frozen-lockfile
+
+      - name: Install and Build Frontend
+        run: |
+          cd client
+          pnpm install --frozen-lockfile
+          pnpm build
+
       - name: Run Lint
         run: pnpm lint
 
@@ -67,17 +78,6 @@ jobs:
         run: |
           echo "${{ secrets.PRIVATE_KEY_B64 }}" | base64 -d > server/privateKey.pem
           echo "${{ secrets.PUBLIC_KEY_B64 }}" | base64 -d > server/publicKey.pem
-
-      - name: Install and Build Backend
-        run: |
-          cd server
-          pnpm install --frozen-lockfile
-
-      - name: Install and Build Frontend
-        run: |
-          cd client
-          pnpm install --frozen-lockfile
-          pnpm build
 
   notify:
     needs: validate
