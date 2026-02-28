@@ -19,8 +19,9 @@ jobs:
       # 1️⃣ Перевірка назви гілки
       # ------------------------------
       - name: 🪵 Check branch name format
+        env:
+          BRANCH: ${{ github.head_ref }}
         run: |
-          BRANCH="${{ github.head_ref }}"
           echo "🔍 Checking branch name: $BRANCH"
 
           # Формат: TM-999/short-description
@@ -40,6 +41,8 @@ jobs:
         run: |
           BASE_SHA=${{ github.event.pull_request.base.sha }}
           HEAD_SHA=${{ github.event.pull_request.head.sha }}
+          
+          # Отримуємо список коммітів
           COMMITS=$(git log --pretty=format:%s $BASE_SHA..$HEAD_SHA)
 
           echo "🔍 Перевіряємо комміти між $BASE_SHA и $HEAD_SHA"
@@ -48,16 +51,21 @@ jobs:
           echo "-------------------------------------------"
 
           INVALID=0
-          while IFS= read -r COMMIT; do
-            if [[ ! "$COMMIT" =~ ^TM-[0-9]+:\  ]]; then
-              echo "❌ Некоректний коміт: \"$COMMIT\""
-              echo "✅ Формат повинен бути: TM-<номер_задачі>: опис"
-              echo "Приклад: TM-123: виправлена авторизація"
-              INVALID=1
-            else
-              echo "✅ $COMMIT"
-            fi
-          done <<< "$COMMITS"
+          # Використовуємо -n для перевірки, чи не пустий список, та echo "$COMMITS" | ... для надійності
+          if [ -z "$COMMITS" ]; then
+            echo "⚠️ Коммітів для перевірки не знайдено (можливо, це merge PR або rebase)"
+          else
+            while IFS= read -r COMMIT || [[ -n "$COMMIT" ]]; do
+              if [[ ! "$COMMIT" =~ ^TM-[0-9]+:\  ]]; then
+                echo "❌ Некоректний коміт: \"$COMMIT\""
+                echo "✅ Формат повинен бути: TM-<номер_задачі>: опис"
+                echo "Приклад: TM-123: виправлена авторизація"
+                INVALID=1
+              else
+                echo "✅ $COMMIT"
+              fi
+            done <<< "$COMMITS"
+          fi
 
           if [ "$INVALID" -eq 1 ]; then
             echo "🚫 Знайдено некоректні коміти"
@@ -70,8 +78,9 @@ jobs:
       #  Перевірка заголовку PR
       # ========================
       - name: Check PR title format
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
         run: |
-          TITLE="${{ github.event.pull_request.title }}"
           echo "🔹 Заголовок PR: $TITLE"
           
           # Перевірка на пусте поле
@@ -99,9 +108,11 @@ jobs:
       # 3️⃣ Перевірка опису PR
       # ------------------------------
       - name: 📝 Check PR description format
+        env:
+          BODY: ${{ github.event.pull_request.body }}
         run: |
-          BODY="${{ github.event.pull_request.body }}"
           echo "🔍 Перевіряємо опис PR:"
+          # Використовуємо одинарні лапки для безпечного виводу
           echo "$BODY"
           
           # Перевірка на пусте поле

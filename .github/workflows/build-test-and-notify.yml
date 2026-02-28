@@ -6,7 +6,7 @@ on:
 
 jobs:
   validate:
-    name: Validate branch, commits, and PR description
+    name: build-and-test
     runs-on: ubuntu-latest
 
     env:
@@ -27,18 +27,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       - name: Enable Corepack and PNPM
         run: |
           corepack enable
           corepack prepare pnpm@10.29.3 --activate
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            client/pnpm-lock.yaml
+            server/pnpm-lock.yaml
+
       - name: Install root dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Install and Build Backend
+        run: |
+          cd server
+          pnpm install --frozen-lockfile
+
+      - name: Install and Build Frontend
+        run: |
+          cd client
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Run Lint
+        run: pnpm lint
 
       - name: Create .env for server
         run: |
@@ -60,73 +79,51 @@ jobs:
           echo "${{ secrets.PRIVATE_KEY_B64 }}" | base64 -d > server/privateKey.pem
           echo "${{ secrets.PUBLIC_KEY_B64 }}" | base64 -d > server/publicKey.pem
 
-      - name: Install and Build Backend
-        run: |
-          cd server
-          pnpm install --frozen-lockfile
-
-      - name: Install and Build Frontend
-        run: |
-          cd client
-          pnpm install --frozen-lockfile
-          pnpm build
-
   notify:
     needs: validate
-    if: success()
+    if: always() && (needs.validate.result == 'success' || github.event.action == 'closed')
     runs-on: ubuntu-latest
 
     env:
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      PR_BODY: ${{ github.event.pull_request.body }}
+      PR_USER: ${{ github.event.pull_request.user.login }}
+      PR_HEAD: ${{ github.event.pull_request.head.ref }}
+      PR_BASE: ${{ github.event.pull_request.base.ref }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_MERGED: ${{ github.event.pull_request.merged }}
+      PR_ACTION: ${{ github.event.action }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
 
     steps:
-      - name: Install jq
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
-
-      - name: Set PR variables
-        run: |
-          PR_NUMBER=$(jq -r '.pull_request.number' "$GITHUB_EVENT_PATH")
-          PR_TITLE=$(jq -r '.pull_request.title' "$GITHUB_EVENT_PATH")
-          PR_BODY=$(jq -r '.pull_request.body' "$GITHUB_EVENT_PATH")
-          PR_USER=$(jq -r '.pull_request.user.login' "$GITHUB_EVENT_PATH")
-          PR_HEAD=$(jq -r '.pull_request.head.ref' "$GITHUB_EVENT_PATH")
-          PR_BASE=$(jq -r '.pull_request.base.ref' "$GITHUB_EVENT_PATH")
-          PR_MERGED=$(jq -r '.pull_request.merged' "$GITHUB_EVENT_PATH")
-          PR_ACTION=$(jq -r '.action' "$GITHUB_EVENT_PATH")
-
-          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
-          echo "PR_TITLE=$PR_TITLE" >> $GITHUB_ENV
-          echo "PR_BODY=$PR_BODY" >> $GITHUB_ENV
-          echo "PR_USER=$PR_USER" >> $GITHUB_ENV
-          echo "PR_HEAD=$PR_HEAD" >> $GITHUB_ENV
-          echo "PR_BASE=$PR_BASE" >> $GITHUB_ENV
-          echo "PR_MERGED=$PR_MERGED" >> $GITHUB_ENV
-          echo "PR_ACTION=$PR_ACTION" >> $GITHUB_ENV
-
       - name: 🔵 Notify PR opened/reopened
-        if: ${{ env.PR_ACTION == 'opened' || env.PR_ACTION == 'reopened' || env.PR_ACTION == 'synchronize' || env.PR_ACTION == 'edited' }}
+        if: ${{ env.PR_ACTION == 'opened' || env.PR_ACTION == 'reopened' || env.PR_ACTION == 'synchronize' }}
         run: |
           DESC_TEXT=""
           if [ -n "$PR_BODY" ]; then
-            DESC_TEXT="*Опис:* $PR_BODY"
+            # Экранируем HTML
+            PR_BODY_ESC=$(echo "$PR_BODY" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+            DESC_TEXT="<b>Опис:</b> $PR_BODY_ESC"
           fi
 
-          MESSAGE=$(cat <<EOF
-          🔵 Новий Pull Request від *$PR_USER*
+          # Экранируем другие переменные
+          PR_TITLE_ESC=$(echo "$PR_TITLE" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
 
-          *Назва:* $PR_TITLE
-          *Гілка:* $PR_HEAD → $PR_BASE
+          MESSAGE=$(cat <<EOF
+          🔵 <b>Новий Pull Request від $PR_USER</b>
+
+          <b>Назва:</b> $PR_TITLE_ESC
+          <b>Гілка:</b> $PR_HEAD → $PR_BASE
           $DESC_TEXT
-          🔗 [Дивитись PR](https://github.com/${{ github.repository }}/pull/$PR_NUMBER)
+
+          🔗 <a href="https://github.com/${{ github.repository }}/pull/$PR_NUMBER">Дивитись PR</a>
           EOF
           )
 
           curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
             --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
-            --data-urlencode "parse_mode=Markdown" \
+            --data-urlencode "parse_mode=HTML" \
             --data-urlencode "text=$MESSAGE"
 
       - name: 🟢 Notify PR merged
@@ -134,23 +131,25 @@ jobs:
         run: |
           DESC_TEXT=""
           if [ -n "$PR_BODY" ]; then
-            DESC_TEXT="*Опис:* $PR_BODY\n"
+            PR_BODY_ESC=$(echo "$PR_BODY" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+            DESC_TEXT="<b>Опис:</b> $PR_BODY_ESC"
           fi
 
           MESSAGE=$(cat <<EOF
-          🟢 Pull Request *#$PR_NUMBER* був злитий в гілку *$PR_BASE*
+          🟢 <b>Pull Request #$PR_NUMBER був злитий в гілку $PR_BASE</b>
 
           Автор: $PR_USER
           $DESC_TEXT
-          🔗 [Дивитись PR](https://github.com/${{ github.repository }}/pull/$PR_NUMBER)
-          
-          👉 Не забудьте зробити \`git pull\`!
+
+          🔗 <a href="https://github.com/${{ github.repository }}/pull/$PR_NUMBER">Дивитись PR</a>
+
+          👉 Не забудьте зробити <code>git pull</code>!
           EOF
           )
 
           curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
             --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
-            --data-urlencode "parse_mode=Markdown" \
+            --data-urlencode "parse_mode=HTML" \
             --data-urlencode "text=$MESSAGE"
 
       - name: 🔴 Notify PR closed without merge
@@ -158,19 +157,21 @@ jobs:
         run: |
           DESC_TEXT=""
           if [ -n "$PR_BODY" ]; then
-            DESC_TEXT="*Опис:* $PR_BODY"
+            PR_BODY_ESC=$(echo "$PR_BODY" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+            DESC_TEXT="<b>Опис:</b> $PR_BODY_ESC"
           fi
 
           MESSAGE=$(cat <<EOF
-          🔴 Pull Request *#$PR_NUMBER* був закритий без merge
-          
-          Автор закритого PR: *$PR_USER*
+          🔴 <b>Pull Request #$PR_NUMBER був закритий без merge</b>
+
+          Автор закритого PR: <b>$PR_USER</b>
           $DESC_TEXT
-          🔗 [Дивитись PR](https://github.com/${{ github.repository }}/pull/$PR_NUMBER)
+
+          🔗 <a href="https://github.com/${{ github.repository }}/pull/$PR_NUMBER">Дивитись PR</a>
           EOF
           )
 
           curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
             --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
-            --data-urlencode "parse_mode=Markdown" \
+            --data-urlencode "parse_mode=HTML" \
             --data-urlencode "text=$MESSAGE"
