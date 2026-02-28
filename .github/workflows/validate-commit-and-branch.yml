@@ -60,14 +60,14 @@ jobs:
           done <<< "$COMMITS"
 
           if [ "$INVALID" -eq 1 ]; then
-            echo "🚫 Знайдено некоректні комміти"
+            echo "🚫 Знайдено некоректні коміти"
             exit 1
           fi
 
           echo "✅ Усі коміти коректні!"
 
       # ========================
-      #  Проверка заголовка PR
+      #  Перевірка заголовку PR
       # ========================
       - name: Check PR title format
         run: |
@@ -118,4 +118,13 @@ jobs:
             exit 1
           fi
           
-          echo "✅ Опис PR коректно!"
+          DESCRIPTION=$(echo "$BODY" | sed -E 's/^TM-[0-9]+:\ //')
+          
+          # Перевірка на загальні слова: Опис не може бути тільки з загальних слів
+          if [[ "$DESCRIPTION" =~ ^(fix|update|wip|temp|test|change|edit|remove|add|delete|refactor|docs?)?$ ]]; then
+           echo "❌ Занадто загальний опис: \"$DESCRIPTION\""
+           echo "✅ Опиши конкретно, що зроблено (наприклад: \"fix login button color\", \"add validation for email\")"
+          exit 1
+         fi
+          
+          echo "✅ Опис PR коректний!"
