@@ -107,7 +107,6 @@ jobs:
             DESC_TEXT="<b>Опис:</b> $PR_BODY_ESC"
           fi
 
-          # Экранируем другие переменные
           PR_TITLE_ESC=$(echo "$PR_TITLE" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
 
           MESSAGE=$(cat <<EOF

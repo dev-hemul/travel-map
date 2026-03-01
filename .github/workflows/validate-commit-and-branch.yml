@@ -42,10 +42,10 @@ jobs:
           BASE_SHA=${{ github.event.pull_request.base.sha }}
           HEAD_SHA=${{ github.event.pull_request.head.sha }}
           
-          # Отримуємо список коммітів
+          # Отримуємо список комітів
           COMMITS=$(git log --pretty=format:%s $BASE_SHA..$HEAD_SHA)
 
-          echo "🔍 Перевіряємо комміти між $BASE_SHA и $HEAD_SHA"
+          echo "🔍 Перевіряємо коміти між $BASE_SHA и $HEAD_SHA"
           echo "-------------------------------------------"
           echo "$COMMITS"
           echo "-------------------------------------------"
@@ -53,7 +53,7 @@ jobs:
           INVALID=0
           # Використовуємо -n для перевірки, чи не пустий список, та echo "$COMMITS" | ... для надійності
           if [ -z "$COMMITS" ]; then
-            echo "⚠️ Коммітів для перевірки не знайдено (можливо, це merge PR або rebase)"
+            echo "⚠️ Комітів для перевірки не знайдено (можливо, це merge PR або rebase)"
           else
             while IFS= read -r COMMIT || [[ -n "$COMMIT" ]]; do
               if [[ ! "$COMMIT" =~ ^TM-[0-9]+:\  ]]; then
