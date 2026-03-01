@@ -3,8 +3,16 @@ import React, { useState } from 'react';
 import { FaTelegram, FaTimes } from 'react-icons/fa';
 import { FiHelpCircle } from 'react-icons/fi';
 
-export default function ContactSupport({ onOpenForm, telegramLink }) {
+export default function ContactSupport({ telegramLink }) {
   const [isOpen, setIsOpen] = useState(false);
+  const supportEmail = 'valentin.traveler@gmail.com';
+
+  const handleEmailClick = () => {
+    setIsOpen(false);
+    const subject = encodeURIComponent('');
+    const body = encodeURIComponent('Опишіть вашу проблему або питання:');
+    window.location.href = `mailto:${supportEmail}?subject=${subject}&body=${body}`;
+  };
 
   return (
     <div className="fixed bottom-10 right-5 z-[997]">
@@ -39,10 +47,7 @@ export default function ContactSupport({ onOpenForm, telegramLink }) {
             </h3>
             <div className="flex flex-col gap-2">
               <button
-                onClick={() => {
-                  setIsOpen(false);
-                  if (typeof onOpenForm === 'function') onOpenForm();
-                }}
+                onClick={handleEmailClick}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700
                         text-gray-800 dark:text-white rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
               >
