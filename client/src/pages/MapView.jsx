@@ -1,20 +1,22 @@
 import L from 'leaflet';
 import React, { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { components } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 
 import 'leaflet/dist/leaflet.css';
-import AuthMenu from './map/AuthMenu.jsx';
-import LayersSwitcher from './map/LayersSwitcher';
-import RouletteWidget from './map/RouletteWidget.jsx';
-import SidePanel from './map/SidePanel.jsx';
-import WeatherWidget from './map/WeatherWidget';
+
 import markerIconSvg from '../assets/map-marker-32px.svg';
+import AuthMenu from '../components/map/AuthMenu.jsx';
+import LayersSwitcher from '../components/map/LayersSwitcher';
+import RouletteWidget from '../components/map/RouletteWidget.jsx';
+import SidePanel from '../components/map/SidePanel.jsx';
+import WeatherWidget from '../components/map/WeatherWidget';
 import { useMapMeasure } from '../hooks/useMapMeasure.jsx';
 
 import api from '@/api/api';
 import MyLocation from '@/components/map/MyLocation';
+
 
 const MapView = () => {
   const [uploadProgress, setUploadProgress] = useState({}); // Об'єкт для збереження прогресу завантаження кожного файлу

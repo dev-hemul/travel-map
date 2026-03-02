@@ -4,9 +4,9 @@ import { BiSupport, BiLogIn } from 'react-icons/bi';
 import { CgProfile } from 'react-icons/cg';
 import { FaRoute, FaLongArrowAltLeft, FaLongArrowAltRight, FaBullhorn } from 'react-icons/fa';
 import { IoMdSettings } from 'react-icons/io';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router';
 
-const SidebarLayout = ({ children }) => {
+const SidebarLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showToggleButton, setShowToggleButton] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -165,7 +165,7 @@ const SidebarLayout = ({ children }) => {
         className="flex-1 p-8"
         onClick={() => windowWidth < breakPoint768 && isSidebarOpen && setIsSidebarOpen(false)}
       >
-        {children}
+        <Outlet />
       </motion.div>
     </div>
   );

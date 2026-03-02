@@ -21,7 +21,7 @@ import {
   FiCode,
   FiTool as FiSpoon,
 } from 'react-icons/fi';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 
 export default function AnnouncementDetailPage() {
   const { id } = useParams();

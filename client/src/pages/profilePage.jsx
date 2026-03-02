@@ -15,7 +15,7 @@ import {
   FiEdit2,
   FiCheck,
 } from 'react-icons/fi';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import api from '@/api/api';
 
