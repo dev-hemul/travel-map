@@ -1,12 +1,10 @@
 import { useState } from 'react';
 
 import ContactSupport from './ContactSupport';
-import useTheme from './hooks/useTheme';
 import SupportModal from './supportModal';
 
 export default function SupportModalWrapper() {
   const [showSupport, setShowSupport] = useState(false);
-  const { theme, toggleTheme } = useTheme();
 
   const toggleSupportModal = () => {
     setShowSupport(prev => !prev);
@@ -18,9 +16,7 @@ export default function SupportModalWrapper() {
     <>
       <ContactSupport onOpenForm={toggleSupportModal} telegramLink={telegramLink} />
 
-      {showSupport && (
-        <SupportModal onClose={toggleSupportModal} toggleTheme={toggleTheme} currentTheme={theme} />
-      )}
+      {showSupport && <SupportModal onClose={toggleSupportModal} />}
     </>
   );
 }

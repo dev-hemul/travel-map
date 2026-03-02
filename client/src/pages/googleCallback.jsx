@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 
 import api from '../api/api';
@@ -9,7 +9,7 @@ export default function GoogleCallback() {
   const ranRef = useRef(false);
 
   useEffect(() => {
-    if (ranRef.current) return;    
+    if (ranRef.current) return;
     ranRef.current = true;
 
     const run = async () => {

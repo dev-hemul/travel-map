@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FaEye, FaEyeSlash, FaGoogle, FaLock, FaUser } from 'react-icons/fa';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import { ToastContainer, toast } from 'react-toastify';
-
-import LoginTelegramButton from './TelegramLoginButton';
 
 import api from '@/api/api';
 import 'react-toastify/dist/ReactToastify.css';
@@ -20,7 +18,6 @@ const BackArrowIcon = ({ className = 'w-5 h-5' }) => (
     <path strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" d="M15 18l-6-6 6-6" />
   </svg>
 );
-
 
 const LoginPage = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -78,7 +75,7 @@ const LoginPage = () => {
       });
 
       setTimeout(() => navigate('/profile'), 1200);
-      } catch (err) {
+    } catch (err) {
       const msg = err.response?.data?.message || 'Щось пішло не так';
 
       if (err.response?.status === 409) {
@@ -87,7 +84,6 @@ const LoginPage = () => {
         toast.error(msg);
       }
     }
-
   };
 
   const handleResetPassword = e => {
@@ -101,19 +97,6 @@ const LoginPage = () => {
     toast.success('Лист для відновлення надіслано на вашу пошту');
     setShowReset(false);
     setResetEmail('');
-  };
-
-  const handleTelegramLogin = () => {
-    const botId = '7744665366';
-    const botUsername = 'TravelMapSupport_bot';
-    const redirectUri = 'https://yourdomain.com/profile';
-    const origin = window.location.origin;
-
-    const telegramAuthUrl = `https://oauth.telegram.org/auth?bot_id=${botId}&bot=${botUsername}&origin=${encodeURIComponent(
-      origin
-    )}&request_access=write&redirect_uri=${encodeURIComponent(redirectUri)}`;
-
-    window.location.href = telegramAuthUrl;
   };
 
   const handleGoogleLogin = async () => {
@@ -155,7 +138,6 @@ const LoginPage = () => {
         >
           <BackArrowIcon />
           <span>Повернутись до карти</span>
-
         </Link>
       </div>
       {/* LG+ back button (зліва зверху) */}
@@ -327,15 +309,6 @@ const LoginPage = () => {
             aria-label="Увійти через Google"
           >
             <FaGoogle className="text-red-500 w-6 h-6 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-6 lg:h-6 xl:w-7 xl:h-7" />
-          </button>
-
-          <button
-            type="button"
-            onClick={handleTelegramLogin}
-            className="relative rounded-full overflow-hidden bg-[#229ED9] shadow-md hover:shadow-xl hover:bg-[#1e8bc5] transition-all duration-200 w-12 h-12 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-12 lg:h-12 xl:w-14 xl:h-14 flex items-center justify-center cursor-pointer active:scale-[0.99]"
-            aria-label="Увійти через Telegram"
-          >
-            <LoginTelegramButton />
           </button>
         </div>
 

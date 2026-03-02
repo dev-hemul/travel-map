@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { FaPlus, FaTrash, FaMapMarkerAlt, FaTag, FaImage, FaArrowLeft } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import CreatableSelect from 'react-select/creatable';
 
 export default function CreateAnnouncementPage() {
