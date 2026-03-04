@@ -56,6 +56,7 @@ const SidebarLayout = () => {
     { to: '/announcements', icon: <FaBullhorn size={25} />, label: 'Оголошення' },
     { to: '/routes', icon: <FaRoute size={25} />, label: 'Маршрути' },
     { to: '/settings', icon: <IoMdSettings size={25} />, label: 'Налаштування' },
+    { to: '/admin', icon: <IoMdSettings size={25} />, label: 'Адміністрування' },
   ];
 
   return (

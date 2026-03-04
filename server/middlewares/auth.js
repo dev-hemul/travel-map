@@ -5,6 +5,8 @@ import { fileURLToPath } from 'url';
 
 import jwt from 'jsonwebtoken';
 
+import { normalizeEmail } from '../controller/authCntrl/auth.utils.js';
+import BannedEmails from '../model/bannedEmails.js';
 import Tokens from '../model/token.js';
 import User from '../model/user.js';
 
@@ -24,10 +26,30 @@ export const verifyAccessToken = (req, res, next) => {
     try {
       // id з токена
       req.userId = decoded.id;
-      //  ролі з бд
-      const user = await User.findById(decoded.id).select('_id roles');
+
+      // ролі з бд
+      const user = await User.findById(decoded.id).select('_id roles email');
       if (!user) return res.status(401).json({ message: 'Користувача не знайдено' });
-      // перевіряти ролі по запиту
+
+      // перевірка бану
+      const emailNorm = normalizeEmail(user.email);
+
+      const banned = await BannedEmails.findOne({
+        email: emailNorm,
+        $or: [
+          { bannedUntil: null },
+          { bannedUntil: { $gt: new Date() } },
+        ],
+      }).select('_id');
+
+      if (banned) {
+        return res.status(403).json({
+          message: 'Ваш обліковий запис забанений. Зверніться в службу підтримки',
+          code: 'BANNED',
+        });
+      }
+
+      // перевірка ролі по запиту
       req.user = {
         id: user._id.toString(),
         roles: user.roles || ['user'],
