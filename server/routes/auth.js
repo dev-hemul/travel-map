@@ -4,6 +4,8 @@ import { googleLogin } from '../controller/authCntrl/google.authCntrl.js';
 import { register, login } from '../controller/authCntrl/local.authCntrl.js';
 import { getRefreshToken, logout } from '../controller/authCntrl/tokenCntrl.js';
 import { verifyAccessToken, verifyRefreshToken } from '../middlewares/auth.js';
+import { checkBannedEmail } from '../middlewares/checkBannedEmail.js'
+import { checkBannedGoogle } from '../middlewares/checkBannedEmailGoogle.js';
 import User from '../model/user.js'; // Імпорт User для GET /profile
 import { googleCodeToUser, getGoogleAuthUrl } from './../middlewares/googleAuth.js';
 import { validateLoginBody, validateRegisterBody } from './../middlewares/validation.js';
@@ -12,8 +14,8 @@ import { updateProfile } from '../controller/authCntrl/profileCntrl.js';
 
 const router = express.Router();
 
-router.post('/register', validateRegisterBody, register);
-router.post('/login', validateLoginBody, (req, res, next) => {
+router.post('/register', validateRegisterBody, checkBannedEmail, register);
+router.post('/login', validateLoginBody, checkBannedEmail, (req, res, next) => {
   login(req, res, next);
 });
 router.post('/refresh-token', verifyRefreshToken, getRefreshToken);
@@ -38,6 +40,6 @@ router.post('/profile', verifyAccessToken, updateProfile);
 
 router.get('/google/url', getGoogleAuthUrl);
 
-router.post('/google', googleCodeToUser, googleLogin);
+router.post('/google', googleCodeToUser, checkBannedGoogle, googleLogin);
 
 export default router;
