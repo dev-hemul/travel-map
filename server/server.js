@@ -55,14 +55,6 @@ app.use((req, res, next) => {
 });
 app.use(express.json());
 
-app.use('/login', (req, res, next) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  next();
-});
-app.use('/refresh-token', (req, res, next) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  next();
-});
 app.use(express.static(path.join(__dirname, '../client')));
 
 // Роути
