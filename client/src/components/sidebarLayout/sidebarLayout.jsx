@@ -59,6 +59,7 @@ const SidebarLayout = () => {
     { to: '/support', icon: <BiSupport size={25} />, label: 'Підтримка' },
     { to: '/auth', icon: <BiLogIn size={25} />, label: 'Авторизація' },
     { to: '/settings', icon: <IoMdSettings size={25} />, label: 'Налаштування' },
+    { to: '/admin', icon: <IoMdSettings size={25} />, label: 'Адміністрування' },
   ];
 
   return (

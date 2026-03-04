@@ -1,11 +1,12 @@
 import { Route, Routes } from 'react-router';
 
+import AdminRouter from './AdminRouter.jsx';
 import PrivateRouter from './PrivateRouter';
 import AnnouncementModal from '../../components/announcements/announcementModal';
 import NotFoundPage from '../../components/NotFoundPage';
 import SidebarLayout from '../../components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from '../../modules/support/components/supportModalWrapper';
-import AdminTestPage from '../../pages/adminTestPage.jsx';
+import AdminPage from '../../pages/adminPage.jsx';
 import AnnouncementDetailPage from '../../pages/announcementDetailPage';
 import CreateAnnouncementPage from '../../pages/createAnnouncementPage';
 import GoogleCallback from '../../pages/googleCallback.jsx';
@@ -32,9 +33,11 @@ const AppRoutes = () => {
       <Route path="/create-announcement" element={<CreateAnnouncementPage />} />
 
       <Route element={<PrivateRouter />}>
-        <Route element={<SidebarLayout />}>
+          <Route element={<SidebarLayout />}>
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/admin-test" element={<AdminTestPage />} />
+          <Route element={<AdminRouter />}>
+            <Route path="/admin" element={<AdminPage />} />
+          </Route>
           <Route path="/announcements" element={<div>Оголошення</div>} />
           <Route path="/routes" element={<div>Маршрути</div>} />
           <Route path="/support" element={<div>Підтримка</div>} />
