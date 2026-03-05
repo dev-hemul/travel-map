@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { BiSupport, BiLogIn } from 'react-icons/bi';
 import { CgProfile } from 'react-icons/cg';
 import { FaRoute, FaLongArrowAltLeft, FaLongArrowAltRight, FaBullhorn } from 'react-icons/fa';
 import { IoMdSettings } from 'react-icons/io';
@@ -56,8 +55,6 @@ const SidebarLayout = () => {
     { to: '/profile', icon: <CgProfile size={27} />, label: 'Профіль' },
     { to: '/announcements', icon: <FaBullhorn size={25} />, label: 'Оголошення' },
     { to: '/routes', icon: <FaRoute size={25} />, label: 'Маршрути' },
-    { to: '/support', icon: <BiSupport size={25} />, label: 'Підтримка' },
-    { to: '/auth', icon: <BiLogIn size={25} />, label: 'Авторизація' },
     { to: '/settings', icon: <IoMdSettings size={25} />, label: 'Налаштування' },
   ];
 

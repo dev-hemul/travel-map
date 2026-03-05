@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import React, { useState, useRef, useEffect } from 'react';
+import { FaInstagram, FaFacebook, FaTelegram } from 'react-icons/fa';
 import {
   FiUpload,
   FiTrash,
@@ -14,6 +15,7 @@ import {
   FiMap,
   FiEdit2,
   FiCheck,
+  FiLink,
 } from 'react-icons/fi';
 import { useNavigate } from 'react-router';
 
@@ -28,6 +30,9 @@ const ProfilePage = () => {
     location: '',
     email: '',
     phone: '',
+    instagram: '',
+    facebook: '',
+    telegram: '',
   });
   const [initialFormData, setInitialFormData] = useState({});
   const [avatar, setAvatar] = useState(null);
@@ -58,6 +63,9 @@ const ProfilePage = () => {
       location: 'Київ, Україна',
       email: 'ivanov@example.com',
       phone: '+380991234567',
+      instagram: 'https://instagram.com/ivan_ivanov',
+      facebook: 'https://facebook.com/ivan.ivanov',
+      telegram: 'https://t.me/ivan_ivanov',
     };
     setFormData(mockProfileData);
     setInitialFormData(mockProfileData);
@@ -144,6 +152,13 @@ const ProfilePage = () => {
   };
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  const openSocialLink = platform => {
+    const url = formData[platform];
+    if (url && url.startsWith('http')) {
+      window.open(url, '_blank');
+    }
+  };
 
   return (
     <div
@@ -281,7 +296,7 @@ const ProfilePage = () => {
           transition={{ duration: 0.5 }}
           className={`grid gap-8 ${isLargeScreen ? 'grid-cols-[1fr_2fr]' : 'grid-cols-1'}`}
         >
-          <div className="flex flex-col items-center justify-start bg-[#F4EFFF] rounded-xl p-6 shadow-lg">
+          <div className="flex flex-col items-center justify-start bg-[#F4EFFF] rounded-xl p-6 shadow-lg h-1/2">
             <div
               className="relative group rounded-full overflow-hidden bg-white flex items-center justify-center shadow-md cursor-pointer"
               style={{
@@ -366,6 +381,71 @@ const ProfilePage = () => {
                   />
                 </div>
               ))}
+            </div>
+
+            {/* Соціальні мережі - поля для введення посилань */}
+            <div className="border-t border-gray-200 pt-4">
+              <h3 className="text-lg font-semibold text-[#744ce9] mb-4">Соціальні мережі</h3>
+              <div className="grid gap-4">
+                {[
+                  {
+                    name: 'instagram',
+                    label: 'Instagram',
+                    icon: FaInstagram,
+                    placeholder: 'https://instagram.com/...',
+                    iconColor: 'text-pink-600',
+                  },
+                  {
+                    name: 'facebook',
+                    label: 'Facebook',
+                    icon: FaFacebook,
+                    placeholder: 'https://facebook.com/...',
+                    iconColor: 'text-blue-600',
+                  },
+                  {
+                    name: 'telegram',
+                    label: 'Telegram',
+                    icon: FaTelegram,
+                    placeholder: 'https://t.me/...',
+                    iconColor: 'text-blue-400',
+                  },
+                ].map(social => (
+                  <div key={social.name} className="flex flex-col gap-1">
+                    <label htmlFor={social.name} className="block text-sm text-gray-500">
+                      {social.label}
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                          <social.icon className={`${social.iconColor}`} size={16} />
+                        </div>
+                        <input
+                          id={social.name}
+                          name={social.name}
+                          type="url"
+                          placeholder={social.placeholder}
+                          value={formData[social.name]}
+                          onChange={handleChange}
+                          disabled={!isEditing}
+                          className={`w-full pl-10 p-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#744ce9] focus:border-transparent ${!isEditing ? 'bg-white cursor-not-allowed text-gray-600' : 'bg-gray-100 text-[#744ce9]'}`}
+                        />
+                      </div>
+                      {!isEditing && formData[social.name] && (
+                        <motion.button
+                          type="button"
+                          onClick={() => openSocialLink(social.name)}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="px-3 py-2 bg-[#744ce9] text-white rounded-md hover:bg-[#5d39b3] transition-colors flex items-center gap-1 text-sm whitespace-nowrap"
+                        >
+                          <FiLink size={14} />
+                          <span>Відкрити</span>
+                        </motion.button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {isEditing && (
