@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, reopened, synchronize, edited, closed]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   build-test-and-notify:
     runs-on: ubuntu-latest
@@ -24,12 +28,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Debug environment
-        run: |
-          echo "PR_NUMBER=$PR_NUMBER"
-          echo "PR_ACTION=$PR_ACTION"
-          echo "GITHUB_REPOSITORY=${{ github.repository }}"
-
       - name: Build, test and notify
         run: |
           # --- Підготовка тексту PR ---
@@ -37,10 +35,6 @@ jobs:
           DESC_TEXT=""
           if [ -n "$PR_BODY" ]; then
             PR_BODY_ESC=$(echo "$PR_BODY" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
-            # Обмежуємо довжину опису для Telegram
-            if [ ${#PR_BODY_ESC} -gt 200 ]; then
-              PR_BODY_ESC="${PR_BODY_ESC:0:200}..."
-            fi
             DESC_TEXT="<b>Опис:</b> $PR_BODY_ESC"
           fi
 
@@ -66,37 +60,13 @@ jobs:
             LAST_UPDATE="$DAYS днів тому"
           fi
 
-          echo "=== Step 1: Отримуємо коментарі до PR ==="
           # ---------------------------
           # 1️⃣ Отримуємо MESSAGE_ID з коментаря на PR
           # ---------------------------
-          COMMENTS_URL="https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments"
-          echo "Comments URL: $COMMENTS_URL"
-          
-          COMMENT_RESPONSE=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" "$COMMENTS_URL")
-          echo "Кількість коментарів: $(echo "$COMMENT_RESPONSE" | jq length)"
-          
-          # Виводимо всі коментарі для діагностики
-          echo "Всі коментарі:"
-          echo "$COMMENT_RESPONSE" | jq -r '.[] | "ID: \(.id), Body: \(.body)"'
-          
-          # Знаходимо коментар з tg-msg-id
-          MESSAGE_ID=$(echo "$COMMENT_RESPONSE" | jq -r '.[] | select(.body | startswith("tg-msg-id:")) | .body' | head -n1 | cut -d: -f2)
-          COMMENT_ID=$(echo "$COMMENT_RESPONSE" | jq -r '.[] | select(.body | startswith("tg-msg-id:")) | .id' | head -n1)
-          
-          echo "Знайдений MESSAGE_ID: '$MESSAGE_ID'"
-          echo "Знайдений COMMENT_ID: '$COMMENT_ID'"
+          MESSAGE_ID=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments" \
+            | jq -r '.[] | select(.body | startswith("tg-msg-id:")) | .body' | head -n1 | cut -d: -f2)
 
-          # Видаляємо старі коментарі з tg-msg-id (залишаємо тільки останній)
-          COMMENT_IDS=$(echo "$COMMENT_RESPONSE" | jq -r '.[] | select(.body | startswith("tg-msg-id:")) | .id' | tail -n +2)
-          for old_comment_id in $COMMENT_IDS; do
-            echo "Видаляємо старий коментар ID: $old_comment_id"
-            curl -s -X DELETE \
-              -H "Authorization: Bearer $GITHUB_TOKEN" \
-              "https://api.github.com/repos/${{ github.repository }}/issues/comments/$old_comment_id"
-          done
-
-          echo "=== Step 2: Отримуємо статус PR ==="
           # ---------------------------
           # 2️⃣ Перевіряємо статус PR через GitHub API
           # ---------------------------
@@ -105,7 +75,6 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER")
           PR_MERGED=$(echo "$PR_INFO" | jq -r '.merged')
           PR_STATE=$(echo "$PR_INFO" | jq -r '.state')
-          echo "PR_STATE: $PR_STATE, PR_MERGED: $PR_MERGED"
 
           # ---------------------------
           # 3️⃣ Формуємо статус PR
@@ -117,101 +86,43 @@ jobs:
               PR_STATUS="🔴 Closed without merge"
             fi
           else
-            PR_STATUS="🟡 Open"
+            PR_STATUS="🟡 Running"
           fi
 
-          # Додаємо інформацію про дію для контексту
-          ACTION_EMOJI=""
-          case "$PR_ACTION" in
-            "opened") ACTION_EMOJI="🆕 " ;;
-            "reopened") ACTION_EMOJI="🔄 " ;;
-            "closed") ACTION_EMOJI="✅ " ;;
-            "synchronize") ACTION_EMOJI="📝 " ;;
-            "edited") ACTION_EMOJI="✏️ " ;;
-          esac
-
-          echo "=== Step 3: Формуємо повідомлення ==="
           # ---------------------------
           # 4️⃣ Формуємо повідомлення
           # ---------------------------
-          MESSAGE=$(printf "%s🔵 <b>Pull Request #$PR_NUMBER</b>\n\n<b>Title:</b> %s\n<b>Author:</b> %s\n<b>Branch:</b> %s → %s\n\n<b>Status:</b> %s\n<b>Last update:</b> %s\n%s" \
-            "$ACTION_EMOJI" "$PR_TITLE_ESC" "$PR_USER" "$PR_HEAD" "$PR_BASE" "$PR_STATUS" "$LAST_UPDATE" "$DESC_TEXT")
-          
-          echo "Повідомлення: $MESSAGE"
+          MESSAGE=$(printf "🔵 <b>Pull Request #$PR_NUMBER</b>\n\n<b>Title:</b> %s\n<b>Author:</b> %s\n<b>Branch:</b> %s → %s\n\n<b>Status:</b> %s\n<b>Last update:</b> %s\n%s" \
+            "$PR_TITLE_ESC" "$PR_USER" "$PR_HEAD" "$PR_BASE" "$PR_STATUS" "$LAST_UPDATE" "$DESC_TEXT")
 
           REPLY_MARKUP=$(printf '{"inline_keyboard": [[{"text": "Open PR", "url": "https://github.com/%s/pull/%s"}, {"text": "Open CI", "url": "https://github.com/%s/actions"}]]}' \
             "${{ github.repository }}" "$PR_NUMBER" "${{ github.repository }}")
 
-          echo "=== Step 4: Надсилаємо/редагуємо повідомлення в Telegram ==="
           # ---------------------------
           # 5️⃣ Редагуємо або створюємо повідомлення
           # ---------------------------
           if [ -n "$MESSAGE_ID" ] && [ "$MESSAGE_ID" != "null" ]; then
-            echo "Спроба відредагувати повідомлення з ID: $MESSAGE_ID"
-            # Редагуємо існуюче повідомлення
-            EDIT_RESPONSE=$(curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/editMessageText" \
+            # редагуємо існуюче повідомлення
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/editMessageText" \
               --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
               --data-urlencode "message_id=$MESSAGE_ID" \
               --data-urlencode "parse_mode=HTML" \
               --data-urlencode "text=$MESSAGE" \
-              --data-urlencode "reply_markup=$REPLY_MARKUP")
-            
-            echo "Відповідь Telegram на edit: $EDIT_RESPONSE"
-            
-            # Перевіряємо, чи успішно
-            OK=$(echo "$EDIT_RESPONSE" | jq -r '.ok')
-            if [ "$OK" != "true" ]; then
-              echo "Помилка редагування, створюємо нове повідомлення"
-              # Якщо редагування не вдалося, створюємо нове
-              RESPONSE=$(curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-                --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
-                --data-urlencode "parse_mode=HTML" \
-                --data-urlencode "text=$MESSAGE" \
-                --data-urlencode "reply_markup=$REPLY_MARKUP")
-              
-              echo "Відповідь Telegram на send: $RESPONSE"
-              
-              NEW_MESSAGE_ID=$(echo "$RESPONSE" | jq -r '.result.message_id')
-              
-              # Оновлюємо коментар з новим ID
-              if [ -n "$COMMENT_ID" ] && [ "$COMMENT_ID" != "null" ]; then
-                echo "Оновлюємо коментар $COMMENT_ID з новим ID: $NEW_MESSAGE_ID"
-                curl -s -X PATCH \
-                  -H "Authorization: Bearer $GITHUB_TOKEN" \
-                  -H "Accept: application/vnd.github+json" \
-                  "https://api.github.com/repos/${{ github.repository }}/issues/comments/$COMMENT_ID" \
-                  -d "{\"body\":\"tg-msg-id:$NEW_MESSAGE_ID\"}"
-              else
-                echo "Створюємо новий коментар з ID: $NEW_MESSAGE_ID"
-                curl -s -X POST \
-                  -H "Authorization: Bearer $GITHUB_TOKEN" \
-                  -H "Accept: application/vnd.github+json" \
-                  "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments" \
-                  -d "{\"body\":\"tg-msg-id:$NEW_MESSAGE_ID\"}"
-              fi
-            else
-              echo "Повідомлення успішно відредаговано"
-            fi
+              --data-urlencode "reply_markup=$REPLY_MARKUP"
           else
-            echo "MESSAGE_ID не знайдено, створюємо нове повідомлення"
-            # Створюємо нове повідомлення
+            # створюємо нове повідомлення
             RESPONSE=$(curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
               --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
               --data-urlencode "parse_mode=HTML" \
               --data-urlencode "text=$MESSAGE" \
               --data-urlencode "reply_markup=$REPLY_MARKUP")
 
-            echo "Відповідь Telegram на send: $RESPONSE"
-            
             MESSAGE_ID=$(echo "$RESPONSE" | jq -r '.result.message_id')
 
-            # Зберігаємо MESSAGE_ID в коментар на PR
-            if [ -n "$MESSAGE_ID" ] && [ "$MESSAGE_ID" != "null" ]; then
-              echo "Зберігаємо MESSAGE_ID $MESSAGE_ID в новий коментар"
-              curl -s -X POST \
-                -H "Authorization: Bearer $GITHUB_TOKEN" \
-                -H "Accept: application/vnd.github+json" \
-                "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments" \
-                -d "{\"body\":\"tg-msg-id:$MESSAGE_ID\"}"
-            fi
+            # --- одразу зберігаємо MESSAGE_ID в окремий коментар на PR ---
+            curl -s -X POST \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments" \
+              -d "{\"body\":\"tg-msg-id:$MESSAGE_ID\"}"
           fi
