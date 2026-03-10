@@ -9,7 +9,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # GitHub PR info
       PR_TITLE: ${{ github.event.pull_request.title }}
       PR_BODY: ${{ github.event.pull_request.body }}
       PR_USER: ${{ github.event.pull_request.user.login }}
@@ -18,10 +17,8 @@ jobs:
       PR_NUMBER: ${{ github.event.pull_request.number }}
       PR_MERGED: ${{ github.event.pull_request.merged }}
       PR_ACTION: ${{ github.event.action }}
-      # Telegram
       TELEGRAM_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
-      # GitHub API
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
@@ -30,7 +27,6 @@ jobs:
 
       - name: Build, test and notify
         run: |
-          # --- Підготовка тексту PR ---
           PR_TITLE_ESC=$(echo "$PR_TITLE" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
           DESC_TEXT=""
           if [ -n "$PR_BODY" ]; then
@@ -38,7 +34,6 @@ jobs:
             DESC_TEXT="<b>Опис:</b> $PR_BODY_ESC"
           fi
 
-          # --- Отримуємо час останньої зміни PR ---
           UPDATED_AT=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER" | jq -r '.updated_at')
@@ -60,24 +55,25 @@ jobs:
             LAST_UPDATE="$DAYS днів тому"
           fi
 
-          # --- Отримуємо message_id з label ---
-          MESSAGE_ID=""
+          # ---------------------------
+          # 1️⃣ Получаем MESSAGE_ID из комментария
+          # ---------------------------
+          MESSAGE_ID=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments" \
+            | jq -r '.[] | select(.body | startswith("tg-msg-id:")) | .body' | head -n1 | cut -d: -f2)
 
-          for i in {1..5}; do
+          # fallback: проверяем label, если комментарий не найден
+          if [ -z "$MESSAGE_ID" ] || [ "$MESSAGE_ID" == "null" ]; then
             LABELS=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
               -H "Accept: application/vnd.github+json" \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels")
-          
-            MESSAGE_ID=$(echo "$LABELS" | jq -r '.[] | select(.name | startswith("tg-msg-id:")) | .name' | cut -d: -f2)
-          
-            if [ -n "$MESSAGE_ID" ] && [ "$MESSAGE_ID" != "null" ]; then
-              break
-            fi
-          
-            sleep 2
-          done
 
-          # --- Формуємо статус PR ---
+            MESSAGE_ID=$(echo "$LABELS" | jq -r '.[] | select(.name | startswith("tg-msg-id:")) | .name' | cut -d: -f2)
+          fi
+
+          # ---------------------------
+          # 2️⃣ Формируем статус PR
+          # ---------------------------
           if [[ "$PR_ACTION" == "closed" ]]; then
             if [[ "$PR_MERGED" == "true" ]]; then
               PR_STATUS="🟢 Merged"
@@ -88,13 +84,13 @@ jobs:
             PR_STATUS="🟡 Running"
           fi
 
-          # --- Формуємо повідомлення ---
           MESSAGE=$(printf "🔵 <b>Pull Request #$PR_NUMBER</b>\n\n<b>Title:</b> %s\n<b>Author:</b> %s\n<b>Branch:</b> %s → %s\n\n<b>Status:</b> %s\n<b>Last update:</b> %s\n%s" "$PR_TITLE_ESC" "$PR_USER" "$PR_HEAD" "$PR_BASE" "$PR_STATUS" "$LAST_UPDATE" "$DESC_TEXT")
 
-          # --- Inline кнопки ---
           REPLY_MARKUP=$(printf '{"inline_keyboard": [[{"text": "Open PR", "url": "https://github.com/%s/pull/%s"}, {"text": "Open CI", "url": "https://github.com/%s/actions"}]]}' "${{ github.repository }}" "$PR_NUMBER" "${{ github.repository }}")
 
-          # --- Якщо message_id є, редагуємо повідомлення ---
+          # ---------------------------
+          # 3️⃣ Редактируем или создаём сообщение
+          # ---------------------------
           if [ -n "$MESSAGE_ID" ] && [ "$MESSAGE_ID" != "null" ]; then
             curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/editMessageText" \
               --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
@@ -103,7 +99,6 @@ jobs:
               --data-urlencode "text=$MESSAGE" \
               --data-urlencode "reply_markup=$REPLY_MARKUP"
           else
-            # --- Інакше створюємо нове повідомлення та зберігаємо label ---
             RESPONSE=$(curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
               --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
               --data-urlencode "parse_mode=HTML" \
@@ -112,11 +107,17 @@ jobs:
 
             MESSAGE_ID=$(echo "$RESPONSE" | jq -r '.result.message_id')
 
-            # --- Зберігаємо message_id в label PR ---
+            # сохраняем MESSAGE_ID в комментарии на PR
+            curl -s -X POST \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments" \
+              -d "{\"body\":\"tg-msg-id:$MESSAGE_ID\"}"
+
+            # fallback: сохраняем label для совместимости со старым кодом
             curl -s -X POST \
               -H "Authorization: Bearer $GITHUB_TOKEN" \
               -H "Accept: application/vnd.github+json" \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels" \
               -d "{\"labels\":[\"tg-msg-id:$MESSAGE_ID\"]}"
           fi
-
