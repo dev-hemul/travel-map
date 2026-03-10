@@ -47,12 +47,12 @@ jobs:
           NOW_TS=$(date +%s)
           DIFF=$((NOW_TS - UPDATED_TS))
 
-          if [ $DIFF -lt 60 ]; then
+          if [ "$DIFF" -lt 60 ]; then
             LAST_UPDATE="менше хвилини тому"
-          elif [ $DIFF -lt 3600 ]; then
+          elif [ "$DIFF" -lt 3600 ]; then
             MINUTES=$((DIFF / 60))
             LAST_UPDATE="$MINUTES хвилин тому"
-          elif [ $DIFF -lt 86400 ]; then
+          elif [ "$DIFF" -lt 86400 ]; then
             HOURS=$((DIFF / 3600))
             LAST_UPDATE="$HOURS годин тому"
           else
@@ -78,31 +78,11 @@ jobs:
             PR_STATUS="🟡 Running"
           fi
 
-          MESSAGE=$(cat <<EOF
-          🔵 <b>Pull Request #$PR_NUMBER</b>
-          
-          <b>Title:</b> $PR_TITLE_ESC
-          <b>Author:</b> $PR_USER
-          <b>Branch:</b> $PR_HEAD → $PR_BASE
-          
-          <b>Status:</b> $PR_STATUS
-          <b>Last update:</b> $LAST_UPDATE
-          $DESC_TEXT
-          EOF
-                    )
-          
-                    # --- Inline кнопки ---
-                    REPLY_MARKUP=$(cat <<EOF
-          {
-            "inline_keyboard": [
-              [
-                {"text": "Open PR", "url": "https://github.com/${{ github.repository }}/pull/$PR_NUMBER"},
-                {"text": "Open CI", "url": "https://github.com/${{ github.repository }}/actions"}
-              ]
-            ]
-          }
-          EOF
-                    )
+          # --- Формуємо повідомлення ---
+          MESSAGE=$(printf "🔵 <b>Pull Request #$PR_NUMBER</b>\n\n<b>Title:</b> %s\n<b>Author:</b> %s\n<b>Branch:</b> %s → %s\n\n<b>Status:</b> %s\n<b>Last update:</b> %s\n%s" "$PR_TITLE_ESC" "$PR_USER" "$PR_HEAD" "$PR_BASE" "$PR_STATUS" "$LAST_UPDATE" "$DESC_TEXT")
+
+          # --- Inline кнопки ---
+          REPLY_MARKUP=$(printf '{"inline_keyboard": [[{"text": "Open PR", "url": "https://github.com/%s/pull/%s"}, {"text": "Open CI", "url": "https://github.com/%s/actions"}]]}' "${{ github.repository }}" "$PR_NUMBER" "${{ github.repository }}")
 
           # --- Якщо message_id є, редагуємо повідомлення ---
           if [ -n "$MESSAGE_ID" ]; then
@@ -128,3 +108,5 @@ jobs:
               -H "Accept: application/vnd.github+json" \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels" \
               -d "{\"labels\":[\"tg-msg-id:$MESSAGE_ID\"]}"
+          fi
+
