@@ -9,14 +9,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      PR_TITLE: ${{ github.event.pull_request.title }}
-      PR_BODY: ${{ github.event.pull_request.body }}
-      PR_USER: ${{ github.event.pull_request.user.login }}
-      PR_HEAD: ${{ github.event.pull_request.head.ref }}
-      PR_BASE: ${{ github.event.pull_request.base.ref }}
-      PR_NUMBER: ${{ github.event.pull_request.number }}
-      PR_MERGED: ${{ github.event.pull_request.merged }}
-      PR_ACTION: ${{ github.event.action }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -27,14 +19,28 @@ jobs:
 
       - name: Build, test and notify
         run: |
-          PR_TITLE_ESC=$(echo "$PR_TITLE" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+          # ---------------------------
+          # 📌 Підготовка змінних з GitHub
+          # ---------------------------
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_ACTION="${{ github.event.action }}"
+          PR_MERGED="${{ github.event.pull_request.merged }}"
+          PR_TITLE_ESC=$(echo "${{ github.event.pull_request.title }}" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+          PR_BODY="${{ github.event.pull_request.body }}"
+          PR_USER="${{ github.event.pull_request.user.login }}"
+          PR_HEAD="${{ github.event.pull_request.head.ref }}"
+          PR_BASE="${{ github.event.pull_request.base.ref }}"
+
           DESC_TEXT=""
           if [ -n "$PR_BODY" ]; then
             PR_BODY_ESC=$(echo "$PR_BODY" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
             DESC_TEXT="<b>Опис:</b> $PR_BODY_ESC"
           fi
 
-          UPDATED_AT=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+          # ---------------------------
+          # ⏱ Отримуємо час останньої зміни PR
+          # ---------------------------
+          UPDATED_AT=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER" | jq -r '.updated_at')
 
@@ -56,11 +62,11 @@ jobs:
           fi
 
           # ---------------------------
-          # 1️⃣ Получаем MESSAGE_ID из комментария с retry loop
+          # 📝 Отримуємо MESSAGE_ID з коментаря
           # ---------------------------
           MESSAGE_ID=""
           for i in {1..5}; do
-            MESSAGE_ID=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            MESSAGE_ID=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments" \
               | jq -r '.[] | select(.body | startswith("tg-msg-id:")) | .body' | head -n1 | cut -d: -f2)
 
@@ -70,34 +76,28 @@ jobs:
             sleep 3
           done
 
-          # fallback: проверяем label, если комментарий не найден
-          if [ -z "$MESSAGE_ID" ] || [ "$MESSAGE_ID" == "null" ]; then
-            LABELS=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github+json" \
-              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels")
-
-            MESSAGE_ID=$(echo "$LABELS" | jq -r '.[] | select(.name | startswith("tg-msg-id:")) | .name' | cut -d: -f2)
-          fi
-
           # ---------------------------
-          # 2️⃣ Формируем статус PR
+          # ⚠️ Формуємо статус PR
           # ---------------------------
-          if [[ "$PR_ACTION" == "closed" ]]; then
-            if [[ "$PR_MERGED" == "true" ]]; then
-              PR_STATUS="🟢 Merged"
-            else
-              PR_STATUS="🔴 Closed without merge"
-            fi
+          if [[ "$PR_ACTION" == "closed" && "$PR_MERGED" == "true" ]]; then
+            PR_STATUS="🟢 Merged"
+          elif [[ "$PR_ACTION" == "closed" && "$PR_MERGED" != "true" ]]; then
+            PR_STATUS="🔴 Closed without merge"
           else
             PR_STATUS="🟡 Running"
           fi
 
-          MESSAGE=$(printf "🔵 <b>Pull Request #$PR_NUMBER</b>\n\n<b>Title:</b> %s\n<b>Author:</b> %s\n<b>Branch:</b> %s → %s\n\n<b>Status:</b> %s\n<b>Last update:</b> %s\n%s" "$PR_TITLE_ESC" "$PR_USER" "$PR_HEAD" "$PR_BASE" "$PR_STATUS" "$LAST_UPDATE" "$DESC_TEXT")
+          # ---------------------------
+          # ✉️ Формуємо повідомлення для Telegram
+          # ---------------------------
+          MESSAGE=$(printf "🔵 <b>Pull Request #$PR_NUMBER</b>\n\n<b>Title:</b> %s\n<b>Author:</b> %s\n<b>Branch:</b> %s → %s\n\n<b>Status:</b> %s\n<b>Last update:</b> %s\n%s" \
+            "$PR_TITLE_ESC" "$PR_USER" "$PR_HEAD" "$PR_BASE" "$PR_STATUS" "$LAST_UPDATE" "$DESC_TEXT")
 
-          REPLY_MARKUP=$(printf '{"inline_keyboard": [[{"text": "Open PR", "url": "https://github.com/%s/pull/%s"}, {"text": "Open CI", "url": "https://github.com/%s/actions"}]]}' "${{ github.repository }}" "$PR_NUMBER" "${{ github.repository }}")
+          REPLY_MARKUP=$(printf '{"inline_keyboard": [[{"text": "Open PR", "url": "https://github.com/%s/pull/%s"}, {"text": "Open CI", "url": "https://github.com/%s/actions"}]]}' \
+            "${{ github.repository }}" "$PR_NUMBER" "${{ github.repository }}")
 
           # ---------------------------
-          # 3️⃣ Редактируем или создаём сообщение
+          # ✏️ Редагуємо або створюємо нове повідомлення
           # ---------------------------
           if [ -n "$MESSAGE_ID" ] && [ "$MESSAGE_ID" != "null" ]; then
             curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/editMessageText" \
@@ -115,17 +115,12 @@ jobs:
 
             MESSAGE_ID=$(echo "$RESPONSE" | jq -r '.result.message_id')
 
-            # сохраняем MESSAGE_ID в комментарии на PR
+            # ---------------------------
+            # 💾 Зберігаємо MESSAGE_ID у коментар PR
+            # ---------------------------
             curl -s -X POST \
-              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Authorization: token $GITHUB_TOKEN" \
               -H "Accept: application/vnd.github+json" \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments" \
               -d "{\"body\":\"tg-msg-id:$MESSAGE_ID\"}"
-
-            # fallback: сохраняем label для совместимости со старым кодом
-            curl -s -X POST \
-              -H "Authorization: Bearer $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github+json" \
-              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels" \
-              -d "{\"labels\":[\"tg-msg-id:$MESSAGE_ID\"]}"
           fi
