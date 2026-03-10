@@ -56,11 +56,19 @@ jobs:
           fi
 
           # ---------------------------
-          # 1️⃣ Получаем MESSAGE_ID из комментария
+          # 1️⃣ Получаем MESSAGE_ID из комментария с retry loop
           # ---------------------------
-          MESSAGE_ID=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments" \
-            | jq -r '.[] | select(.body | startswith("tg-msg-id:")) | .body' | head -n1 | cut -d: -f2)
+          MESSAGE_ID=""
+          for i in {1..5}; do
+            MESSAGE_ID=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments" \
+              | jq -r '.[] | select(.body | startswith("tg-msg-id:")) | .body' | head -n1 | cut -d: -f2)
+
+            if [ -n "$MESSAGE_ID" ] && [ "$MESSAGE_ID" != "null" ]; then
+              break
+            fi
+            sleep 3
+          done
 
           # fallback: проверяем label, если комментарий не найден
           if [ -z "$MESSAGE_ID" ] || [ "$MESSAGE_ID" == "null" ]; then
