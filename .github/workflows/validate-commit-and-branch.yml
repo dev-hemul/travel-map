@@ -45,13 +45,12 @@ jobs:
           # Отримуємо список комітів
           COMMITS=$(git log --pretty=format:%s $BASE_SHA..$HEAD_SHA)
 
-          echo "🔍 Перевіряємо коміти між $BASE_SHA и $HEAD_SHA"
+          echo "🔍 Перевіряємо коміти між $BASE_SHA і $HEAD_SHA"
           echo "-------------------------------------------"
           echo "$COMMITS"
           echo "-------------------------------------------"
 
           INVALID=0
-          # Використовуємо -n для перевірки, чи не пустий список, та echo "$COMMITS" | ... для надійності
           if [ -z "$COMMITS" ]; then
             echo "⚠️ Комітів для перевірки не знайдено (можливо, це merge PR або rebase)"
           else
@@ -74,16 +73,14 @@ jobs:
 
           echo "✅ Усі коміти коректні!"
 
-      # ========================
-      #  Перевірка заголовку PR
-      # ========================
+      # ------------------------------
+      # 3️⃣ Перевірка заголовку PR
+      # ------------------------------
       - name: Check PR title format
         env:
           TITLE: ${{ github.event.pull_request.title }}
         run: |
           echo "🔹 Заголовок PR: $TITLE"
-          
-          # Перевірка на пусте поле
           
           if [ -z "$TITLE" ]; then
             echo "❌ Заголовок PR пустий!"
@@ -102,17 +99,17 @@ jobs:
             echo "❌ Заголовок PR дуже довгий ($LEN символів, максимум 72)" >&2
             exit 1
           fi    
-          
+
+          echo "✅ Заголовок PR коректний!"
 
       # ------------------------------
-      # 3️⃣ Перевірка опису PR
+      # 4️⃣ Перевірка опису PR
       # ------------------------------
       - name: 📝 Check PR description format
         env:
           BODY: ${{ github.event.pull_request.body }}
         run: |
           echo "🔍 Перевіряємо опис PR:"
-          # Використовуємо одинарні лапки для безпечного виводу
           echo "$BODY"
           
           # Перевірка на пусте поле
@@ -131,11 +128,11 @@ jobs:
           
           DESCRIPTION=$(echo "$BODY" | sed -E 's/^TM-[0-9]+:\ //')
           
-          # Перевірка на загальні слова: Опис не може бути тільки з загальних слів
-          if [[ "$DESCRIPTION" =~ ^(fix|update|wip|temp|test|change|edit|remove|add|delete|refactor|docs?)?$ ]]; then
-           echo "❌ Занадто загальний опис: \"$DESCRIPTION\""
-           echo "✅ Опиши конкретно, що зроблено (наприклад: \"fix login button color\", \"add validation for email\")"
-          exit 1
-         fi
-          
+          # Перевірка на загальні слова
+          if [[ "$DESCRIPTION" =~ ^(fix|update|wip|temp|test|change|edit|remove|add|delete|refactor|docs?)$ ]]; then
+            echo "❌ Занадто загальний опис: \"$DESCRIPTION\""
+            echo "✅ Опиши конкретно, що зроблено (наприклад: \"fix login button color\", \"add validation for email\")"
+            exit 1
+          fi
+
           echo "✅ Опис PR коректний!"
