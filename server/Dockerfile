@@ -1,5 +1,5 @@
 # Використовуємо офіційний Node образ
-FROM node:20-alpine
+FROM node:20.19.4-alpine
 
 # Встановлюємо build tools для нативних модулів (на всяк випадок)
 RUN apk add --no-cache python3 make g++

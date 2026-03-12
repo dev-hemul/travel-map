@@ -4,84 +4,12 @@ on:
   pull_request:
     types: [opened, reopened, synchronize, edited, closed]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
-  validate:
-    name: build-and-test
-    runs-on: ubuntu-latest
-
-    env:
-      ADMIN_ID: ${{ secrets.ADMIN_ID }}
-      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
-      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
-      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
-      DB_URL: ${{ secrets.DB_URL }}
-      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      PORT: ${{ secrets.PORT }}
-      PRIVATE_KEY_B64: ${{ secrets.PRIVATE_KEY_B64 }}
-      PUBLIC_KEY_B64: ${{ secrets.PUBLIC_KEY_B64 }}
-      REFRESH_SECRET: ${{ secrets.REFRESH_SECRET }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Enable Corepack and PNPM
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.29.3 --activate
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'pnpm'
-          cache-dependency-path: |
-            pnpm-lock.yaml
-            client/pnpm-lock.yaml
-            server/pnpm-lock.yaml
-
-      - name: Install root dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Install and Build Backend
-        run: |
-          cd server
-          pnpm install --frozen-lockfile
-
-      - name: Install and Build Frontend
-        run: |
-          cd client
-          pnpm install --frozen-lockfile
-          pnpm build
-
-      - name: Run Lint
-        run: pnpm lint
-
-      - name: Create .env for server
-        run: |
-          cat <<EOF > server/.env
-          ADMIN_ID=${{ secrets.ADMIN_ID }}
-          BOT_TOKEN=${{ secrets.BOT_TOKEN }}
-          CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
-          CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
-          CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}
-          DB_URL=${{ secrets.DB_URL }}
-          GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          PORT=${{ secrets.PORT }}
-          REFRESH_SECRET=${{ secrets.REFRESH_SECRET }}
-          EOF
-
-      - name: Create PEM key files
-        run: |
-          echo "${{ secrets.PRIVATE_KEY_B64 }}" | base64 -d > server/privateKey.pem
-          echo "${{ secrets.PUBLIC_KEY_B64 }}" | base64 -d > server/publicKey.pem
-
-  notify:
-    needs: validate
-    if: always() && (needs.validate.result == 'success' || github.event.action == 'closed')
+  build-test-and-notify:
     runs-on: ubuntu-latest
 
     env:
@@ -91,86 +19,88 @@ jobs:
       PR_HEAD: ${{ github.event.pull_request.head.ref }}
       PR_BASE: ${{ github.event.pull_request.base.ref }}
       PR_NUMBER: ${{ github.event.pull_request.number }}
-      PR_MERGED: ${{ github.event.pull_request.merged }}
       PR_ACTION: ${{ github.event.action }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - name: 🔵 Notify PR opened/reopened
-        if: ${{ env.PR_ACTION == 'opened' || env.PR_ACTION == 'reopened' || env.PR_ACTION == 'synchronize' }}
-        run: |
-          DESC_TEXT=""
-          if [ -n "$PR_BODY" ]; then
-            # Экранируем HTML
-            PR_BODY_ESC=$(echo "$PR_BODY" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
-            DESC_TEXT="<b>Опис:</b> $PR_BODY_ESC"
-          fi
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      - name: Build, test and notify
+        run: |
+          # --- Підготовка тексту PR ---
           PR_TITLE_ESC=$(echo "$PR_TITLE" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
-
-          MESSAGE=$(cat <<EOF
-          🔵 <b>Новий Pull Request від $PR_USER</b>
-
-          <b>Назва:</b> $PR_TITLE_ESC
-          <b>Гілка:</b> $PR_HEAD → $PR_BASE
-          $DESC_TEXT
-
-          🔗 <a href="https://github.com/${{ github.repository }}/pull/$PR_NUMBER">Дивитись PR</a>
-          EOF
-          )
-
-          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-            --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
-            --data-urlencode "parse_mode=HTML" \
-            --data-urlencode "text=$MESSAGE"
-
-      - name: 🟢 Notify PR merged
-        if: ${{ env.PR_MERGED == 'true' }}
-        run: |
           DESC_TEXT=""
           if [ -n "$PR_BODY" ]; then
             PR_BODY_ESC=$(echo "$PR_BODY" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
             DESC_TEXT="<b>Опис:</b> $PR_BODY_ESC"
           fi
 
-          MESSAGE=$(cat <<EOF
-          🟢 <b>Pull Request #$PR_NUMBER був злитий в гілку $PR_BASE</b>
+          # ---------------------------
+          # 1️⃣ Отримуємо MESSAGE_ID з коментаря на PR
+          # ---------------------------
+          MESSAGE_ID=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments" \
+            | jq -r '.[] | select(.body | startswith("tg-msg-id:")) | .body' | head -n1 | cut -d: -f2)
 
-          Автор: $PR_USER
-          $DESC_TEXT
+          # ---------------------------
+          # 2️⃣ Перевіряємо статус PR через GitHub API
+          # ---------------------------
+          PR_INFO=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER")
+          PR_MERGED=$(echo "$PR_INFO" | jq -r '.merged')
+          PR_STATE=$(echo "$PR_INFO" | jq -r '.state')
 
-          🔗 <a href="https://github.com/${{ github.repository }}/pull/$PR_NUMBER">Дивитись PR</a>
-
-          👉 Не забудьте зробити <code>git pull</code>!
-          EOF
-          )
-
-          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-            --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
-            --data-urlencode "parse_mode=HTML" \
-            --data-urlencode "text=$MESSAGE"
-
-      - name: 🔴 Notify PR closed without merge
-        if: ${{ env.PR_ACTION == 'closed' && env.PR_MERGED != 'true' }}
-        run: |
-          DESC_TEXT=""
-          if [ -n "$PR_BODY" ]; then
-            PR_BODY_ESC=$(echo "$PR_BODY" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
-            DESC_TEXT="<b>Опис:</b> $PR_BODY_ESC"
+          # ---------------------------
+          # 3️⃣ Формуємо статус PR
+          # ---------------------------
+          if [[ "$PR_STATE" == "closed" ]]; then
+            if [[ "$PR_MERGED" == "true" ]]; then
+              PR_STATUS="🟢 Merged"
+            else
+              PR_STATUS="🔴 Closed without merge"
+            fi
+          else
+            PR_STATUS="🟡 Running"
           fi
 
-          MESSAGE=$(cat <<EOF
-          🔴 <b>Pull Request #$PR_NUMBER був закритий без merge</b>
+          # ---------------------------
+          # 4️⃣ Формуємо повідомлення (без Last update)
+          # ---------------------------
+          MESSAGE=$(printf "🔵 <b>Pull Request #$PR_NUMBER</b>\n\n<b>Title:</b> %s\n<b>Author:</b> %s\n<b>Branch:</b> %s → %s\n\n<b>Status:</b> %s\n%s" \
+            "$PR_TITLE_ESC" "$PR_USER" "$PR_HEAD" "$PR_BASE" "$PR_STATUS" "$DESC_TEXT")
 
-          Автор закритого PR: <b>$PR_USER</b>
-          $DESC_TEXT
+          REPLY_MARKUP=$(printf '{"inline_keyboard": [[{"text": "Open PR", "url": "https://github.com/%s/pull/%s"}, {"text": "Open CI", "url": "https://github.com/%s/actions"}]]}' \
+            "${{ github.repository }}" "$PR_NUMBER" "${{ github.repository }}")
 
-          🔗 <a href="https://github.com/${{ github.repository }}/pull/$PR_NUMBER">Дивитись PR</a>
-          EOF
-          )
+          # ---------------------------
+          # 5️⃣ Редагуємо або створюємо повідомлення
+          # ---------------------------
+          if [ -n "$MESSAGE_ID" ] && [ "$MESSAGE_ID" != "null" ]; then
+            # редагуємо існуюче повідомлення
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/editMessageText" \
+              --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
+              --data-urlencode "message_id=$MESSAGE_ID" \
+              --data-urlencode "parse_mode=HTML" \
+              --data-urlencode "text=$MESSAGE" \
+              --data-urlencode "reply_markup=$REPLY_MARKUP"
+          else
+            # створюємо нове повідомлення
+            RESPONSE=$(curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+              --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
+              --data-urlencode "parse_mode=HTML" \
+              --data-urlencode "text=$MESSAGE" \
+              --data-urlencode "reply_markup=$REPLY_MARKUP")
 
-          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-            --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
-            --data-urlencode "parse_mode=HTML" \
-            --data-urlencode "text=$MESSAGE"
+            MESSAGE_ID=$(echo "$RESPONSE" | jq -r '.result.message_id')
+
+            # --- одразу зберігаємо MESSAGE_ID в окремий коментар на PR ---
+            curl -s -X POST \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments" \
+              -d "{\"body\":\"tg-msg-id:$MESSAGE_ID\"}"
+          fi

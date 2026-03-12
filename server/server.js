@@ -47,7 +47,7 @@ app.use(
     origin: [
       'http://localhost:5173',
       'http://139.59.146.5',
-      'https://evgeniiviter.website',
+      'https://travel-map.site/',
       'http://localhost',
     ],
     credentials: true,

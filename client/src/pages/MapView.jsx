@@ -17,7 +17,6 @@ import { useMapMeasure } from '../hooks/useMapMeasure.jsx';
 import api from '@/api/api';
 import MyLocation from '@/components/map/MyLocation';
 
-
 const MapView = () => {
   const [uploadProgress, setUploadProgress] = useState({}); // Об'єкт для збереження прогресу завантаження кожного файлу
   const [imagePreviews, setImagePreviews] = useState([]); // Массив превью
@@ -638,7 +637,7 @@ const MapView = () => {
           >
             <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 p-5 sm:p-6 pb-7 rounded-none md:rounded-t-2xl">
               <h3 className="text-2xl sm:text-2xl font-semibold text-white leading-tight">
-                Створення маркера
+                Створення маркера5
               </h3>
               <p className="text-blue-100 mt-1 text-base">Додайте інформацію про нову локацію</p>
 
