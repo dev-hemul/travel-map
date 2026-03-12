@@ -1,5 +1,5 @@
 # Используем Alpine (намного легче)
-FROM node:20-alpine
+FROM node:20.19.4-alpine
 
 # Устанавливаем bash (опционально) и build tools
 RUN apk add --no-cache python3 make g++ bash

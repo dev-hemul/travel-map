@@ -28,5 +28,8 @@
     "lint-staged": "^16.2.7",
     "prettier": "^3.5.3"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "volta": {
+    "node": "20.19.4"
+  }
 }
