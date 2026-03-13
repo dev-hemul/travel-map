@@ -6,6 +6,7 @@ import { supportLimiter } from '../utils/rateLimiter.js';
 const router = express.Router();
 
 // Застосовуємо Limiter до маршруту
+
 router.post('/support', supportLimiter, async (req, res) => {
   try {
     const { name, email, subject, message } = req.body;
