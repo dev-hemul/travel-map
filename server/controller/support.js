@@ -1,4 +1,4 @@
-import Support from '../model/Support.js';
+import Support from '../model/support.js';
 
 const getReports = async (req, res) => {
   const reports = await Support.find();

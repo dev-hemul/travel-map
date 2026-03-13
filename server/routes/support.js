@@ -1,11 +1,12 @@
 import express from 'express';
 
-import Support from '../model/Support.js';
+import Support from '../model/support.js';
 import { supportLimiter } from '../utils/rateLimiter.js';
 
 const router = express.Router();
 
-// Застосовуємо лімiтер до маршруту
+// Застосовуємо Limiter до маршруту
+
 router.post('/support', supportLimiter, async (req, res) => {
   try {
     const { name, email, subject, message } = req.body;

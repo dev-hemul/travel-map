@@ -44,12 +44,7 @@ app.use((req, res, next) => {
 // CORS конфігурація
 app.use(
   cors({
-    origin: [
-      'http://localhost:5173',
-      'http://139.59.146.5',
-      'https://travel-map.site/',
-      'http://localhost',
-    ],
+    origin: ['http://localhost:5173', 'https://travel-map.site', 'http://localhost'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
