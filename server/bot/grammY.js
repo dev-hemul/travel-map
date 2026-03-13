@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import { Bot, InlineKeyboard } from 'grammy';
 import mongoose from 'mongoose';
 
-import Support from '../model/Support.js';
+import Support from '../model/support.js';
 import 'dotenv/config';
 
 dotenv.config({ path: '.env.development' });
