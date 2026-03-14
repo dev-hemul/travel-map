@@ -23,5 +23,73 @@ services:
     environment:
       NODE_ENV: ${DEPLOY_ENV}
 
+  # --- Infisical services ---
+  postgres:
+    image: postgres:14-alpine
+    container_name: infisical-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: infisical
+      POSTGRES_USER: infisical
+      POSTGRES_PASSWORD: ${INFISICAL_DB_PASSWORD}
+    volumes:
+      - infisical-db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U infisical"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: infisical-redis
+    restart: unless-stopped
+    volumes:
+      - infisical-redis-data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  infisical-backend:
+    image: infisical/backend:latest
+    container_name: infisical-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DB_CONNECTION_URI: postgresql://infisical:${INFISICAL_DB_PASSWORD}@postgres:5432/infisical?sslmode=disable
+      REDIS_URL: redis://redis:6379
+      ENCRYPTION_KEY: ${INFISICAL_ENCRYPTION_KEY}
+      JWT_SECRET: ${INFISICAL_JWT_SECRET}
+      SITE_URL: https://secrets.${DOMAIN:-travel-map.site}
+      TELEMETRY_ENABLED: "false"
+    networks:
+      - app-network
+
+  infisical-frontend:
+    image: infisical/frontend:latest
+    container_name: infisical-frontend
+    restart: unless-stopped
+    depends_on:
+      - infisical-backend
+    environment:
+      NEXT_PUBLIC_SITE_URL: https://secrets.${DOMAIN:-travel-map.site}
+      INFISICAL_TELEMETRY_ENABLED: "false"
+    networks:
+      - app-network
+
+volumes:
+  infisical-db-data:
+  infisical-redis-data:
+
 networks:
   app-network:
