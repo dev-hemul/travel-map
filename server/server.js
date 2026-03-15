@@ -10,6 +10,7 @@ import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yaml';
 
+import { corsOptions } from './config/cors.js';
 // Роути
 import adminRoutes from './routes/admin.js';
 import announcementsRouter from './routes/annoucementsAdding.js';
@@ -42,16 +43,7 @@ app.use((req, res, next) => {
 });
 
 // CORS конфігурація
-app.use(
-  cors({
-    origin: ['http://localhost:5173', 'https://travel-map.site', 'http://localhost'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['Set-Cookie'],
-    optionsSuccessStatus: 200,
-  })
-);
+app.use(cors(corsOptions));
 
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
