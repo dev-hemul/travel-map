@@ -19,6 +19,14 @@ if (!privateKey || !publicKey) {
 
 export const normalizeEmail = (email) => String(email || '').trim().toLowerCase();
 
+export const conflict = (res, message, code) => { /// конфлікт авторизації гугл/локал
+  return res.status(409).json({
+    success: false,
+    message,
+    code,
+  });
+};
+
 export const setRefreshCookie = (res, refreshT) => {
   res.cookie('refreshToken', refreshT, {
     httpOnly: true,

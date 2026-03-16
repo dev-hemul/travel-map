@@ -1,10 +1,8 @@
 import bcrypt from 'bcryptjs';
 
-import { normalizeEmail, ensureRoles, issueTokens } from './auth.utils.js';
+import { normalizeEmail, ensureRoles, issueTokens, conflict } from './auth.utils.js';
 import User from '../../model/user.js';
 
-const conflict = (res, message, code) =>
-  res.status(409).json({ success: false, message, code });
 
 export const register = async (req, res) => {
   try {
