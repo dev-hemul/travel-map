@@ -23,7 +23,6 @@ export default [
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
-      ecmaVersion: 2020,
       globals: {
         ...globals.browser,
         ...globals.node,
@@ -42,32 +41,13 @@ export default [
       'unused-imports': unusedImports,
     },
     rules: {
-      'react-hooks/exhaustive-deps': 'error',
-      'unused-imports/no-unused-imports': 'error',
-      'unused-imports/no-unused-vars': [
-        'error',
-        {
-          vars: 'all',
-          varsIgnorePattern: '^_',
-          argsIgnorePattern: '^_',
-        },
-      ],
-
-      // Разрешаем только warn/error глобально
-      'no-console': ['error', { allow: ['warn', 'error'] }],
-
-      // Базовые рекомендации
+      // Базові рекомендації
       ...js.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       ...react.configs.recommended.rules,
 
       // Не дозволяти невикористані змінні, крім тих, що починаються з великої літери або _
-      'no-unused-vars': [
-        'error',
-        {
-          varsIgnorePattern: '^[A-Z_]|^colors$',
-        },
-      ],
+      'no-unused-vars': 'off',
 
       // React Refresh
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
@@ -89,6 +69,36 @@ export default [
 
       // Вимикаємо конфліктні правила prettier
       ...prettier.rules,
+
+      'unused-imports/no-unused-vars': [
+        'error',
+        {
+          vars: 'all',
+          varsIgnorePattern: '^_',
+          argsIgnorePattern: '^_',
+        },
+      ],
+
+      // Дозволяємо тільки warn/error глобально
+      'no-console': ['error', { allow: ['warn', 'error'] }],
+      'react-hooks/exhaustive-deps': 'error',
+      'unused-imports/no-unused-imports': 'error',
+      'max-lines': [
+        'error',
+        {
+          max: 200,
+          skipBlankLines: true,
+          skipComments: true,
+        },
+      ],
+      'max-lines-per-function': [
+        'error',
+        {
+          max: 120,
+          skipBlankLines: true,
+          skipComments: true,
+        },
+      ],
     },
     settings: {
       react: { version: 'detect' },
