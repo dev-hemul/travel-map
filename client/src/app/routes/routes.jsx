@@ -2,7 +2,7 @@ import { Route, Routes } from 'react-router';
 
 import AdminRouter from './AdminRouter.jsx';
 import PrivateRouter from './PrivateRouter';
-import AnnouncementModal from '../../components/announcements/announcementModal';
+import AnnouncementModal from '../../components/announcements/index.jsx';
 import NotFoundPage from '../../components/NotFoundPage';
 import SidebarLayout from '../../components/sidebarLayout/sidebarLayout';
 import SupportModalWrapper from '../../modules/support/components/supportModalWrapper';
@@ -33,7 +33,7 @@ const AppRoutes = () => {
       <Route path="/create-announcement" element={<CreateAnnouncementPage />} />
 
       <Route element={<PrivateRouter />}>
-          <Route element={<SidebarLayout />}>
+        <Route element={<SidebarLayout />}>
           <Route path="/profile" element={<ProfilePage />} />
           <Route element={<AdminRouter />}>
             <Route path="/admin" element={<AdminPage />} />
