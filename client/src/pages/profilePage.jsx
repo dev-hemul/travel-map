@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import api from '@/api/api';
-import AvatarSection from '@/components/Profile/AvatarSection';
-import MobileMenu from '@/components/Profile/MobileMenu';
-import ProfileForm from '@/components/Profile/ProfileForm';
-import ProfileHeader from '@/components/Profile/ProfileHeader';
+import AvatarSection from '@/components/profile/AvatarSection';
+import MobileMenu from '@/components/profile/MobileMenu';
+import ProfileForm from '@/components/profile/ProfileForm';
+import ProfileHeader from '@/components/profile/ProfileHeader';
 import { useProfileData } from '@/hooks/useProfileData';
 import { useWindowSize } from '@/hooks/useWindowSize';
 
