@@ -1,0 +1,173 @@
+review:
+  language: uk
+  tone: concise
+  max_comments: 15
+
+  instructions: |
+    Пиши українською мовою.
+    Будь максимально конкретним і не додавай зайвих коментарів.
+
+    Ігноруй:
+    - форматування
+    - незначні стилістичні правки
+
+    Фокус:
+    - баги
+    - продуктивність
+    - архітектура
+
+  categories:
+    - correctness
+    - performance
+    - architecture
+    - best_practices
+
+  # =========================
+  # 🔥 ГОЛОВНИЙ РОЗДІЛ
+  # =========================
+  path_instructions:
+
+    # =========================
+    # 🎨 FRONTEND (client)
+    # =========================
+    - paths:
+        - "client/**"
+      instructions: |
+        --- FRONTEND (React) ---
+
+        Фокус:
+        - ререндери
+        - React hooks
+        - структура компонентів
+        - розділення логіки і UI
+
+        REACT:
+        - перевіряй useEffect (залежності, зайві виклики)
+        - чи є зайві ререндери
+        - чи потрібні useMemo/useCallback
+        - чи немає heavy логіки в render
+        - чи не створюються нові об'єкти/функції кожен рендер
+
+        PERFORMANCE:
+        - списки (key, memo)
+        - оптимізація маркерів (map)
+        - debounce/throttle де потрібно
+
+        АРХІТЕКТУРА:
+        - pages повинні бути thin layer
+        - modules — бізнес логіка
+        - components — композиція
+        - ui — dumb компоненти
+
+        Заборонено:
+        - бізнес логіка в ui
+        - великі компоненти без декомпозиції
+
+        ASYNC:
+        - loading / error стани
+        - дублювання запитів
+        - race conditions
+
+        Якщо є проблема:
+        - коротко поясни
+        - скажи чому це проблема
+        - дай конкретний приклад фіксу
+
+    # =========================
+    # ⚙️ BACKEND (server)
+    # =========================
+    - paths:
+        - "server/**"
+      instructions: |
+        --- BACKEND (Node.js / Express) ---
+
+        Фокус:
+        - безпека
+        - стабільність
+        - API дизайн
+        - робота з БД
+
+        SECURITY:
+        - обов'язкова валідація input
+        - не довіряй req.body / req.query
+        - перевірка на NoSQL injection
+        - відсутність витоку секретів
+
+        API:
+        - правильні HTTP статуси
+        - консистентність JSON відповідей
+        - REST best practices
+
+        ERROR HANDLING:
+        - try/catch
+        - централізований error handler
+        - сервер не повинен падати
+
+        DATABASE (MongoDB):
+        - чи немає зайвих запитів
+        - чи оптимальні запити
+        - уникнення важких операцій
+
+        PERFORMANCE:
+        - відсутність блокуючих операцій
+        - ефективна обробка запитів
+
+        Якщо знаходиш проблему:
+        - поясни ризик
+        - запропонуй конкретний фікс
+
+    # =========================
+    # 🎯 ДОДАТКОВО: UI слой (frontend)
+    # =========================
+    - paths:
+        - "client/**/ui/**"
+      instructions: |
+        --- UI COMPONENTS ---
+
+        Це dumb компоненти.
+
+        Перевіряй:
+        - відсутність бізнес-логіки
+        - простоту
+        - перевикористання
+
+        НЕ давай зайвих зауважень.
+
+    # =========================
+    # 🧠 MODULES слой (frontend)
+    # =========================
+    - paths:
+        - "client/**/modules/**"
+      instructions: |
+        --- MODULES ---
+
+        Це основна бізнес-логіка.
+
+        Перевіряй:
+        - правильність логіки
+        - відсутність дублювання
+        - чи можна винести в hooks/services
+        - чистоту архітектури
+
+  path_filters:
+    - "!node_modules/**"
+    - "!dist/**"
+    - "!build/**"
+    - "!coverage/**"
+
+  ignore:
+    - "typo"
+    - "formatting"
+    - "spelling"
+
+  grouping:
+    enabled: true
+
+  summary:
+    enabled: true
+    include_overview: true
+    include_recommendations: true
+
+  auto_review:
+    enabled: true
+    drafts: false
