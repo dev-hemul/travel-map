@@ -1,5 +1,6 @@
-review:
-  language: uk
+language: uk
+
+reviews:
   tone: concise
   max_comments: 15
 
@@ -161,11 +162,6 @@ review:
     - "!dist/**"
     - "!build/**"
     - "!coverage/**"
-
-  ignore:
-    - "typo"
-    - "formatting"
-    - "spelling"
 
   grouping:
     enabled: true
