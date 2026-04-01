@@ -4,7 +4,13 @@ review:
   max_comments: 15
 
   instructions: |
-    Пиши українською мовою.
+    IMPORTANT:
+    You MUST write ALL comments ONLY in Ukrainian language.
+    DO NOT use English at all.
+    Each comment MUST start with "UA:".
+
+    Якщо ти пишеш не українською — це помилка.
+
     Будь максимально конкретним і не додавай зайвих коментарів.
 
     Ігноруй:
@@ -22,9 +28,6 @@ review:
     - architecture
     - best_practices
 
-  # =========================
-  # 🔥 ГОЛОВНИЙ РОЗДІЛ
-  # =========================
   path_instructions:
 
     # =========================
@@ -34,6 +37,8 @@ review:
         - "client/**"
       instructions: |
         --- FRONTEND (React) ---
+
+        Аналізуй тільки frontend код.
 
         Фокус:
         - ререндери
@@ -81,6 +86,8 @@ review:
       instructions: |
         --- BACKEND (Node.js / Express) ---
 
+        Аналізуй тільки backend код.
+
         Фокус:
         - безпека
         - стабільність
@@ -117,7 +124,7 @@ review:
         - запропонуй конкретний фікс
 
     # =========================
-    # 🎯 ДОДАТКОВО: UI слой (frontend)
+    # 🎯 UI слой
     # =========================
     - paths:
         - "client/**/ui/**"
@@ -134,14 +141,14 @@ review:
         НЕ давай зайвих зауважень.
 
     # =========================
-    # 🧠 MODULES слой (frontend)
+    # 🧠 MODULES слой
     # =========================
     - paths:
         - "client/**/modules/**"
       instructions: |
         --- MODULES ---
 
-        Це основна бізнес-логіка.
+        Це бізнес-логіка.
 
         Перевіряй:
         - правильність логіки
