@@ -16,11 +16,7 @@ export default function AdminPage() {
 
   const debouncedSearch = useDebounce(search, 400);
 
-  const fetchUsers = async ({
-    search = '',
-    sortBy = 'createdAt',
-    sortOrder = 'desc',
-  } = {}) => {
+  const fetchUsers = async ({ search = '', sortBy = 'createdAt', sortOrder = 'desc' } = {}) => {
     try {
       setLoading(true);
 
@@ -56,9 +52,9 @@ export default function AdminPage() {
     setShowUsers(true);
   };
 
-  const handleSort = (field) => {
+  const handleSort = field => {
     if (sortBy === field) {
-      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+      setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
       return;
     }
 
@@ -66,30 +62,26 @@ export default function AdminPage() {
     setSortOrder('asc');
   };
 
-  const handleBan = async (email) => {
+  const handleBan = async email => {
     try {
       await api.post('/admin/ban', { email });
       toast.success('Користувача забанено');
 
-      setUsers((prev) =>
-        prev.map((user) =>
-          user.email === email ? { ...user, isBanned: true } : user
-        )
+      setUsers(prev =>
+        prev.map(user => (user.email === email ? { ...user, isBanned: true } : user))
       );
     } catch {
       toast.error('Не вдалося забанити');
     }
   };
 
-  const handleUnban = async (email) => {
+  const handleUnban = async email => {
     try {
       await api.post('/admin/unban', { email });
       toast.success('Користувача розбанено');
 
-      setUsers((prev) =>
-        prev.map((user) =>
-          user.email === email ? { ...user, isBanned: false } : user
-        )
+      setUsers(prev =>
+        prev.map(user => (user.email === email ? { ...user, isBanned: false } : user))
       );
     } catch {
       toast.error('Не вдалося розбанити');
@@ -98,7 +90,7 @@ export default function AdminPage() {
 
   return (
     <div className="p-6">
-      <h1 className="mb-4 text-2xl font-semibold">Адміністрування</h1>
+      <h1 className="mb-4 text-2xl font-semibold">Адміністрування і управління</h1>
 
       <AdminToolbar
         showUsers={showUsers}
