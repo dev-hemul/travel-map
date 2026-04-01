@@ -1,6 +1,5 @@
-language: uk
-
-reviews:
+review:
+  language: uk
   tone: concise
   max_comments: 15
 
