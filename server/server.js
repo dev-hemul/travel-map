@@ -66,7 +66,7 @@ app.use('/api/', marker);
 app.use('/api/', authRouter);
 app.use('/api/profile', profileEdditRouter);
 app.use('/api/', weatherRouter);
-app.use('/api/', adminRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/', usersRoutes);
 
 // Обробка 404
