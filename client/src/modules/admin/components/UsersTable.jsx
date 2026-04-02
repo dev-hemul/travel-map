@@ -4,7 +4,7 @@ import UserRow from './UserRow';
 const columns = [
   { key: 'email', label: 'Email' },
   { key: 'username', label: 'Username' },
-  { key: 'roles', label: 'Roles' },
+  { key: 'roles', label: 'Role' },
   { key: 'provider', label: 'Provider' },
   { key: 'createdAt', label: 'Зареєстрований' },
   { key: 'isBanned', label: 'Статус' },
@@ -18,6 +18,8 @@ export default function UsersTable({
   onSort,
   onBan,
   onUnban,
+  onUpdateRole,
+  isMobile
 }) {
   return (
     <>
@@ -25,7 +27,7 @@ export default function UsersTable({
         Натисни на назву колонки, щоб відсортувати
       </p>
 
-      <div className="overflow-auto">
+      <div className="hidden md:block overflow-auto">
         <table className="w-full border">
           <thead>
             <tr className="border-b bg-gray-100">
@@ -43,19 +45,20 @@ export default function UsersTable({
                   />
                 </th>
               ))}
-
               <th className="p-2 text-left">Action</th>
             </tr>
           </thead>
 
           <tbody>
             {users.map((user) => (
-              <UserRow
-                key={user._id}
-                user={user}
-                onBan={onBan}
-                onUnban={onUnban}
-              />
+            <UserRow
+              key={user._id}
+              user={user}
+              onBan={onBan}
+              onUnban={onUnban}
+              onUpdateRole={onUpdateRole}
+              isMobile={isMobile}
+            />
             ))}
 
             {!users.length && !loading && (
@@ -68,6 +71,25 @@ export default function UsersTable({
           </tbody>
         </table>
       </div>
+
+      <ul className="flex flex-col gap-3 md:hidden">
+        {users.map((user) => (
+          <UserRow
+            key={user._id}
+            user={user}
+            onBan={onBan}
+            onUnban={onUnban}
+            isMobile={isMobile}
+            onUpdateRole={onUpdateRole}
+          />
+        ))}
+
+        {!users.length && !loading && (
+          <li className="p-4 text-center text-gray-500">
+            Немає користувачів
+          </li>
+        )}
+      </ul>
     </>
   );
 }
