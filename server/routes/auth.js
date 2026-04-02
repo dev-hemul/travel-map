@@ -5,7 +5,6 @@ import { register, login } from '../controller/authCntrl/local.authCntrl.js';
 import { getRefreshToken, logout } from '../controller/authCntrl/tokenCntrl.js';
 import { verifyAccessToken, verifyRefreshToken } from '../middlewares/auth.js';
 import { checkBannedEmail } from '../middlewares/checkBannedEmail.js'
-import { checkBannedGoogle } from '../middlewares/checkBannedEmailGoogle.js';
 import User from '../model/user.js'; // Імпорт User для GET /profile
 import { googleCodeToUser, getGoogleAuthUrl } from './../middlewares/googleAuth.js';
 import { validateLoginBody, validateRegisterBody } from './../middlewares/validation.js';
@@ -40,6 +39,6 @@ router.post('/profile', verifyAccessToken, updateProfile);
 
 router.get('/google/url', getGoogleAuthUrl);
 
-router.post('/google', googleCodeToUser, checkBannedGoogle, googleLogin);
+router.post('/google', googleCodeToUser, checkBannedEmail, googleLogin);
 
 export default router;
