@@ -2,9 +2,9 @@ import { Route, Routes } from 'react-router';
 
 import AdminRouter from './AdminRouter.jsx';
 import PrivateRouter from './PrivateRouter';
-import AnnouncementModal from '../../components/announcements/layout.jsx';
 import NotFoundPage from '../../components/NotFoundPage';
 import SidebarLayout from '../../components/sidebarLayout/sidebarLayout';
+import AnnouncementModal from '../../modules/announcements/announcementModal/layout.jsx';
 import SupportModalWrapper from '../../modules/support/components/supportModalWrapper';
 import AdminPage from '../../pages/adminPage.jsx';
 import AnnouncementDetailPage from '../../pages/announcementDetailPage';
