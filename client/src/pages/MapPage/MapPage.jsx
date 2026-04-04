@@ -18,12 +18,13 @@ const MapPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [activeMarker, setActiveMarker] = useState(null);
   const [isMeasureEnabled, setIsMeasureEnabled] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   const { params, clearOpenedMarkerParams, setOpenedMarkerParams, updateZoomParam } =
     useMapUrlSync();
 
-  const { markers, loading, createMarker, updateMarker, deleteMarker, deleteMedia } =
-    useMapMarkers();
+  const { markers, createMarker, updateMarker, deleteMarker, deleteMedia } = useMapMarkers();
 
   const form = useMarkerForm();
 
@@ -83,6 +84,9 @@ const MapPage = () => {
     e.preventDefault();
     if (!selectedMarker) return;
 
+    setIsSubmitting(true);
+    setSubmitError(null);
+
     try {
       const uploadedFileUrls = [];
       for (const file of form.formData.files || []) {
@@ -113,6 +117,9 @@ const MapPage = () => {
       clearOpenedMarkerParams();
     } catch (error) {
       console.error('Ошибка при создании маркера:', error);
+      setSubmitError('Не вдалося зберегти маркер. Спробуйте ще раз.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -121,6 +128,7 @@ const MapPage = () => {
     setModalOpen(false);
     setSelectedMarker(null);
     clearOpenedMarkerParams();
+    setSubmitError(null);
   };
 
   const handleMarkerSave = async updatedMarker => {
@@ -182,8 +190,9 @@ const MapPage = () => {
         onFilesChange={form.handleFilesChange}
         onSubmit={handleCreateMarkerSubmit}
         onClose={handleCreateMarkerCancel}
-        loading={loading}
+        loading={isSubmitting}
         onRemoveFile={form.handleRemoveFile}
+        error={submitError}
       />
 
       <MarkerSidePanel

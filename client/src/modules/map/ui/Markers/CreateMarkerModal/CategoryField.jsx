@@ -2,7 +2,13 @@ import CreatableSelect from 'react-select/creatable';
 
 import { selectStyles } from './selectStyles';
 
-const CategoryField = ({ options, selectedOption, onCategoryChange, onCreateCategory }) => {
+const CategoryField = ({
+  options,
+  selectedOption,
+  onCategoryChange,
+  onCreateCategory,
+  loading,
+}) => {
   return (
     <div>
       <label className="mb-1.5 inline-block text-sm font-semibold uppercase text-gray-500">
@@ -11,6 +17,7 @@ const CategoryField = ({ options, selectedOption, onCategoryChange, onCreateCate
       <CreatableSelect
         styles={selectStyles}
         isClearable
+        isDisabled={loading}
         onChange={onCategoryChange}
         onCreateOption={onCreateCategory}
         options={options}

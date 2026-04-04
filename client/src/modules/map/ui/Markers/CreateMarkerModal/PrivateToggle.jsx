@@ -1,12 +1,17 @@
-const PrivateToggle = ({ value, onChange }) => {
+const PrivateToggle = ({ value, onChange, disabled }) => {
   return (
     <div className="pt-1">
-      <label className="relative inline-flex cursor-pointer items-center">
+      <label
+        className={`relative inline-flex items-center ${
+          disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+        }`}
+      >
         <input
           type="checkbox"
           name="private"
           checked={!!value}
           onChange={e => onChange(e.target.checked)}
+          disabled={disabled}
           className="peer sr-only"
         />
         <div

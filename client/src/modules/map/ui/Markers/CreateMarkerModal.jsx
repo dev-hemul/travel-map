@@ -22,6 +22,7 @@ const CreateMarkerModal = ({
   onClose,
   loading,
   onRemoveFile,
+  error,
 }) => {
   const [tagsInput, setTagsInput] = useState('');
 
@@ -77,9 +78,10 @@ const CreateMarkerModal = ({
                 name="title"
                 value={formData.title}
                 onChange={onFormChange}
-                className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none transition duration-200 hover:border-[#9ca3af] focus:border-blue-500 focus:ring focus:ring-blue-200 sm:text-base"
+                className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none transition duration-200 hover:border-[#9ca3af] focus:border-blue-500 focus:ring focus:ring-blue-200 disabled:cursor-not-allowed disabled:bg-gray-50 sm:text-base"
                 placeholder="Введіть назву маркера"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -89,6 +91,7 @@ const CreateMarkerModal = ({
                 selectedOption={selectedOption}
                 onCategoryChange={onCategoryChange}
                 onCreateCategory={onCreateCategory}
+                loading={loading}
               />
             </div>
 
@@ -100,13 +103,14 @@ const CreateMarkerModal = ({
                 type="text"
                 value={tagsInput}
                 onChange={handleTagsInputChange}
-                className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none transition duration-200 hover:border-[#9ca3af] focus:border-blue-500 focus:ring focus:ring-blue-200 sm:text-base"
+                className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none transition duration-200 hover:border-[#9ca3af] focus:border-blue-500 focus:ring focus:ring-blue-200 disabled:cursor-not-allowed disabled:bg-gray-50 sm:text-base"
                 placeholder="Наприклад: море, пляж, sunset"
+                disabled={loading}
               />
               <p className="mt-1 text-xs text-gray-500">Вводь теги мітки кому</p>
             </div>
 
-            <PrivateToggle value={formData.private} onChange={onPrivateChange} />
+            <PrivateToggle value={formData.private} onChange={onPrivateChange} disabled={loading} />
 
             <FileUploadField
               files={formData.files}
@@ -125,13 +129,18 @@ const CreateMarkerModal = ({
                 value={formData.description}
                 onChange={onFormChange}
                 rows={3}
-                className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none placeholder-gray-400 focus:border-blue-500"
+                className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none placeholder-gray-400 focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50"
                 placeholder="Уведіть опис (необов'язково)"
+                disabled={loading}
               />
             </div>
           </div>
 
-          <ModalActions onClose={onClose} />
+          {error && (
+            <div className="mt-4 text-center text-sm font-medium text-red-500">{error}</div>
+          )}
+
+          <ModalActions onClose={onClose} loading={loading} />
         </form>
       </div>
     </div>

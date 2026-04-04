@@ -1,4 +1,14 @@
-const MarkerDetails = ({ marker, isEditing, editForm, setEditForm }) => {
+import FileUploadField from '../../../Markers/CreateMarkerModal/FileUploadField';
+
+const MarkerDetails = ({
+  marker,
+  isEditing,
+  editForm,
+  setEditForm,
+  onFilesChange,
+  onRemoveFile,
+  isSaving,
+}) => {
   return (
     <div className="space-y-6">
       <div>
@@ -91,6 +101,16 @@ const MarkerDetails = ({ marker, isEditing, editForm, setEditForm }) => {
           </label>
         )}
       </div>
+
+      {isEditing && (
+        <FileUploadField
+          files={editForm.files}
+          fileUrls={editForm.fileUrls}
+          onFilesChange={onFilesChange}
+          onRemoveFile={onRemoveFile}
+          isUploading={isSaving}
+        />
+      )}
     </div>
   );
 };

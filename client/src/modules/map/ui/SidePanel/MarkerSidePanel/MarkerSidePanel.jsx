@@ -7,6 +7,8 @@ import MarkerHeader from './components/MarkerHeader';
 import MediaGallery, { MediaViewer } from './components/MediaGallery';
 import ShareModal from './components/ShareModal';
 
+import api from '@/api/api';
+
 const MarkerSidePanel = ({ marker, onClose, onSave, onDelete, onDeleteMedia }) => {
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -18,6 +20,8 @@ const MarkerSidePanel = ({ marker, onClose, onSave, onDelete, onDeleteMedia }) =
     description: marker?.description || '',
     tags: Array.isArray(marker?.tags) ? marker.tags.join(', ') : '',
     private: !!marker?.private,
+    files: [],
+    fileUrls: [],
   });
   const [saveError, setSaveError] = useState('');
   const [isDeleteConfirm, setIsDeleteConfirm] = useState(false);
@@ -37,6 +41,8 @@ const MarkerSidePanel = ({ marker, onClose, onSave, onDelete, onDeleteMedia }) =
       description: marker?.description || '',
       tags: Array.isArray(marker?.tags) ? marker.tags.join(', ') : '',
       private: !!marker?.private,
+      files: [],
+      fileUrls: [],
     });
     setSaveError('');
     setIsDeleteConfirm(false);
@@ -126,15 +132,48 @@ const MarkerSidePanel = ({ marker, onClose, onSave, onDelete, onDeleteMedia }) =
     setShowShareModal(false);
   };
 
-  const handleSave = async () => {
-    const updatedMarker = buildUpdatedMarker();
-    setEditForm({
-      ...editForm,
-      tags: Array.isArray(updatedMarker.tags) ? updatedMarker.tags.join(', ') : '',
+  const handleFilesChange = files => {
+    const fileUrls = files.map(file => URL.createObjectURL(file));
+    setEditForm(prev => ({ ...prev, files, fileUrls }));
+  };
+
+  const handleRemoveFile = indexToRemove => {
+    setEditForm(prev => {
+      const nextFiles = prev.files.filter((_, index) => index !== indexToRemove);
+      const nextFileUrls = prev.fileUrls.filter((_, index) => index !== indexToRemove);
+      const removedUrl = prev.fileUrls[indexToRemove];
+      if (removedUrl) URL.revokeObjectURL(removedUrl);
+      return { ...prev, files: nextFiles, fileUrls: nextFileUrls };
     });
+  };
+
+  const handleSave = async () => {
+    const uploadedFileUrls = [];
     try {
       setSaveError('');
       setIsSaving(true);
+
+      for (const file of editForm.files || []) {
+        const fileData = new FormData();
+        fileData.append('file', file);
+        const uploadResponse = await api.post('/upload', fileData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        if (uploadResponse.data?.url) uploadedFileUrls.push(uploadResponse.data.url);
+      }
+
+      const updatedMarker = {
+        ...buildUpdatedMarker(),
+        fileUrls: [...(marker.fileUrls || []), ...uploadedFileUrls],
+      };
+
+      setEditForm({
+        ...editForm,
+        tags: Array.isArray(updatedMarker.tags) ? updatedMarker.tags.join(', ') : '',
+        files: [],
+        fileUrls: [],
+      });
+
       if (onSave) await onSave(updatedMarker);
       setIsEditing(false);
     } catch (error) {
@@ -212,6 +251,9 @@ const MarkerSidePanel = ({ marker, onClose, onSave, onDelete, onDeleteMedia }) =
                 isEditing={isEditing}
                 editForm={editForm}
                 setEditForm={setEditForm}
+                onFilesChange={handleFilesChange}
+                onRemoveFile={handleRemoveFile}
+                isSaving={isSaving}
               />
 
               <MediaGallery

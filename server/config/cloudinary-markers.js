@@ -8,6 +8,7 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 dotenv.config({
@@ -32,9 +33,6 @@ const storage = new CloudinaryStorage({
       transformation: isImage
         ? [
             {
-              width: 800,
-              height: 600,
-              crop: 'limit',
               quality: 'auto:good',
               fetch_format: 'auto',
             },
@@ -47,7 +45,7 @@ const storage = new CloudinaryStorage({
 const upload = multer({
   storage,
   limits: {
-    fileSize: 50 * 1024 * 1024,
+    fileSize: 10 * 1024 * 1024, // 10 MB
   },
 });
 
