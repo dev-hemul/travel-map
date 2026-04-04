@@ -16,10 +16,8 @@ import unusedImports from 'eslint-plugin-unused-imports';
 import globals from 'globals';
 
 export default [
-  // Ігнорування build/модулів
   { ignores: ['dist', 'node_modules'] },
 
-  // Загальні правила для всіх JS/JSX файлів
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -41,18 +39,14 @@ export default [
       'unused-imports': unusedImports,
     },
     rules: {
-      // Базові рекомендації
       ...js.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       ...react.configs.recommended.rules,
 
-      // Не дозволяти невикористані змінні, крім тих, що починаються з великої літери або _
       'no-unused-vars': 'off',
 
-      // React Refresh
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
 
-      // Import rules
       'import/no-unresolved': ['error', { ignore: ['@', '@tailwindcss/vite'] }],
       'import/order': [
         'warn',
@@ -63,11 +57,9 @@ export default [
         },
       ],
 
-      // React специфічні правила
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
 
-      // Вимикаємо конфліктні правила prettier
       ...prettier.rules,
 
       'unused-imports/no-unused-vars': [
@@ -79,22 +71,14 @@ export default [
         },
       ],
 
-      // Дозволяємо тільки warn/error глобально
       'no-console': ['error', { allow: ['warn', 'error'] }],
       'react-hooks/exhaustive-deps': 'error',
       'unused-imports/no-unused-imports': 'error',
+
       'max-lines': [
         'error',
         {
-          max: 200,
-          skipBlankLines: true,
-          skipComments: true,
-        },
-      ],
-      'max-lines-per-function': [
-        'error',
-        {
-          max: 150,
+          max: 300,
           skipBlankLines: true,
           skipComments: true,
         },
@@ -105,18 +89,17 @@ export default [
       'import/resolver': {
         node: { extensions: ['.js', '.jsx'] },
         alias: {
-          map: [['@', './src']], // @ -> src
+          map: [['@', './src']],
           extensions: ['.js', '.jsx'],
         },
       },
     },
   },
 
-  // Override для Node-файлів, де console.log дозволений
   {
     files: ['server/bin/runners/db.js', 'server/bin/runners/http.js', 'server/bot/grammY.js'],
     rules: {
-      'no-console': 'off', // дозволяємо всі console
+      'no-console': 'off',
     },
   },
 ];

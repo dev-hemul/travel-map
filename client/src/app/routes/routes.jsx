@@ -2,7 +2,6 @@ import { Route, Routes } from 'react-router';
 
 import AdminRouter from './AdminRouter.jsx';
 import PrivateRouter from './PrivateRouter';
-import NotFoundPage from '../../components/NotFoundPage';
 import SidebarLayout from '../../components/sidebarLayout/sidebarLayout';
 import AnnouncementModal from '../../modules/announcements/announcementModal/layout.jsx';
 import SupportModalWrapper from '../../modules/support/components/supportModalWrapper';
@@ -11,7 +10,8 @@ import AnnouncementDetailPage from '../../pages/announcementDetailPage';
 import CreateAnnouncementPage from '../../pages/createAnnouncementPage';
 import GoogleCallback from '../../pages/googleCallback.jsx';
 import LoginPage from '../../pages/loginPage';
-import MapView from '../../pages/MapView';
+import MapPage from '../../pages/MapPage/MapPage';
+import NotFoundPage from '../../pages/NotFoundPage';
 import ProfilePage from '../../pages/profilePage';
 
 const AppRoutes = () => {
@@ -21,12 +21,13 @@ const AppRoutes = () => {
         path="/"
         element={
           <>
-            <MapView />
+            <MapPage />
             <SupportModalWrapper />
             <AnnouncementModal />
           </>
         }
       />
+
       <Route path="/login" element={<LoginPage />} />
       <Route path="/auth/google/callback" element={<GoogleCallback />} />
       <Route path="/announcement/:id" element={<AnnouncementDetailPage />} />
