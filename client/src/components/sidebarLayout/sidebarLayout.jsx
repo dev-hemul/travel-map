@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { CgProfile } from 'react-icons/cg';
 import { FaRoute, FaLongArrowAltLeft, FaLongArrowAltRight, FaBullhorn } from 'react-icons/fa';
 import { IoMdSettings } from 'react-icons/io';
+import { MdOutlineAdminPanelSettings } from 'react-icons/md'
 import { NavLink, Outlet } from 'react-router';
 
 const SidebarLayout = () => {
@@ -56,7 +57,7 @@ const SidebarLayout = () => {
     { to: '/announcements', icon: <FaBullhorn size={25} />, label: 'Оголошення' },
     { to: '/routes', icon: <FaRoute size={25} />, label: 'Маршрути' },
     { to: '/settings', icon: <IoMdSettings size={25} />, label: 'Налаштування' },
-    { to: '/admin', icon: <IoMdSettings size={25} />, label: 'Адміністрування' },
+    { to: '/admin', icon: <MdOutlineAdminPanelSettings size={25} />, label: 'Адміністрування' },
   ];
 
   return (
