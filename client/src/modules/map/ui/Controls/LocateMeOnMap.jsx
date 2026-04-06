@@ -65,6 +65,12 @@ const LocateMeOnMap = ({ trigger }) => {
   useEffect(() => {
     if (!trigger) return;
 
+    if (markerRef.current) {
+      map.removeLayer(markerRef.current);
+      markerRef.current = null;
+      return;
+    }
+
     toast.info('Визначаємо ваше місцеположення...', {
       toastId: 'locating',
     });

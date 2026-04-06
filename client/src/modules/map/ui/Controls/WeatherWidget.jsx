@@ -161,22 +161,20 @@ export default function WeatherWidget() {
               absolute
               top-full
               right-0
-              -translate-x-14
-              sm:absolute
-              sm:top-full
-              sm:right-0
-              sm:left-auto
-
+              mt-2
               bg-[#F0F4F8]
-              rounded-none sm:rounded-lg
+              rounded-lg
               shadow-lg
               p-4
               z-50
               flex flex-col gap-4
-
-              w-full sm:w-[300px]
-              max-h-[80vh] overflow-y-auto
-            "
+              w-[90vw]
+              sm:w-[350px]
+              max-w-[90vw]
+              sm:max-w-[350px]
+              max-h-[80vh]
+              overflow-y-auto
+              "
           >
             {/* Місто */}
             <div className="relative">
