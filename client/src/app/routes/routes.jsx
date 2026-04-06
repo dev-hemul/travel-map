@@ -2,32 +2,21 @@ import { Route, Routes } from 'react-router';
 
 import AdminRouter from './AdminRouter.jsx';
 import PrivateRouter from './PrivateRouter';
-import SidebarLayout from '../../components/sidebarLayout/sidebarLayout';
-import AnnouncementModal from '../../modules/announcements/announcementModal/layout.jsx';
-import SupportModalWrapper from '../../modules/support/components/supportModalWrapper';
-import AdminPage from '../../pages/adminPage.jsx';
-import AnnouncementDetailPage from '../../pages/announcementDetailPage';
-import CreateAnnouncementPage from '../../pages/createAnnouncementPage';
-import GoogleCallback from '../../pages/googleCallback.jsx';
-import LoginPage from '../../pages/loginPage';
-import MapPage from '../../pages/MapPage/MapPage';
-import NotFoundPage from '../../pages/NotFoundPage';
-import ProfilePage from '../../pages/profilePage';
+
+import SidebarLayout from '@/components/sidebarLayout/sidebarLayout';
+import AdminPage from '@/pages/adminPage.jsx';
+import AnnouncementDetailPage from '@/pages/announcementDetailPage';
+import CreateAnnouncementPage from '@/pages/createAnnouncementPage';
+import GoogleCallback from '@/pages/googleCallback.jsx';
+import LoginPage from '@/pages/loginPage';
+import MapPage from '@/pages/MapPage/MapPage';
+import NotFoundPage from '@/pages/NotFoundPage';
+import ProfilePage from '@/pages/profilePage';
 
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route
-        path="/"
-        element={
-          <>
-            <MapPage />
-            <SupportModalWrapper />
-            <AnnouncementModal />
-          </>
-        }
-      />
-
+      <Route path="/" element={<MapPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/auth/google/callback" element={<GoogleCallback />} />
       <Route path="/announcement/:id" element={<AnnouncementDetailPage />} />
@@ -41,9 +30,7 @@ const AppRoutes = () => {
           </Route>
           <Route path="/announcements" element={<div>Оголошення</div>} />
           <Route path="/routes" element={<div>Маршрути</div>} />
-          <Route path="/support" element={<div>Підтримка</div>} />
           <Route path="/settings" element={<div>Налаштування</div>} />
-          <Route path="/auth" element={<div>Налаштування авторизації</div>} />
         </Route>
       </Route>
 

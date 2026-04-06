@@ -5,11 +5,13 @@ import { useMapUrlSync } from './hooks/useMapUrlSync';
 import { useMarkerForm } from './hooks/useMarkerForm';
 
 import api from '@/api/api';
+import AnnouncementModal from '@/modules/announcements/announcementModal/layout.jsx';
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from '@/modules/map/config/mapDefaults';
 import MapControlsPanel from '@/modules/map/ui/Controls/MapControlsPanel';
 import MapCanvas from '@/modules/map/ui/Map/MapCanvas';
 import CreateMarkerModal from '@/modules/map/ui/Markers/CreateMarkerModal';
 import MarkerSidePanel from '@/modules/map/ui/SidePanel/MarkerSidePanel/MarkerSidePanel';
+import SupportModalWrapper from '@/modules/support/components/supportModalWrapper';
 
 const MapPage = () => {
   const [mapType, setMapType] = useState('standard');
@@ -205,6 +207,9 @@ const MapPage = () => {
         onDelete={handleMarkerDelete}
         onDeleteMedia={handleDeleteMedia}
       />
+
+      <SupportModalWrapper />
+      <AnnouncementModal />
     </div>
   );
 };
