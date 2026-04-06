@@ -39,7 +39,7 @@ const LayersSwitcher = ({ mapType, onChange }) => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="absolute right-0 top-full z-10 mt-2 flex flex-col space-y-2"
+            className="absolute right-0 top-full z-10 mt-2 flex flex-col space-y-2 -translate-x-14"
           >
             <button
               type="button"

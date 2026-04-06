@@ -158,10 +158,10 @@ export default function WeatherWidget() {
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.2 }}
             className="
-              fixed
-              inset-x-0
-              top-20
-
+              absolute
+              top-full
+              right-0
+              -translate-x-14
               sm:absolute
               sm:top-full
               sm:right-0
