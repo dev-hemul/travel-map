@@ -61,6 +61,7 @@ const CreateMarkerModal = ({
           rounded-none border-0 bg-gradient-to-br from-white to-gray-50
           shadow-none
           md:rounded-2xl md:border md:border-gray-100 md:shadow-xl
+          overflow-hidden
         "
       >
         <ModalHeader />
