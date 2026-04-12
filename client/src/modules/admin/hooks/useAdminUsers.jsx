@@ -116,6 +116,22 @@ export const useAdminUsers = () => {
     }
   };
 
+  const updateStatus = async (userId, status) => {
+    try {
+      await apiAdmin.post('/status', { userId, status });
+
+      toast.success('Статус оновлено');
+
+      setUsers((prev) =>
+        prev.map((u) =>
+          u._id === userId ? { ...u, statuses: [status] } : u
+        )
+      );
+    } catch {
+      toast.error('Не вдалося змінити роль');
+    }
+  };
+
   return {
     users,
     loading,
@@ -129,6 +145,7 @@ export const useAdminUsers = () => {
     banUser,
     unbanUser,
     updateRole, 
+    updateStatus,
     page,
     setPage,
     pages,

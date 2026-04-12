@@ -1,6 +1,7 @@
 import BannedEmails from './../../model/bannedEmails.js';
-import User from './../../model/user.js'
+import User from './../../model/user.js';
 import { normalizeEmail } from './../authCntrl/auth.utils.js';
+
 
 export const filterUsers = (users, search) => {
   if (!search) return users;
@@ -8,7 +9,11 @@ export const filterUsers = (users, search) => {
   const normalizedSearch = search.trim().toLowerCase();
 
   return users.filter((user) => {
-    const searchValue = [user.username, user.email, user.provider]
+    const searchValue = [
+      user.statuses?.join(' '),
+      user.email,
+      user.provider,
+    ]
       .filter(Boolean)
       .join(' ')
       .toLowerCase();
@@ -16,7 +21,6 @@ export const filterUsers = (users, search) => {
     return searchValue.includes(normalizedSearch);
   });
 };
-
 
 export const attachBanStatus = async (users) => {
   const banned = await BannedEmails.find().select('email -_id').lean();
@@ -27,7 +31,6 @@ export const attachBanStatus = async (users) => {
     isBanned: bannedSet.has(normalizeEmail(u.email)),
   }));
 };
-
 
 export const sortUsers = (users, sortBy, sortOrder) => {
   return users.sort((a, b) => {
@@ -40,19 +43,18 @@ export const sortUsers = (users, sortBy, sortOrder) => {
         valB = b.email?.toLowerCase() || '';
         break;
 
-      case 'username':
-        valA = a.username?.toLowerCase() || '';
-        valB = b.username?.toLowerCase() || '';
-        break;
-
       case 'provider':
         valA = a.provider?.toLowerCase() || '';
         valB = b.provider?.toLowerCase() || '';
         break;
 
       case 'roles':
-        valA = Array.isArray(a.roles) ? a.roles.join(',').toLowerCase() : '';
-        valB = Array.isArray(b.roles) ? b.roles.join(',').toLowerCase() : '';
+        valA = Array.isArray(a.roles)
+          ? a.roles.join(',').toLowerCase()
+          : '';
+        valB = Array.isArray(b.roles)
+          ? b.roles.join(',').toLowerCase()
+          : '';
         break;
 
       case 'isBanned':
@@ -100,7 +102,6 @@ export const banUserByEmail = async ({
   );
 };
 
-
 export const unbanUserByEmail = async (email) => {
   const emailNorm = normalizeEmail(email);
   return BannedEmails.deleteOne({ email: emailNorm });
@@ -110,6 +111,14 @@ export const updateUserRole = async (userId, role) => {
   return User.findByIdAndUpdate(
     userId,
     { roles: [role] },
+    { new: true }
+  );
+};
+
+export const updateUserStatus = async (userId, status) => {
+  return User.findByIdAndUpdate(
+    userId,
+    { statuses: [status] },
     { new: true }
   );
 };

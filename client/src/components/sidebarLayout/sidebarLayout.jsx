@@ -1,9 +1,8 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { CgProfile } from 'react-icons/cg';
-import { FaRoute, FaLongArrowAltLeft, FaLongArrowAltRight, FaBullhorn } from 'react-icons/fa';
+import { FaRoute, FaLongArrowAltLeft, FaLongArrowAltRight, FaBullhorn, FaUserShield } from 'react-icons/fa';
 import { IoMdSettings } from 'react-icons/io';
-import { MdOutlineAdminPanelSettings } from 'react-icons/md'
 import { NavLink, Outlet } from 'react-router';
 
 const SidebarLayout = () => {
@@ -33,82 +32,69 @@ const SidebarLayout = () => {
     }
   }, [windowWidth]);
 
-  const baseLinkStyles =
-    'py-2 px-4 rounded-lg flex items-center transition-all duration-200 ease-in-out';
+  const baseLinkStyles = 'py-2 px-4 rounded-lg flex items-center transition-all duration-200 ease-in-out';
 
   const activeStyle = ({ isActive }) => {
     if (windowWidth < breakPoint768 && isSidebarOpen) {
-      return `${baseLinkStyles} ${
-        isActive ? 'bg-[#744ce9] text-white' : 'text-[#797979] hover:bg-[#744CE9] hover:text-white'
-      }`;
+      return `${baseLinkStyles} ${isActive ? 'bg-[#744ce9] text-white' : 'text-[#797979] hover:bg-[#744CE9] hover:text-white'}`;
     } else if (isSidebarOpen) {
-      return `${baseLinkStyles} ${
-        isActive ? 'bg-[#744ce9] text-white' : 'text-[#797979] hover:bg-[#744CE9] hover:text-white'
-      }`;
+      return `${baseLinkStyles} ${isActive ? 'bg-[#744ce9] text-white' : 'text-[#797979] hover:bg-[#744CE9] hover:text-white'}`;
     } else {
-      return `${baseLinkStyles} ${
-        isActive ? 'text-[#744ce9]' : 'text-[#797979] hover:text-[#744CE9]'
-      } justify-center`;
+      return `${baseLinkStyles} ${isActive ? 'text-[#744ce9]' : 'text-[#797979] hover:text-[#744CE9]'} justify-center`;
     }
   };
 
   const links = [
-    { to: '/profile', icon: <CgProfile size={27} />, label: 'Профіль' },
+    { to: '/profile', icon: <CgProfile size={29} />, label: 'Профіль' },
     { to: '/announcements', icon: <FaBullhorn size={25} />, label: 'Оголошення' },
     { to: '/routes', icon: <FaRoute size={25} />, label: 'Маршрути' },
     { to: '/settings', icon: <IoMdSettings size={25} />, label: 'Налаштування' },
-    { to: '/admin', icon: <MdOutlineAdminPanelSettings size={25} />, label: 'Адміністрування' },
+    { to: '/admin', icon: <FaUserShield size={25} />, label: 'Адміністрування' },
   ];
 
   return (
-    <div className="flex min-h-screen bg-[#F3F3F3]">
+    <div className="flex min-h-screen bg-white overflow-hidden">
+
       {windowWidth < breakPoint768 && !isSidebarOpen && (
         <button
           onClick={() => setIsSidebarOpen(true)}
-          className="fixed top-4 left-1 z-60 w-10 h-10 bg-[#744ce9] text-white rounded-full flex items-center justify-center shadow-lg"
+          className="fixed top-4 left-2 z-70 w-8 h-8 bg-[#744ce9] text-white rounded-full flex items-center justify-center shadow-lg"
         >
-          <FaLongArrowAltRight size={18} />
+          <FaLongArrowAltRight size={16} />
         </button>
       )}
 
       <motion.div
-        className="fixed left-0 top-0 h-full bg-white p-6 flex flex-col shadow-lg z-50"
+        className="fixed left-0 top-0 h-full bg-white p-6 flex flex-col shadow-lg z-[60]"
         animate={{
-          width:
-            windowWidth < breakPoint768 ? (isSidebarOpen ? '100%' : 0) : isSidebarOpen ? 256 : 64,
+          width: windowWidth < breakPoint768 ? (isSidebarOpen ? '100%' : 0) : isSidebarOpen ? 256 : 64,
         }}
         transition={{ type: 'tween', duration: 0.3 }}
       >
         {showToggleButton && windowWidth >= breakPoint768 && (
           <motion.button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="absolute top-4 z-50 w-8 h-8 bg-[#744ce9] text-white rounded-full flex items-center justify-center shadow-lg"
-            animate={{ left: isSidebarOpen ? 256 : 17 }}
+            className="absolute top-4 z-50 w-9 h-9 bg-[#744ce9] text-white rounded-full flex items-center justify-center shadow-lg"
+            animate={{ left: isSidebarOpen ? 256 : 8 }}
             transition={{ type: 'tween', duration: 0.3 }}
           >
             {isSidebarOpen ? <FaLongArrowAltLeft size={18} /> : <FaLongArrowAltRight size={18} />}
           </motion.button>
         )}
+        
         {windowWidth < breakPoint768 && isSidebarOpen && (
           <button
             onClick={() => setIsSidebarOpen(false)}
-            className="absolute top-4 right-4 z-50 w-10 h-10 bg-[#744ce9] text-white rounded-full flex items-center justify-center shadow-lg"
+            className="absolute top-4 right-4 z-[70] w-5 h-5 bg-[#744ce9] hover:bg-[#5d39b3] text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200"
           >
             <FaLongArrowAltLeft size={18} />
           </button>
         )}
 
-        <motion.div
-          className="flex flex-col items-center mb-8"
-          animate={{ opacity: isSidebarOpen ? 1 : 0 }}
-          transition={{ duration: 0.2 }}
-        >
+        <motion.div className="flex flex-col items-center mb-8" animate={{ opacity: isSidebarOpen ? 1 : 0 }}>
           <h1 className="font-bold text-[#744ce9] text-2xl text-center">
-            Особистий
-            <br />
-            кабінет
+            Особистий<br />кабінет
           </h1>
-
           <h2 className="text-[#744ce9] mt-4 text-center">Вітаємо Користувач!</h2>
         </motion.div>
 
@@ -124,26 +110,14 @@ const SidebarLayout = () => {
                 {windowWidth < breakPoint768 && isSidebarOpen ? (
                   <div className="flex flex-col items-center justify-center w-full gap-1">
                     {link.icon}
-                    <motion.span
-                      className="text-sm text-center"
-                      initial={false}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {link.label}
-                    </motion.span>
+                    <motion.span className="text-sm text-center">{link.label}</motion.span>
                   </div>
                 ) : (
                   <div className="flex items-center">
                     {link.icon}
                     <motion.span
                       className="ml-7 whitespace-nowrap overflow-hidden"
-                      initial={false}
-                      animate={{
-                        opacity: isSidebarOpen ? 1 : 0,
-                        maxWidth: isSidebarOpen ? 200 : 0,
-                      }}
-                      transition={{ duration: 0.2 }}
+                      animate={{ opacity: isSidebarOpen ? 1 : 0, maxWidth: isSidebarOpen ? 200 : 0 }}
                     >
                       {link.label}
                     </motion.span>
@@ -154,18 +128,19 @@ const SidebarLayout = () => {
           </div>
         </nav>
       </motion.div>
-
-      <motion.div
-        animate={{
-          marginLeft: windowWidth < breakPoint768 ? 0 : isSidebarOpen ? 256 : 64,
-          opacity: windowWidth < breakPoint768 && isSidebarOpen ? 0.3 : 1,
+      
+      <div 
+        className="flex-1 min-h-screen bg-white p-4 sm:p-6 lg:p-8"
+        style={{
+          paddingLeft: windowWidth < breakPoint768 ? '64px' : (isSidebarOpen ? '256px' : '64px'),
+          paddingRight: '16px',           // костиль 
         }}
-        transition={{ type: 'tween', duration: 0.3 }}
-        className="flex-1 p-8"
         onClick={() => windowWidth < breakPoint768 && isSidebarOpen && setIsSidebarOpen(false)}
       >
-        <Outlet />
-      </motion.div>
+        <div className="w-full max-w-[1280px] mx-auto">
+          <Outlet />
+        </div>
+      </div>
     </div>
   );
 };
