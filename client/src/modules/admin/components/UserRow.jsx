@@ -8,6 +8,7 @@ export default function UserRow({
   onBan,
   onUnban,
   onUpdateRole,
+  onUpdateStatus,
   isMobile,
 }) {
   const handleToggle = () => {
@@ -25,11 +26,24 @@ export default function UserRow({
         <div className="space-y-3 text-base">
 
           <div>
-            <b>Email:</b>
+            <b>Пошта:</b>
             <div className="break-all">{user.email}</div>
           </div>
 
-          <div><b>Username:</b> {user.username || '-'}</div>
+          <div className="flex items-center gap-2">
+            <b>Статус:</b>
+            <select
+              value={user.statuses?.[0] || 'Учасник клубу'}
+              onChange={(e) =>
+                onUpdateStatus(user._id, e.target.value)
+              }
+              className="border rounded px-2 py-1 text-sm"
+            >
+              <option value="Учасник клубу">Учасник клубу</option>
+              <option value="Шляхотворець">Шляхотворець</option>
+              <option value="Власник садиби">Власник садиби</option>
+            </select>
+          </div>
 
           <div className="flex items-center gap-2">
             <b>Role:</b>
@@ -78,7 +92,19 @@ export default function UserRow({
 
       <div className="break-all">{user.email}</div>
 
-      <div>{user.username || '-'}</div>
+        <div>
+        <select
+          value={user.statuses?.[0] || 'Учасник клубу'}
+          onChange={(e) =>
+            onUpdateStatus(user._id, e.target.value)
+          }
+          className="border rounded px-2 py-1 text-sm"
+        >
+          <option value="Учасник клубу">Учасник клубу</option>
+          <option value="Шляхотворець">Шляхотворець</option>
+          <option value="Власник садиби">Власник садиби</option>
+        </select>
+      </div>
 
       <div>
         <select

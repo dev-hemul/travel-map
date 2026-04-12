@@ -49,7 +49,7 @@ export default function AdminToolbar({
             className="w-60 rounded border px-3 py-2"
           />
 
-          {/* 📱 MOBILE SORT */}
+          {/* адаптив тлф */}
           {isMobile && (
             <div className="flex items-center gap-2">
 
@@ -62,14 +62,13 @@ export default function AdminToolbar({
                 className="rounded border px-3 py-2"
               >
                 <option value="createdAt">Дата</option>
-                <option value="email">Email</option>
-                <option value="username">Username</option>
-                <option value="provider">Provider</option>
-                <option value="roles">Role</option>
-                <option value="isBanned">Статус</option>
+                <option value="email">Пошта</option>
+                <option value="status">Статус</option>
+                <option value="provider">Провайдер</option>
+                <option value="roles">Роль</option>
+                <option value="isBanned">Бан</option>
               </select>
-
-              {/* 🔥 КНОПКА СОРТУ */}
+                
               <button
                 onClick={toggleSortOrder}
                 className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#744ce9] text-white hover:bg-[#5d39b3] transition"

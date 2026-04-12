@@ -17,6 +17,11 @@ const userSchema = new mongoose.Schema({
   enum: ['user', 'admin'],
   default: ['user'],
 },
+  statuses: {
+    type: [String],
+    enum: ['Учасник клубу', 'Шляхотворець', 'Власник садиби'],
+    default: ['Учасник клубу'],
+  },
   refreshToken: String,
 }, {
   timestamps: true

@@ -3,13 +3,14 @@ import { useEffect, useState } from 'react';
 import SortComp from './SortComp';
 import UserRow from './UserRow';
 
+
 const columns = [
-  { key: 'email', label: 'Email' },
-  { key: 'username', label: 'Username' },
-  { key: 'roles', label: 'Role' },
-  { key: 'provider', label: 'Provider' },
+  { key: 'email', label: 'Пошта' }, 
+  { key: 'status', label: 'Статус', noSort: true },   // ← додаємо noSort: true
+  { key: 'roles', label: 'Роль'},
+  { key: 'provider', label: 'Провайдер' },
   { key: 'createdAt', label: 'Дата' },
-  { key: 'isBanned', label: 'Статус' },
+  { key: 'isBanned', label: 'Бан' },
   { key: 'action', label: 'Дія' },
 ];
 
@@ -21,6 +22,7 @@ export default function UsersTable({
   onBan,
   onUnban,
   onUpdateRole,
+  onUpdateStatus
 }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -30,8 +32,8 @@ export default function UsersTable({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 📱 MOBILE
   if (isMobile) {
+    // ... мобільна версія без змін
     return (
       <div className="flex flex-col gap-4">
         {users.map((user) => (
@@ -41,6 +43,7 @@ export default function UsersTable({
             onBan={onBan}
             onUnban={onUnban}
             onUpdateRole={onUpdateRole}
+            onUpdateStatus={onUpdateStatus}
             isMobile
           />
         ))}
@@ -54,21 +57,22 @@ export default function UsersTable({
     );
   }
 
-  // 💻 DESKTOP
+  // ДЕСКТОП
   return (
-    <div className="w-full">
+    <div className="w-full max-w-[1200px] mx-auto">   {/* центрування */}
 
       {/* HEADER */}
-      <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_0.5fr] gap-2 items-center border-b bg-gray-100 p-2 text-base font-semibold">
+      <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_0.5fr] gap-2 items-center border-b bg-white p-2 text-base font-semibold">
         {columns.map((col) => (
           <div
             key={col.key}
-            className="cursor-pointer flex items-center"
-            onClick={() => col.key !== 'action' && onSort(col.key)}
+            className={`flex items-center ${col.noSort ? '' : 'cursor-pointer'}`}
+            onClick={() => !col.noSort && onSort(col.key)}   // ← сортуємо тільки якщо !noSort
           >
             {col.label}
 
-            {col.key !== 'action' && (
+            {/* Показуємо SortComp тільки якщо дозволяємо сортування */}
+            {!col.noSort && (
               <SortComp
                 field={col.key}
                 activeField={sortBy}
@@ -79,7 +83,6 @@ export default function UsersTable({
         ))}
       </div>
 
-      {/* BODY */}
       {!users.length && (
         <div className="p-4 text-center text-gray-500 text-base">
           Немає користувачів
@@ -94,10 +97,10 @@ export default function UsersTable({
             onBan={onBan}
             onUnban={onUnban}
             onUpdateRole={onUpdateRole}
+            onUpdateStatus={onUpdateStatus}
           />
         ))}
       </div>
-
     </div>
   );
 }
