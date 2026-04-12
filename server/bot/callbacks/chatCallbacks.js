@@ -118,7 +118,6 @@ export const setupChatCallbacks = botInstance => {
     queue.push({
       id: userId,
       name: ctx.from.first_name || 'Користувач',
-      username: ctx.from.username,
     });
     await ctx.reply('⌛ Вас додано в чергу. Очікуйте.');
 

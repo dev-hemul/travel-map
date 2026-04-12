@@ -22,7 +22,6 @@ const BackArrowIcon = ({ className = 'w-5 h-5' }) => (
 const LoginPage = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [formData, setFormData] = useState({
-    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -57,7 +56,6 @@ const LoginPage = () => {
 
       const payload = isRegister
         ? {
-            username: formData.username.trim(),
             email: formData.email.trim(),
             password: formData.password,
             confirmPassword: formData.confirmPassword,

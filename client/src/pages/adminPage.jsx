@@ -18,6 +18,7 @@ export default function AdminPage() {
     banUser,
     unbanUser,
     updateRole,
+    updateStatus,
     page,
     setPage,
     pages,
@@ -63,6 +64,7 @@ export default function AdminPage() {
             onBan={banUser}
             onUnban={unbanUser}
             onUpdateRole={updateRole}
+            onUpdateStatus={updateStatus}
             isMobile={isMobile}
           />
 

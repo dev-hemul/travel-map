@@ -1,5 +1,5 @@
 import User from './../../model/user.js';
-import { updateUserRole } from './admin.service.js';
+import { updateUserRole, updateUserStatus } from './admin.service.js';
 import {
   filterUsers,
   attachBanStatus,
@@ -26,7 +26,7 @@ export const listUsers = async (req, res) => {
 
     const allUsers = await User.find(
       {},
-      'email username roles provider createdAt'
+      'email roles statuses provider createdAt'
     ).lean();
 
     let users = filterUsers(allUsers, search);
@@ -117,3 +117,19 @@ export const updateRole = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
+export const updateStatus = async (req, res) => {
+
+  try{
+    const { userId, status } = req.body;
+
+    if(!userId || !status) {
+      return res.status(400).json({ message: 'Missing data' });
+    }
+    const user = await updateUserStatus(userId, status);
+    return res.json({ user });
+  } catch (e) {
+    console.error('updateStatus error', e);
+    return res.status(500).json({ message: 'Server error'})
+  }
+}
