@@ -72,13 +72,14 @@ export const useAdminUsers = () => {
     try {
       await apiAdmin.post('/ban', { email });
 
-      toast.success('Користувача забанено');
-
       setUsers((prev) =>
         prev.map((u) =>
           u.email === email ? { ...u, isBanned: true } : u
         )
       );
+        setTimeout(() => {
+          toast.success('Користувача забанено');
+        }, 0);
     } catch {
       toast.error('Не вдалося забанити');
     }
@@ -88,13 +89,14 @@ export const useAdminUsers = () => {
     try {
       await apiAdmin.post('/unban', { email });
 
-      toast.success('Користувача розбанено');
-
       setUsers((prev) =>
         prev.map((u) =>
           u.email === email ? { ...u, isBanned: false } : u
         )
       );
+      setTimeout(() => {
+        toast.success('Користувача розбанено');
+      }, 0);
     } catch {
       toast.error('Не вдалося розбанити');
     }
@@ -104,13 +106,16 @@ export const useAdminUsers = () => {
     try {
       await apiAdmin.post('/role', { userId, role });
 
-      toast.success('Роль оновлено');
-
       setUsers((prev) =>
         prev.map((u) =>
           u._id === userId ? { ...u, roles: [role] } : u
         )
       );
+
+      setTimeout(() => {
+        toast.success('Роль оновлено');
+      }, 0);
+
     } catch {
       toast.error('Не вдалося змінити роль');
     }
@@ -120,15 +125,16 @@ export const useAdminUsers = () => {
     try {
       await apiAdmin.post('/status', { userId, status });
 
-      toast.success('Статус оновлено');
-
       setUsers((prev) =>
         prev.map((u) =>
           u._id === userId ? { ...u, statuses: [status] } : u
         )
       );
+      setTimeout(() => {
+        toast.success('Статус оновлено');
+      }, 0);
     } catch {
-      toast.error('Не вдалося змінити роль');
+      toast.error('Не вдалося змінити статус');
     }
   };
 
