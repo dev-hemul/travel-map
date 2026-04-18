@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import api from '@/api/api';
