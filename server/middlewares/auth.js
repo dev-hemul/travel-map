@@ -1,4 +1,3 @@
-
 import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -11,7 +10,12 @@ import User from '../model/user.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const publicKey = readFileSync(path.join(__dirname, '../keys/publicKey.pem'), 'utf8');
+let publicKey;
+if (process.env.PUBLIC_KEY) {
+  publicKey = process.env.PUBLIC_KEY.replace(/\\n/g, '\n');
+} else {
+  publicKey = readFileSync(path.join(__dirname, '../keys/publicKey.pem'), 'utf8');
+}
 const alg = 'RS512';
 
 export const verifyAccessToken = (req, res, next) => {
@@ -59,4 +63,3 @@ export const verifyRefreshToken = async (req, res, next) => {
     return res.status(500).json({ message: 'Помилка сервера' });
   }
 };
-
