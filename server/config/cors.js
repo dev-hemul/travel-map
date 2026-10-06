@@ -3,6 +3,7 @@ export const corsOptions = {
     'http://localhost:5173',
     'http://localhost',
     'https://tripmap.site',
+    'https://www.tripmap.site',
     'https://travel-map-three-beta.vercel.app',
   ],
   credentials: true,
