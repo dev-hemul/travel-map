@@ -1,4 +1,6 @@
 import http from 'http';
+import dns from 'node:dns';
+dns.setServers(['8.8.8.8', '8.8.4.4']); // Google DNS
 
 import chalk from 'chalk';
 

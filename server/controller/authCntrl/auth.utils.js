@@ -6,20 +6,35 @@ import { nanoid } from 'nanoid';
 import Tokens from '../../model/token.js';
 import User from '../../model/user.js';
 
-const privateKey = readFileSync('keys/privateKey.pem', 'utf8');
-const publicKey = readFileSync('keys/publicKey.pem', 'utf8');
+let privateKey;
+let publicKey;
+
+if (process.env.PRIVATE_KEY && process.env.PUBLIC_KEY) {
+  // Для Render: читаем из переменных окружения
+  privateKey = process.env.PRIVATE_KEY.replace(/\\n/g, '\n');
+  publicKey = process.env.PUBLIC_KEY.replace(/\\n/g, '\n');
+} else {
+  // Для локальной разработки: читаем из файлов
+  privateKey = readFileSync('keys/privateKey.pem', 'utf8');
+  publicKey = readFileSync('keys/publicKey.pem', 'utf8');
+}
+
 const alg = 'RS512';
 
-export const lifedur = 7 * 24 * 3600 * 1000;          // 7 днів
-export const refreshLifedur = 21 * 24 * 3600 * 1000;  // 21 день
+export const lifedur = 7 * 24 * 3600 * 1000; // 7 днів
+export const refreshLifedur = 21 * 24 * 3600 * 1000; // 21 день
 
 if (!privateKey || !publicKey) {
   throw new Error('Ключі не ініціалізовані в файлах keys/');
 }
 
-export const normalizeEmail = (email) => String(email || '').trim().toLowerCase();
+export const normalizeEmail = email =>
+  String(email || '')
+    .trim()
+    .toLowerCase();
 
-export const conflict = (res, message, code) => { /// конфлікт авторизації гугл/локал
+export const conflict = (res, message, code) => {
+  /// конфлікт авторизації гугл/локал
   return res.status(409).json({
     success: false,
     message,
@@ -37,7 +52,7 @@ export const setRefreshCookie = (res, refreshT) => {
   });
 };
 
-export const clearRefreshCookie = (res) => {
+export const clearRefreshCookie = res => {
   res.clearCookie('refreshToken', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -46,17 +61,17 @@ export const clearRefreshCookie = (res) => {
   });
 };
 
-export const ensureRoles = async (user) => {
+export const ensureRoles = async user => {
   if (!Array.isArray(user.roles) || user.roles.length === 0) {
     user.roles = ['user'];
     await user.save();
   }
 };
 
-export const createAccessToken = (payload) =>
+export const createAccessToken = payload =>
   jwt.sign(payload, privateKey, { algorithm: alg, expiresIn: lifedur / 1000 });
 
-export const createTokens = async (userId) => {
+export const createTokens = async userId => {
   const user = await User.findById(userId).select('roles');
   const roles = Array.isArray(user?.roles) && user.roles.length ? user.roles : ['user'];
 
@@ -77,4 +92,4 @@ export const issueTokens = async (res, userId) => {
   return accessT;
 };
 
-export const decodeToken = (token) => jwt.decode(token);
+export const decodeToken = token => jwt.decode(token);
